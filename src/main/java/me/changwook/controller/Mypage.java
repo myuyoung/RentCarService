@@ -23,7 +23,7 @@ public class Mypage {
 
     @GetMapping("/detail")
     public String detail(@RequestParam Long id , Model model) {
-        Member one = memberRepository.findOne(id);
+        Member one = memberRepository.findOne(id).orElseThrow();
         model.addAttribute("member", memberRepository.findOne(id));
         log.info("one");
         return "detail";

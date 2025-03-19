@@ -22,6 +22,8 @@ public class Member {
 
     private String email;
 
+    private String password;
+
     @OneToOne(mappedBy = "member")
     private Rent rent;
 
@@ -36,5 +38,12 @@ public class Member {
         this.licence = memberDTO.getLicence();
         this.email = memberDTO.getEmail();
     }
-
+    public MemberDTO toDTO(){
+        MemberDTO memberDTO = new MemberDTO();
+        memberDTO.setId(this.id);
+        memberDTO.setName(this.name);
+        memberDTO.setLicence(this.licence);
+        memberDTO.setEmail(this.email);
+        return memberDTO;
+    }
 }
