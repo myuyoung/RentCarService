@@ -44,7 +44,7 @@ class MemberServiceTest {
         log.info("member: {}", member.toString());
 
         //when
-        Member one1 = memberRepository.findOne(member.getId()).orElseThrow();
+        Member one1 = memberRepository.findById(member.getId()).orElseThrow();
         MemberDTO memberDTO = new MemberDTO(one1);
         memberDTO.setEmail("jjjonga33@naver.com");
         memberService.update(memberDTO);
@@ -52,8 +52,8 @@ class MemberServiceTest {
         entityManager.clear();
         log.info("member.getEmail: {}", member.getEmail());
         //then
-        Member one = memberRepository.findOne(member.getId()).orElseThrow();
-        log.info("one: {}", one.toString());
+        Member one = memberRepository.findById(member.getId()).orElseThrow();
+        log.info("one: {}", one);
         assertThat(one.getEmail()).isEqualTo("jjjonga33@naver.com");
     }
 
@@ -66,7 +66,7 @@ class MemberServiceTest {
         entityManager.flush();
         entityManager.clear();
         //when
-        Member findOne = memberRepository.findOne(member.getId()).orElseThrow();
+        Member findOne = memberRepository.findById(member.getId()).orElseThrow();
         //then
         assertThat(findOne.getName()).isEqualTo(member.getName());
         log.info("findOne.getEmail: {}, findOne.getName:{} ", findOne.getEmail(), findOne.getName());

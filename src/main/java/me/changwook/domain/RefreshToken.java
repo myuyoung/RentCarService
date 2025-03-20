@@ -1,9 +1,7 @@
 package me.changwook.domain;
 
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
@@ -15,6 +13,7 @@ import lombok.*;
 public class RefreshToken {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     @Column
     private String id;
 

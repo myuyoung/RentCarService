@@ -17,9 +17,10 @@ public class Member {
 
     private String name;
 
-    @Column(nullable = false,columnDefinition = "BOOLEAN")
+    @Column(columnDefinition = "BOOLEAN")
     private Boolean licence = false;
 
+    @Column(unique = true, nullable = false)
     private String email;
 
     private String password;

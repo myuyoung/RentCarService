@@ -22,3 +22,6 @@ spring:
 logging:
   level:
     sql: debug
+jwt:
+  secret: d9f82kd9fkdw92kfslaj2k39fkdslqwe
+  expire: 1800

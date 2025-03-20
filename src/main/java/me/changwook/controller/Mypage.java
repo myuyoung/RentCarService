@@ -23,16 +23,17 @@ public class Mypage {
 
     @GetMapping("/detail")
     public String detail(@RequestParam Long id , Model model) {
-        Member one = memberRepository.findOne(id).orElseThrow();
-        model.addAttribute("member", memberRepository.findOne(id));
+        Member one = memberRepository.findById(id).orElseThrow();
+        model.addAttribute("member", one);
         log.info("one");
         return "detail";
     }
 
+    //회원가입 컨트롤러
     @PostMapping("/member")
     public String member(@Validated @ModelAttribute MemberDTO memberDTO, Model model){
         memberService.create(memberDTO);
-        model.addAttribute("member", memberRepository.findOne(memberDTO.getId()));
+        model.addAttribute("member", memberRepository.findById(memberDTO.getId()));
         log.info("member");
         return "mypage/detail";
     }

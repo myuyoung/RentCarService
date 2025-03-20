@@ -19,7 +19,7 @@ public class MemberService {
 
     @Transactional(readOnly = true)
     public MemberDTO findById(Long id) {
-        Member member = memberRepository.findOne(id).orElseThrow(() -> new EntityNotFoundException(String.valueOf(id)));
+        Member member = memberRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(String.valueOf(id)));
         return new MemberDTO(member);
     }
 
@@ -31,13 +31,13 @@ public class MemberService {
 
     @Transactional
     public void update(MemberDTO memberDTO) {
-        Member member = memberRepository.findOne(memberDTO.getId()).orElseThrow();
+        Member member = memberRepository.findById(memberDTO.getId()).orElseThrow();
         member.updateMember(memberDTO);
     }
 
     @Transactional
     public void registerMember(RegisterMemberDTO registerMemberDTO) {
-        memberRepository.findByName(registerMemberDTO.getName()).ifPresent(m ->{throw new RuntimeException("이미 존재하는 회원입니다."); });
+        memberRepository.findByEmail(registerMemberDTO.getName()).ifPresent(m ->{throw new RuntimeException("이미 존재하는 회원입니다."); });
 
         Member member = Member.builder().email(registerMemberDTO.getEmail()).password(passwordEncoder.encode(registerMemberDTO.getPassword())).build();
 

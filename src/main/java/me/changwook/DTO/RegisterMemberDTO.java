@@ -1,6 +1,7 @@
 package me.changwook.DTO;
 
 import jakarta.validation.constraints.NotNull;
+import lombok.Builder;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import me.changwook.domain.Member;
