@@ -3,7 +3,6 @@ package me.changwook.repository;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import me.changwook.domain.Rent;
-import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
