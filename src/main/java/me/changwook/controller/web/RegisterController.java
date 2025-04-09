@@ -1,8 +1,8 @@
-package me.changwook.controller;
+package me.changwook.controller.web;
 
 import lombok.RequiredArgsConstructor;
 import me.changwook.DTO.RegisterMemberDTO;
-import me.changwook.service.MemberService;
+import me.changwook.service.impl.MemberService;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;

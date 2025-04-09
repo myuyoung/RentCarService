@@ -1,8 +1,7 @@
-package me.changwook.service;
+package me.changwook.service.impl;
 
 import lombok.RequiredArgsConstructor;
-import me.changwook.configuration.security.CustomUserDetails;
-import me.changwook.domain.Member;
+import me.changwook.configuration.config.security.CustomUserDetails;
 import me.changwook.repository.MemberRepository;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;

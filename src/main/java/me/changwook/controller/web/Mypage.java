@@ -1,11 +1,11 @@
-package me.changwook.controller;
+package me.changwook.controller.web;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.changwook.DTO.MemberDTO;
 import me.changwook.domain.Member;
 import me.changwook.repository.MemberRepository;
-import me.changwook.service.MemberService;
+import me.changwook.service.impl.MemberService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.annotation.Validated;
@@ -22,7 +22,7 @@ public class Mypage {
     private final MemberService memberService;
 
     @GetMapping("/detail")
-    public String detail(@RequestParam Long id , Model model) {
+    public String detail(@RequestBody Long id , Model model) {
         Member one = memberRepository.findById(id).orElseThrow();
         model.addAttribute("member", one);
         log.info("one");
@@ -31,7 +31,7 @@ public class Mypage {
 
     //회원가입 컨트롤러
     @PostMapping("/member")
-    public String member(@Validated @ModelAttribute MemberDTO memberDTO, Model model){
+    public String member(@Validated @ModelAttribute MemberDTO memberDTO, Model model) {
         memberService.create(memberDTO);
         model.addAttribute("member", memberRepository.findById(memberDTO.getId()));
         log.info("member");

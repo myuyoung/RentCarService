@@ -1,4 +1,4 @@
-package me.changwook.service;
+package me.changwook.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import me.changwook.domain.Rent;

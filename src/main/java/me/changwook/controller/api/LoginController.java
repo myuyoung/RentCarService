@@ -1,4 +1,4 @@
-package me.changwook.controller;
+package me.changwook.controller.api;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -6,7 +6,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import me.changwook.DTO.AuthResponse;
 import me.changwook.DTO.LoginRequest;
-import me.changwook.configuration.security.JwtUtil;
+import me.changwook.configuration.config.security.JwtUtil;
 import me.changwook.domain.RefreshToken;
 import me.changwook.repository.RefreshTokenRepository;
 import org.springframework.http.HttpStatus;
@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
-@RequestMapping("/api/auth")
+@RequestMapping("/auth")
 @RequiredArgsConstructor
 public class LoginController {
 

@@ -1,4 +1,4 @@
-package me.changwook.service;
+package me.changwook.service.impl;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -6,7 +6,7 @@ import me.changwook.DTO.RentCarsDTO;
 import me.changwook.domain.RentCars;
 import me.changwook.mapper.RentCarsMapper;
 import me.changwook.repository.RentCarsRepository;
-import org.springframework.data.crossstore.ChangeSetPersister;
+import me.changwook.service.BasicService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

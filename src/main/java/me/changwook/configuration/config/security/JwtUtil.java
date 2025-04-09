@@ -1,4 +1,4 @@
-package me.changwook.configuration.security;
+package me.changwook.configuration.config.security;
 
 
 import io.jsonwebtoken.Jwts;

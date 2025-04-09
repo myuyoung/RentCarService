@@ -4,14 +4,13 @@ import lombok.extern.slf4j.Slf4j;
 import me.changwook.DTO.RentCarsDTO;
 import me.changwook.domain.RentCars;
 import me.changwook.repository.RentCarsRepository;
+import me.changwook.service.impl.RentCarService;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Optional;
 
 @SpringBootTest
 @Slf4j
