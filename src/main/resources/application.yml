@@ -19,9 +19,17 @@ spring:
       settings:
         web-allow-others: true
       enabled: true
+  messages:
+    basename: messages_ko
+    encoding: UTF-8
+
 logging:
   level:
     sql: debug
 jwt:
-  secret: "8960"
-  expire: 1000 * 60 * 60
+  secret: "qwertyuiopasdfghjklzxcvbnmqwerty"
+  expire: 3600000
+security:
+  login:
+    max-attempts: 5
+    lockout-duration-minutes: 15

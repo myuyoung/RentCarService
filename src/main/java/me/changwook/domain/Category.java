@@ -1,9 +1,6 @@
 package me.changwook.domain;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 
 @Entity
@@ -16,7 +13,7 @@ public class Category {
     private Long id;
 
     @Enumerated(EnumType.STRING)
-    private RentCarsSegment rentCarsSegment;
+private RentCarsSegment rentCarsSegment;
 
     @Enumerated(EnumType.STRING)
     private FuelType fuelType;

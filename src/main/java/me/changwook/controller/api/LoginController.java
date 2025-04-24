@@ -4,21 +4,23 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import me.changwook.DTO.AuthResponse;
-import me.changwook.DTO.LoginRequest;
+import me.changwook.DTO.ApiResponseDTO;
+import me.changwook.DTO.AuthResponseDTO;
+import me.changwook.DTO.LoginRequestDTO;
 import me.changwook.configuration.config.security.JwtUtil;
 import me.changwook.domain.RefreshToken;
 import me.changwook.repository.RefreshTokenRepository;
+import me.changwook.service.impl.LoginService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+
+import java.util.Map;
 
 @Controller
 @RequestMapping("/auth")
@@ -28,32 +30,22 @@ public class LoginController {
     private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
     private final RefreshTokenRepository refreshTokenRepository;
+    private final LoginService loginService;
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest, HttpServletResponse response) {
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword())
-        );
-        String accessToken = jwtUtil.generateAccessToken(authentication.getName());
-        String refreshToken = jwtUtil.generateRefreshToken(authentication.getName());
+    public ResponseEntity<?> login(@RequestBody LoginRequestDTO loginRequestDTO, HttpServletResponse response) {
+        Map<String, String> token = loginService.login(loginRequestDTO);
 
-        //리프레쉬토큰 저장
-        refreshTokenRepository.save(RefreshToken.builder()
-                .username(authentication.getName())
-                .token(refreshToken)
-                .expiryDate(jwtUtil.getExpirationDateFromToken(refreshToken).getTime())
-                .build());
-
-        //HttpOnly 쿠키로 전달
-        ResponseCookie cookie = ResponseCookie.from("refreshToken",refreshToken)
+        ResponseCookie cookie = ResponseCookie.from("refreshToken",token.get("refresh-token"))
                 .httpOnly(true)
                 .path("/")
                 .maxAge(jwtUtil.getRefreshInterval()/1000)
                 .build();
         response.addHeader("Set-Cookie", cookie.toString());
 
-        return ResponseEntity.ok(new AuthResponse(accessToken));
+        return ResponseEntity.ok(new ApiResponseDTO<>(true,"로그인이 성공했습니다.",new AuthResponseDTO(token.get("access_token"))));
     }
+
     @PostMapping("/refresh-token")
     public ResponseEntity<?> refreshToken(HttpServletRequest request, HttpServletResponse response) {
         String refreshToken = extractRefreshToken(request,"refreshToken");
@@ -69,7 +61,7 @@ public class LoginController {
         }
 
         String newAccessToken = jwtUtil.generateAccessToken(username);
-        return ResponseEntity.ok(new AuthResponse(newAccessToken));
+        return ResponseEntity.ok(new ApiResponseDTO<>(true,"토큰 재생성",new AuthResponseDTO(newAccessToken)));
     }
 
     private String extractRefreshToken(HttpServletRequest request,String name) {
@@ -95,7 +87,7 @@ public class LoginController {
                 .maxAge(0)
                 .build();
         response.addHeader("Set-Cookie", deleteCookie.toString());
-        return ResponseEntity.ok("로그아웃 완료");
+        return ResponseEntity.ok(new ApiResponseDTO<>(true,"로그아웃 되었습니다.",null));
     }
 
 

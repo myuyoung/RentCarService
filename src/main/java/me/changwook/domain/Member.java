@@ -1,13 +1,16 @@
 package me.changwook.domain;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import me.changwook.DTO.MemberDTO;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Getter
-@NoArgsConstructor
-@AllArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PROTECTED)
 @Builder
 public class Member {
     @Id
@@ -23,28 +26,49 @@ public class Member {
     @Column(unique = true, nullable = false)
     private String email;
 
+    private String phone;
+
+    private String address;
+
     private String password;
 
-    @OneToOne(mappedBy = "member")
-    private Rent rent;
+    @Column(columnDefinition = "integer default 0")
+    private int failedLoginAttempts = 0;
 
-    public void setMember(Rent rent){
-        this.rent = rent;
-    }
+    //계정 잠금 해제 시간 필드 추가
+    @Column
+    private LocalDateTime accountLockedUntil;
+
+    @OneToOne(fetch = FetchType.LAZY,cascade = CascadeType.ALL)
+    @JoinColumn(name = "rent_id")
+    private Rent rent;
 
     //더티 체킹을 위한 메서드
     public void updateMember(MemberDTO memberDTO){
-        this.id = memberDTO.getId();
         this.name = memberDTO.getName();
         this.licence = memberDTO.getLicence();
-        this.email = memberDTO.getEmail();
     }
-    public MemberDTO toDTO(){
-        MemberDTO memberDTO = new MemberDTO();
-        memberDTO.setId(this.id);
-        memberDTO.setName(this.name);
-        memberDTO.setLicence(this.licence);
-        memberDTO.setEmail(this.email);
-        return memberDTO;
+
+    // 로그인 시도 관련 메서드 추가
+
+    //로그인 실패 시 횟수증가 메서드
+    public void incrementFailedLoginAttempts(){
+        this.failedLoginAttempts++;
+    }
+
+    //로그인 성공시 실패 횟수와 잠금시간 초기화
+    public void resetLoginAttempts(){
+        this.failedLoginAttempts = 0;
+        this.accountLockedUntil =null;
+    }
+
+    //로그인 실패 횟수 5회 시 로그인 잠금시간 설정
+    public void lockAccount(LocalDateTime unlockTime){
+        this.accountLockedUntil = unlockTime;
+    }
+
+    //로그인 잠금 시간이 존재하거나 시간이 잠금시간 이전이라면 true반환
+    public boolean isAccountLocked(){
+        return this.accountLockedUntil != null && LocalDateTime.now().isBefore(this.accountLockedUntil);
     }
 }

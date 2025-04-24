@@ -1,7 +1,7 @@
 package me.changwook.Security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import me.changwook.DTO.LoginRequest;
+import me.changwook.DTO.LoginRequestDTO;
 import me.changwook.DTO.RegisterMemberDTO;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -46,13 +46,13 @@ public class SecurityTest {
                 .andExpect(status().is3xxRedirection());
 
         // 2. 로그인 요청 및 JWT 발급
-        LoginRequest loginRequest = new LoginRequest();
-        loginRequest.setEmail("testuser@example.com");
-        loginRequest.setPassword("Test1234!");
+        LoginRequestDTO loginRequestDTO = new LoginRequestDTO();
+        loginRequestDTO.setEmail("testuser@example.com");
+        loginRequestDTO.setPassword("Test1234!");
 
         MvcResult result = mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(loginRequest)))
+                        .content(objectMapper.writeValueAsString(loginRequestDTO)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.token").exists())
                 .andReturn();

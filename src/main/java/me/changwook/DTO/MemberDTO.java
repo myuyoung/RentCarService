@@ -1,6 +1,8 @@
 package me.changwook.DTO;
 
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,17 +15,18 @@ import me.changwook.domain.Member;
 @NoArgsConstructor
 public class MemberDTO {
 
-    @NotNull
     private Long id;
 
-    @NotNull
     private String name;
 
-    @NotNull
     private Boolean licence = false;
 
-    @NotNull
     private String email;
+
+    private String phone;
+
+    private String address;
+
 
     public MemberDTO(Member member) {
         this.id = member.getId();

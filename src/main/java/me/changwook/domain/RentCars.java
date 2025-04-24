@@ -23,9 +23,6 @@ public class RentCars {
 
     private Long recommend;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    private Rent rent;
-
     private int rentPrice;
 
     private int totalDistance;
@@ -33,10 +30,6 @@ public class RentCars {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")
     private Category category;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "reservation_id")
-    private Reservation reservation;
 
     public void updateRentCars(RentCarsDTO entity) {
         this.name = entity.getName();

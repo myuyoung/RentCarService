@@ -1,11 +1,15 @@
-package me.changwook.mapper;
+package me.changwook.mapper.impl;
 
 import me.changwook.DTO.RentCarsDTO;
 import me.changwook.domain.RentCars;
 
 public class RentCarsMapper {
     public static RentCars toEntity(RentCarsDTO dto) {
-        return RentCars.builder().name(dto.getName()).rentPrice(dto.getRentPrice()).recommend(dto.getRecommend()).build();
+        return RentCars.builder()
+                .name(dto.getName())
+                .rentPrice(dto.getRentPrice())
+                .recommend(dto.getRecommend())
+                .build();
     }
 
     public static RentCarsDTO toDTO(RentCars entity) {

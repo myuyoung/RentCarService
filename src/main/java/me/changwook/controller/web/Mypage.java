@@ -21,24 +21,14 @@ public class Mypage {
 
     private final MemberService memberService;
 
-    @GetMapping("/detail")
-    public String detail(@RequestBody Long id , Model model) {
-        Member one = memberRepository.findById(id).orElseThrow();
-        model.addAttribute("member", one);
-        log.info("one");
-        return "detail";
+    //회원의 개인정보를 확인하는 컨트롤러
+    @GetMapping("/detail/{id}")
+    public String detail(@PathVariable Long id , Model model) {
+        //서비스 레이어로 변환시켜야 함
+        //매퍼로 변환
+        model.addAttribute("member",memberService.inquiry(id));
+        log.info("member: {}", memberService.inquiry(id));
+        return "/detail";
     }
-
-    //회원가입 컨트롤러
-    @PostMapping("/member")
-    public String member(@Validated @ModelAttribute MemberDTO memberDTO, Model model) {
-        memberService.create(memberDTO);
-        model.addAttribute("member", memberRepository.findById(memberDTO.getId()));
-        log.info("member");
-        return "mypage/detail";
-    }
-
-
-
 }
 
