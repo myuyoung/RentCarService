@@ -1,10 +1,10 @@
-package me.changwook.exception.apiException;
+package me.changwook.DTO;
 
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
 
 @AllArgsConstructor
-@Getter
+@Data
 public class ErrorDTO  {
 
     private String message;

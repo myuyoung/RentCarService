@@ -1,5 +1,6 @@
 package me.changwook.DTO;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
@@ -26,7 +27,6 @@ public class MemberDTO {
     private String phone;
 
     private String address;
-
 
     public MemberDTO(Member member) {
         this.id = member.getId();

@@ -43,11 +43,36 @@ dependencies {
     implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
     runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
+
+    //매핑 라이브러리 설정
+    implementation 'org.mapstruct:mapstruct:1.5.5.Final'
+    annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.5.Final'
+
+    annotationProcessor 'org.projectlombok:lombok-mapstruct-binding:0.2.0'
+}
+
+// Java 컴파일 옵션에 Annotation Processor 경로 설정 (Lombok + MapStruct)
+tasks.withType(JavaCompile) {
+    options.getGeneratedSourceOutputDirectory().set(file("${buildDir}/generated/sources/annotationProcessor/java/main"))
+    // Lombok과 MapStruct 프로세서 모두 활성화
+    options.compilerArgs = [
+            '-Amapstruct.defaultComponentModel=spring' // MapStruct 구현체를 Spring Bean으로 생성
+    ]
+}
+
+// IntelliJ IDEA 사용 시 generated source 인식 위한 설정 (선택적이지만 권장)
+sourceSets {
+    main {
+        java {
+            srcDirs = ["$projectDir/src/main/java", "$projectDir/build/generated/sources/annotationProcessor/java/main"]
+        }
+    }
 }
 
 tasks.named('test') {
     useJUnitPlatform()
 }
+
 clean {
     delete file('src/main/generated')
 }

@@ -18,28 +18,30 @@ import java.util.List;
 public class RentCarService implements BasicService<RentCarsDTO> {
 
     private final RentCarsRepository rentCarsRepository;
+    private final RentCarsMapper rentCarsMapper;
 
 
     @Override
     @Transactional
-    public void save(RentCarsDTO entity) {
-        rentCarsRepository.save(RentCarsMapper.toEntity(entity));
+    public void save(RentCarsDTO rentCarsDTO) {
+        rentCarsRepository.save(rentCarsMapper.rentCarsDTOToRent(rentCarsDTO));
     }
 
     @Override
     @Transactional
-    public void update(RentCarsDTO entity) {
-        RentCars rentCars = rentCarsRepository.findByName(entity.getName()).orElseThrow(() -> new RuntimeException("RentCars not found"));
-        rentCars.updateRentCars(entity);
+    public void update(RentCarsDTO rentCarsDTO) {
+        RentCars rentCars = rentCarsRepository.findByName(rentCarsDTO.getName()).orElseThrow(() -> new RuntimeException("RentCars not found"));
+       //업데이트 할 메서드를 작성해야함
+        rentCars.updateRentCars(rentCarsMapper.rentCarsDTOToRent(rentCarsDTO));
     }
 
     @Override
-    public void delete(RentCarsDTO entity) {
-        rentCarsRepository.delete(RentCarsMapper.toEntity(entity));
+    public void delete(RentCarsDTO rentCarsDTO) {
+        rentCarsRepository.delete(rentCarsMapper.rentCarsDTOToRent(rentCarsDTO));
     }
 
     @Override
-    public List<RentCarsDTO> findAll(RentCarsDTO entity) {
+    public List<RentCarsDTO> findAll(RentCarsDTO rentCarsDTO) {
         return List.of(null);
     }
 

@@ -18,6 +18,7 @@ public class MemberService {
 
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
+    private final MemberMapper memberMapper;
 
     @Transactional(readOnly = true)
     public MemberDTO findById(Long id) {
@@ -34,13 +35,14 @@ public class MemberService {
     @Transactional
     public MemberDTO inquiry(Long id) {
         Member member = memberRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(String.valueOf(id)));
-        return MemberMapper.toDTO(member);
+        return memberMapper.memberToMemberDTO(member);
     }
 
     @Transactional
     public void update(MemberDTO memberDTO) {
         Member member = memberRepository.findById(memberDTO.getId()).orElseThrow();
-        member.updateMember(memberDTO);
+        //업데이트 할 메서드를 작성
+        member.updateMember(memberMapper.memberDTOToMember(memberDTO));
     }
 
 }

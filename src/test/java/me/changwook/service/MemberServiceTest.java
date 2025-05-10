@@ -34,7 +34,7 @@ class MemberServiceTest {
     @DisplayName("회원 정보 수정 로직")
     @Transactional
     @Rollback
-    void updateMember() {
+    void updateMemberMember() {
         //given
         Member member = Member.builder().email("changwook@gmail.com").licence(true).name("changwook").build();
         memberRepository.save(member);

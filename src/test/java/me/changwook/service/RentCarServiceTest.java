@@ -30,7 +30,7 @@ class RentCarServiceTest {
 
     @Test
     @Transactional
-    void update() {
+    void updateRent() {
         RentCarsDTO rentCarsDTO = RentCarsDTO.builder().rentPrice(1000).recommend(50L).name("Genesis").build();
         rentCarService.update(rentCarsDTO);
 

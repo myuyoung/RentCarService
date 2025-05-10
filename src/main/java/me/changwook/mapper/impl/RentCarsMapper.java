@@ -2,18 +2,23 @@ package me.changwook.mapper.impl;
 
 import me.changwook.DTO.RentCarsDTO;
 import me.changwook.domain.RentCars;
+import org.mapstruct.Mapper;
+import org.mapstruct.MappingTarget;
+import org.mapstruct.factory.Mappers;
 
-public class RentCarsMapper {
-    public static RentCars toEntity(RentCarsDTO dto) {
-        return RentCars.builder()
-                .name(dto.getName())
-                .rentPrice(dto.getRentPrice())
-                .recommend(dto.getRecommend())
-                .build();
-    }
+import java.util.List;
 
-    public static RentCarsDTO toDTO(RentCars entity) {
-        return new RentCarsDTO(entity.getName(), entity.getRentPrice(), entity.getRecommend());
-    }
+@Mapper(componentModel = "spring")
+public interface RentCarsMapper {
+    RentCarsMapper INSTANCE = Mappers.getMapper(RentCarsMapper.class);
+
+    RentCarsDTO rentCarsToRentCarsDTO(RentCars rentCars);
+
+    List<RentCarsDTO> rentCarsDTOListToRentCarsDTOs(List<RentCars> rentCars);
+
+    RentCars rentCarsDTOToRent(RentCarsDTO rentCarsDTO);
+
+    List<RentCars> rentListToRents(List<RentCarsDTO> rentCarsDTOList);
+
 
 }

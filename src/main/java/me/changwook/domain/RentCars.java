@@ -1,11 +1,7 @@
 package me.changwook.domain;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import me.changwook.DTO.RentCarsDTO;
+import lombok.*;
 
 @Entity
 @Getter
@@ -19,6 +15,8 @@ public class RentCars {
     @Column(name = "rentcars_id",updatable = false)
     private Long id;
 
+    private String rentCarNumber;
+
     private String name;
 
     private Long recommend;
@@ -27,15 +25,36 @@ public class RentCars {
 
     private int totalDistance;
 
+    private boolean available;
+
+    @Setter
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")
     private Category category;
 
-    public void updateRentCars(RentCarsDTO entity) {
-        this.name = entity.getName();
-        this.recommend = entity.getRecommend();
-        this.rentPrice = entity.getRentPrice();
-    }
+    public void updateRentCars(RentCars rentCars) {
 
+        if (rentCars.getRentCarNumber() != null) {
+            this.rentCarNumber = rentCars.getRentCarNumber();
+        }
+        if (rentCars.getName() != null) {
+            this.name = rentCars.getName();
+        }
+        if (rentCars.getRecommend() != null) {
+            this.recommend = rentCars.getRecommend();
+        }
+        if (rentCars.getRentPrice() != 0) {
+            this.rentPrice = rentCars.getRentPrice();
+        }
+        if (rentCars.getTotalDistance() != 0) {
+            this.totalDistance = rentCars.getTotalDistance();
+        }
+        if (rentCars.isAvailable() != this.available) {
+            this.available = rentCars.isAvailable();
+        }
+        if (rentCars.getCategory() != null) {
+            this.category = rentCars.getCategory();
+        }
+    }
 
 }

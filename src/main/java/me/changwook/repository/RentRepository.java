@@ -1,33 +1,24 @@
 package me.changwook.repository;
 
-import jakarta.persistence.EntityManager;
-import lombok.RequiredArgsConstructor;
 import me.changwook.domain.Rent;
+import me.changwook.domain.RentCars;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
-@RequiredArgsConstructor
-public class RentRepository {
+public interface RentRepository extends JpaRepository<Rent,Long> {
 
-    private final EntityManager em;
+    List<Rent> findByDuration(int duration);
 
+    List<Rent> findByRentDate(LocalDate rentDate);
 
-    public void save(Rent rent) {
-        em.persist(rent);
-    }
+    List<Rent> findByRentCars(RentCars rentCars);
 
-    public Rent findOne(Long id) {
-         return em.find(Rent.class,id);
-    }
+    List<Rent> findByRentCars_Name(String rentCarsName);
 
-    public List<Rent> findAll() {
-        return em.createQuery("select r from Rent r", Rent.class).getResultList();
-    }
-
-    public Rent findByName(String name) {
-        return em.find(Rent.class,name);
-    }
 
 }

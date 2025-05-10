@@ -25,3 +25,7 @@ logging:
 jwt:
   secret: d9f82kd9fkdw92kfslaj2k39fkdslqwe
   expire: 1800
+security:
+  login:
+    max-attempts: 5
+    lockout-duration-minutes: 15

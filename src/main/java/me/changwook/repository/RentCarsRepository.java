@@ -17,4 +17,6 @@ public interface RentCarsRepository extends JpaRepository<RentCars, Long> {
     Optional<List<RentCars>> findAllCategories();
 
     Optional<RentCars> findByName(String name);
+
+    Optional<RentCars> findByRentCarNumber(String rentCarNumber);
 }

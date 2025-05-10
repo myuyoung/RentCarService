@@ -1,11 +1,13 @@
 package me.changwook.domain;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import me.changwook.DTO.MemberDTO;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 @Entity
 @Getter
@@ -39,14 +41,55 @@ public class Member {
     @Column
     private LocalDateTime accountLockedUntil;
 
-    @OneToOne(fetch = FetchType.LAZY,cascade = CascadeType.ALL)
-    @JoinColumn(name = "rent_id")
-    private Rent rent;
+    @OneToMany(mappedBy = "member",fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Rent> rent = new ArrayList<>();
 
-    //더티 체킹을 위한 메서드
-    public void updateMember(MemberDTO memberDTO){
-        this.name = memberDTO.getName();
-        this.licence = memberDTO.getLicence();
+    //더티체킹을 위한 메서드
+    public void updateMember(Member member) {
+
+        if(member.getName() != null) {
+            this.name = member.getName();
+        }
+
+        if(member.getLicence() != null) {
+            this.licence = member.getLicence();
+        }
+
+        if(member.getEmail() != null) {
+            this.email = member.getEmail();
+        }
+
+        if(member.getPhone() != null) {
+            this.phone = member.getPhone();
+        }
+
+        if(member.getAddress() != null) {
+            this.address = member.getAddress();
+        }
+
+        if(member.getPassword() != null) {
+            this.password = member.getPassword();
+        }
+    }
+
+
+    //연관관계 편의 메서드
+    public void setMemberAndRent(Rent rent){
+        this.rent.add(rent);
+        //반대편 설정
+        rent.setMemberReference(this);
+    }
+
+    //연관관계 제거 메서드
+    public void removeRent(Rent rent){
+        this.rent.remove(rent);
+        //반대편 설정
+        rent.setMemberReference(null);
+    }
+
+    //Getter(변경 불가능 List반환)
+    public List<Rent> getRent(){
+        return Collections.unmodifiableList(rent);
     }
 
     // 로그인 시도 관련 메서드 추가
