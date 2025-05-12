@@ -65,7 +65,8 @@ public class LoginController {
     }
 
     private String extractRefreshToken(HttpServletRequest request,String name) {
-        if(request.getParameter(name) != null) {
+        Cookie[] cookies = request.getCookies();
+        if(cookies != null && cookies.length > 0) {
             for(Cookie cookie : request.getCookies()) {
                 if(cookie.getName().equals(name)) {
                     return cookie.getValue();

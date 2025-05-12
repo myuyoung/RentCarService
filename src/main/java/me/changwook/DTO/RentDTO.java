@@ -1,5 +1,8 @@
 package me.changwook.DTO;
 
+import jakarta.validation.constraints.Future;
+import jakarta.validation.constraints.FutureOrPresent;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,11 +16,14 @@ import java.time.LocalDate;
 @Builder
 public class RentDTO {
 
+    @FutureOrPresent
     private LocalDate rentDate;
 
     private int duration;
 
+    @Future
     private LocalDate endDate;
 
+    @NotNull
     private RentCarsDTO rentCars;
 }

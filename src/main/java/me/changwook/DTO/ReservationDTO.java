@@ -1,6 +1,7 @@
 package me.changwook.DTO;
 
 
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
@@ -8,7 +9,9 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ReservationDTO {
 
+    @NotNull
     private RentDTO rentDTO;
 
+    @NotNull
     private RentCarsDTO rentCarsDTO;
 }
