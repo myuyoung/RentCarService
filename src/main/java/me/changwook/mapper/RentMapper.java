@@ -1,4 +1,4 @@
-package me.changwook.mapper.impl;
+package me.changwook.mapper;
 
 import me.changwook.DTO.RentDTO;
 import me.changwook.domain.Rent;

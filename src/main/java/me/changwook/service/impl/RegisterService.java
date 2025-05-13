@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import me.changwook.DTO.RegisterMemberDTO;
 import me.changwook.domain.Member;
 import me.changwook.exception.custom.RegisterException;
-import me.changwook.mapper.impl.RegisterMapper;
+import me.changwook.mapper.RegisterMapper;
 import me.changwook.repository.MemberRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;

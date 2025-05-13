@@ -11,7 +11,7 @@ import java.util.Optional;
 public interface RentCarsRepository extends JpaRepository<RentCars, Long> {
 
     @Query("select r from RentCars r")
-    Optional<List<RentCars>> findAllByCarId();
+    List<RentCars> findAllByCarId();
 
     @Query("select c from Category c")
     Optional<List<RentCars>> findAllCategories();
@@ -19,4 +19,11 @@ public interface RentCarsRepository extends JpaRepository<RentCars, Long> {
     Optional<RentCars> findByName(String name);
 
     Optional<RentCars> findByRentCarNumber(String rentCarNumber);
+
+    //사용 가능한 모든 차량 조회
+    List<RentCars> findByAvailableTrue();
+
+    //사용 가능한 차량을 이름으로 검색
+    Optional<RentCars> findByNameAndAvailableTrue(String name);
+
 }

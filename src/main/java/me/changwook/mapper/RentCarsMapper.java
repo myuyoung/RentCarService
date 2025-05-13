@@ -1,9 +1,8 @@
-package me.changwook.mapper.impl;
+package me.changwook.mapper;
 
 import me.changwook.DTO.RentCarsDTO;
 import me.changwook.domain.RentCars;
 import org.mapstruct.Mapper;
-import org.mapstruct.MappingTarget;
 import org.mapstruct.factory.Mappers;
 
 import java.util.List;
@@ -14,11 +13,11 @@ public interface RentCarsMapper {
 
     RentCarsDTO rentCarsToRentCarsDTO(RentCars rentCars);
 
-    List<RentCarsDTO> rentCarsDTOListToRentCarsDTOs(List<RentCars> rentCars);
+    List<RentCarsDTO> rentCarsListToRentCarsDTOs(List<RentCars> rentCars);
 
     RentCars rentCarsDTOToRent(RentCarsDTO rentCarsDTO);
 
-    List<RentCars> rentListToRents(List<RentCarsDTO> rentCarsDTOList);
+    List<RentCars> rentCarsDTOListToRents(List<RentCarsDTO> rentCarsDTOList);
 
 
 }

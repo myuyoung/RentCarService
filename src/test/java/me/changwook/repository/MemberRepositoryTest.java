@@ -42,7 +42,7 @@ class MemberRepositoryTest {
         rentCarsRepository.save(rentCars2);
         assertThat(rentCars1.getRentPrice()).isEqualTo(50000);
 
-        Optional<List<RentCars>> allByCarId = rentCarsRepository.findAllByCarId();
+        List<RentCars> allByCarId = rentCarsRepository.findAllByCarId();
         assertThat(allByCarId).isNotEmpty();
 
     }
