@@ -1,4 +1,4 @@
-package me.changwook.mapper;
+package me.changwook.mapper.impl;
 
 import me.changwook.DTO.MemberDTO;
 import me.changwook.domain.Member;
@@ -18,6 +18,5 @@ public interface MemberMapper {
     Member memberDTOToMember(MemberDTO memberDTO);
 
     List<Member> memberDTOsToMembers(List<MemberDTO> memberDTOs);
-
 
 }

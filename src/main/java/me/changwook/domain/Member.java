@@ -23,6 +23,7 @@ public class Member {
     private String name;
 
     @Column(columnDefinition = "BOOLEAN")
+    @Builder.Default
     private Boolean licence = false;
 
     @Column(unique = true, nullable = false)
@@ -35,6 +36,7 @@ public class Member {
     private String password;
 
     @Column(columnDefinition = "integer default 0")
+    @Builder.Default
     private int failedLoginAttempts = 0;
 
     //계정 잠금 해제 시간 필드 추가
@@ -42,6 +44,7 @@ public class Member {
     private LocalDateTime accountLockedUntil;
 
     @OneToMany(mappedBy = "member",fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
     private List<Rent> rent = new ArrayList<>();
 
     //더티체킹을 위한 메서드

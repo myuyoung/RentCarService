@@ -1,7 +1,8 @@
-package me.changwook.mapper;
+package me.changwook.mapper.impl;
 
 import me.changwook.DTO.RegisterMemberDTO;
 import me.changwook.domain.Member;
+import me.changwook.mapper.BasicMapper;
 
 public class RegisterMapper implements BasicMapper<Member,RegisterMemberDTO> {
 

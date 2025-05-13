@@ -2,7 +2,7 @@ package me.changwook.repository;
 
 import lombok.extern.slf4j.Slf4j;
 import me.changwook.domain.*;
-import me.changwook.mapper.RentMapper;
+import me.changwook.mapper.impl.RentMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;

@@ -10,69 +10,79 @@ version = '1.0-SNAPSHOT'
 repositories {
     mavenCentral()
 }
+
 configurations {
     compileOnly {
         extendsFrom annotationProcessor
     }
+    // testCompileOnly도 annotationProcessor를 확장하도록 추가 (Lombok 때문)
+    testCompileOnly {
+        extendsFrom annotationProcessor
+    }
 }
+
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-web'
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testImplementation platform('org.junit:juni t-bom:5.10.0')
-    testImplementation 'org.junit.jupiter:junit-jupiter'
     implementation "org.springframework.boot:spring-boot-starter-security"
-    testImplementation 'org.springframework.security:spring-security-test'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-    //타임리프 의존성 추가
-    implementation('org.springframework.boot:spring-boot-starter-thymeleaf')
+    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+
     runtimeOnly 'com.h2database:h2'
-    implementation 'javax.annotation:javax.annotation-api:1.3.2'
+
+
+
     implementation 'jakarta.persistence:jakarta.persistence-api:3.1.0'
+    implementation 'jakarta.annotation:jakarta.annotation-api:2.1.1'
+
+    // Lombok
     compileOnly 'org.projectlombok:lombok:1.18.30'
     annotationProcessor 'org.projectlombok:lombok:1.18.30'
     testCompileOnly 'org.projectlombok:lombok:1.18.30'
     testAnnotationProcessor 'org.projectlombok:lombok:1.18.30'
-    compileOnly('org.springframework.boot:spring-boot-devtools')
+
+    // Jackson
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-hibernate5-jakarta'
-    //Querydsl 추가
-    implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
-    annotationProcessor "com.querydsl:querydsl-apt:${dependencyManagement.importedProperties['querydsl.version']}:jakarta"
-    annotationProcessor "jakarta.annotation:jakarta.annotation-api"
-    annotationProcessor "jakarta.persistence:jakarta.persistence-api"
+
+    // JWT
     implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
     runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
 
-    //매핑 라이브러리 설정
+    // MapStruct
     implementation 'org.mapstruct:mapstruct:1.5.5.Final'
     annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.5.Final'
 
+    // Lombok + MapStruct Binding
     annotationProcessor 'org.projectlombok:lombok-mapstruct-binding:0.2.0'
+
+    // Test
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
+    testImplementation 'org.springframework.security:spring-security-test'
 }
 
-// Java 컴파일 옵션에 Annotation Processor 경로 설정 (Lombok + MapStruct)
-tasks.withType(JavaCompile) {
-    options.getGeneratedSourceOutputDirectory().set(file("${buildDir}/generated/sources/annotationProcessor/java/main"))
-    // Lombok과 MapStruct 프로세서 모두 활성화
-    options.compilerArgs = [
-            '-Amapstruct.defaultComponentModel=spring' // MapStruct 구현체를 Spring Bean으로 생성
-    ]
+tasks.withType(JavaCompile).configureEach { // configureEach 사용 권장
+    options.encoding = 'UTF-8' // 인코딩 설정 추가
+
+    // JavaCompile 작업에만 MapStruct 옵션 적용
+    if (name == "compileJava") {
+        options.compilerArgs += [
+                '-Amapstruct.defaultComponentModel=spring'
+        ]
+    }
+
 }
 
-// IntelliJ IDEA 사용 시 generated source 인식 위한 설정 (선택적이지만 권장)
+// IntelliJ IDEA 및 다른 IDE에서 생성된 소스를 인식하도록 설정
 sourceSets {
     main {
         java {
-            srcDirs = ["$projectDir/src/main/java", "$projectDir/build/generated/sources/annotationProcessor/java/main"]
+            srcDirs += file("${buildDir}/generated/sources/annotationProcessor/java/main")
         }
     }
 }
 
 tasks.named('test') {
     useJUnitPlatform()
-}
-
-clean {
-    delete file('src/main/generated')
 }
