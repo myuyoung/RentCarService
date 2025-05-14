@@ -1,24 +1,21 @@
 package me.changwook.mapper;
 
+import me.changwook.DTO.MemberDTO;
 import me.changwook.DTO.RegisterMemberDTO;
 import me.changwook.domain.Member;
+import org.mapstruct.Mapper;
+import org.mapstruct.factory.Mappers;
 
-public class RegisterMapper implements BasicMapper<Member,RegisterMemberDTO> {
+@Mapper(componentModel = "spring")
+public interface RegisterMapper  {
 
-    @Override
-    public Member toDto(RegisterMemberDTO dto) {
-        return Member.builder()
-                .address(dto.getAddress())
-                .email(dto.getEmail())
-                .password(dto.getPassword())
-                .phone(dto.getPhone())
-                .name(dto.getName())
-                .build();
-    }
+    RegisterMapper INSTANCE = Mappers.getMapper(RegisterMapper.class);
+    //memberToDTO 작성하기
 
-    //회원가입시에 DTO객체로 변환할 필요가 없기 때문에 null로함.
-    @Override
-    public RegisterMemberDTO toEntity(Member entity) {
-        return null;
-    }
+    RegisterMemberDTO memberToRegisterDTO(Member member);
+
+    Member registerDTOToMember(RegisterMemberDTO registerMemberDTO);
+
+
+
 }

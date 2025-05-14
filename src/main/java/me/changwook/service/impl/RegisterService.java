@@ -16,6 +16,7 @@ public class RegisterService {
 
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
+    private final RegisterMapper registerMapper;
 
     @Transactional
     public void registerMember(RegisterMemberDTO registerMemberDTO) {
@@ -25,7 +26,7 @@ public class RegisterService {
         }
 
         registerMemberDTO.setPassword(passwordEncoder.encode(registerMemberDTO.getPassword()));
-        Member member = new RegisterMapper().toDto(registerMemberDTO);
+        Member member = registerMapper.registerDTOToMember(registerMemberDTO);
 
         memberRepository.save(member);
     }
