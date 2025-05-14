@@ -4,7 +4,7 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import me.changwook.DTO.MemberDTO;
 import me.changwook.domain.Member;
-import me.changwook.mapper.impl.MemberMapper;
+import me.changwook.mapper.MemberMapper;
 import me.changwook.repository.MemberRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;

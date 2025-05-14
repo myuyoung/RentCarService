@@ -4,7 +4,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import me.changwook.DTO.RentCarsDTO;
 import me.changwook.domain.RentCars;
-import me.changwook.mapper.impl.RentCarsMapper;
+import me.changwook.mapper.RentCarsMapper;
 import me.changwook.repository.RentCarsRepository;
 import me.changwook.service.BasicService;
 import org.springframework.stereotype.Service;
