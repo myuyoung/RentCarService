@@ -35,6 +35,8 @@ public class Member {
 
     private String password;
 
+
+
     @Column(columnDefinition = "integer default 0")
     @Builder.Default
     private int failedLoginAttempts = 0;
@@ -73,6 +75,7 @@ public class Member {
         if(member.getPassword() != null) {
             this.password = member.getPassword();
         }
+
     }
 
 

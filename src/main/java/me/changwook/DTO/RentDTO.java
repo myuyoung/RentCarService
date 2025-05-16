@@ -20,7 +20,7 @@ public class RentDTO {
     @FutureOrPresent
     private LocalDate rentDate;
 
-    @Min(value = 1)
+    @Min(1)
     private int duration;
 
     @Future

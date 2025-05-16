@@ -29,8 +29,8 @@ public class DataInitializer {
             categoryRepository.saveAll(Arrays.asList(mediumGasoline,largeDiesel));
 
             // 렌트카 초기화
-            RentCars sonata = RentCars.builder().rentCarNumber("11가1111").name("소나타").rentPrice(50000).available(true).category(mediumGasoline).build();
-            RentCars bentz = RentCars.builder().rentCarNumber("22나2222").name("아이오닉5").rentPrice(100_000).available(true).category(largeDiesel).build();
+            RentCars sonata = RentCars.builder().rentCarNumber("11가1111").name("소나타").rentPrice(50000).category(mediumGasoline).build();
+            RentCars bentz = RentCars.builder().rentCarNumber("22나2222").name("아이오닉5").rentPrice(100_000).category(largeDiesel).build();
             rentCarsRepository.saveAll(Arrays.asList(sonata,bentz));
 
             // 회원 초기화 - 이메일 중복 검사 추가
@@ -44,6 +44,7 @@ public class DataInitializer {
                         .email(email1)
                         .password(passwordEncoder.encode("Password123!"))
                         .licence(true)
+                        .address("서울시 은평구")
                         .build();
                 memberRepository.save(user1);
             }
@@ -55,6 +56,7 @@ public class DataInitializer {
                         .email(email2)
                         .password(passwordEncoder.encode("Password1234@"))
                         .licence(false)
+                        .address("경기도 안산")
                         .build();
                 memberRepository.save(user2);
             }

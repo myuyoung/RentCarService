@@ -25,7 +25,6 @@ public class RentCars {
 
     private int totalDistance;
 
-    private boolean available;
 
     @Setter
     @ManyToOne(fetch = FetchType.LAZY)
@@ -48,9 +47,6 @@ public class RentCars {
         }
         if (rentCars.getTotalDistance() != 0) {
             this.totalDistance = rentCars.getTotalDistance();
-        }
-        if (rentCars.isAvailable() != this.available) {
-            this.available = rentCars.isAvailable();
         }
         if (rentCars.getCategory() != null) {
             this.category = rentCars.getCategory();

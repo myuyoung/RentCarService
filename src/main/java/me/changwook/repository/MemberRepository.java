@@ -2,7 +2,9 @@ package me.changwook.repository;
 
 import me.changwook.domain.Member;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface MemberRepository extends JpaRepository<Member, Long> {
@@ -10,4 +12,11 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     Optional<Member> findByEmail(String email);
 
     Boolean existsByEmail(String email);
+
+    //member
+    @Query("""
+    select m from Member m where m.rent =: rent \s
+    and 
+""")
+    List<Member> findOverLappingMembers();
 }
