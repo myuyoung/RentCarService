@@ -8,8 +8,6 @@ import me.changwook.domain.Member;
 import me.changwook.domain.Rent;
 import me.changwook.domain.RentCars;
 import me.changwook.exception.custom.ReservationConflictException;
-import me.changwook.mapper.MemberMapper;
-import me.changwook.mapper.RentCarsMapper;
 import me.changwook.mapper.RentMapper;
 import me.changwook.repository.MemberRepository;
 import me.changwook.repository.RentCarsRepository;
