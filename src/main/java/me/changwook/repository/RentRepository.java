@@ -2,6 +2,7 @@ package me.changwook.repository;
 
 import me.changwook.domain.Rent;
 import me.changwook.domain.RentCars;
+import me.changwook.repository.custom.RentRepositoryCustom;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -11,7 +12,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 @Repository
-public interface RentRepository extends JpaRepository<Rent,Long> {
+public interface RentRepository extends JpaRepository<Rent,Long>, RentRepositoryCustom {
 
     List<Rent> findByDuration(int duration);
 

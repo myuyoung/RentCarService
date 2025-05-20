@@ -15,18 +15,17 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Getter
-public class RentCarService implements BasicService<RentCarsDTO> {
+public class RentCarService  {
 
     private final RentCarsRepository rentCarsRepository;
     private final RentCarsMapper rentCarsMapper;
 
-    @Override
     @Transactional
     public void save(RentCarsDTO rentCarsDTO) {
         rentCarsRepository.save(rentCarsMapper.rentCarsDTOToRent(rentCarsDTO));
     }
 
-    @Override
+
     @Transactional
     public void update(RentCarsDTO rentCarsDTO) {
         RentCars rentCars = rentCarsRepository.findByName(rentCarsDTO.getName()).orElseThrow(() -> new RuntimeException("RentCars not found"));
@@ -34,17 +33,9 @@ public class RentCarService implements BasicService<RentCarsDTO> {
         rentCars.updateRentCars(rentCarsMapper.rentCarsDTOToRent(rentCarsDTO));
     }
 
-    @Override
     public void delete(RentCarsDTO rentCarsDTO) {
         rentCarsRepository.delete(rentCarsMapper.rentCarsDTOToRent(rentCarsDTO));
     }
 
-    //렌트가 가능한 차량만 조회
-    @Override
-    public List<RentCarsDTO> findAll(RentCarsDTO rentCarsDTO) {
-        List<RentCars> byAvailableTrue = rentCarsRepository.findByAvailableTrue();
 
-        return rentCarsMapper.rentCarsListToRentCarsDTOs(byAvailableTrue);
-
-    }
 }

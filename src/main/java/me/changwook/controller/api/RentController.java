@@ -31,5 +31,4 @@ public class RentController {
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
-
 }

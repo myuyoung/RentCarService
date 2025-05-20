@@ -7,6 +7,11 @@ plugins {
 group = 'me.changwook'
 version = '1.0-SNAPSHOT'
 
+java {
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
+}
+
 repositories {
     mavenCentral()
 }
@@ -15,8 +20,7 @@ configurations {
     compileOnly {
         extendsFrom annotationProcessor
     }
-    // testCompileOnly도 annotationProcessor를 확장하도록 추가 (Lombok 때문)
-    testCompileOnly {
+    testCompileOnly { // 테스트 코드용 Lombok 등을 위해 필요
         extendsFrom annotationProcessor
     }
 }
@@ -27,11 +31,9 @@ dependencies {
     implementation "org.springframework.boot:spring-boot-starter-security"
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
-
     runtimeOnly 'com.h2database:h2'
 
-
-
+    // Jakarta EE API (Spring Boot 3.x에서 JPA 사용 시 필요)
     implementation 'jakarta.persistence:jakarta.persistence-api:3.1.0'
     implementation 'jakarta.annotation:jakarta.annotation-api:2.1.1'
 
@@ -41,8 +43,6 @@ dependencies {
     testCompileOnly 'org.projectlombok:lombok:1.18.30'
     testAnnotationProcessor 'org.projectlombok:lombok:1.18.30'
 
-    // Jackson
-    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-hibernate5-jakarta'
 
     // JWT
     implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
@@ -52,35 +52,48 @@ dependencies {
     // MapStruct
     implementation 'org.mapstruct:mapstruct:1.5.5.Final'
     annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.5.Final'
-
-    // Lombok + MapStruct Binding
     annotationProcessor 'org.projectlombok:lombok-mapstruct-binding:0.2.0'
 
     // Test
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
-
     testImplementation 'org.springframework.security:spring-security-test'
+
+    // QueryDSL 의존성 (버전 5.1.0으로 통일, classifier 'jakarta' 사용)
+    implementation 'com.querydsl:querydsl-jpa:5.1.0:jakarta'
+    implementation 'com.querydsl:querydsl-core:5.1.0'
+    // annotationProcessor로 querydsl-apt 추가 (Q-Type 생성용)
+    annotationProcessor "com.querydsl:querydsl-apt:5.1.0:jakarta"
+
+    // QueryDSL APT가 참조하는 API (이미 위에서 implementation으로 선언했더라도, APT가 명시적으로 필요)
+    annotationProcessor 'jakarta.persistence:jakarta.persistence-api'
+    annotationProcessor 'jakarta.annotation:jakarta.annotation-api'
 }
 
-tasks.withType(JavaCompile).configureEach { // configureEach 사용 권장
-    options.encoding = 'UTF-8' // 인코딩 설정 추가
+// QueryDSL Q-Type 생성 경로 설정
+def generatedDir = project.file('src/main/generated')
 
-    // JavaCompile 작업에만 MapStruct 옵션 적용
+// 컴파일 시 Q-Type 생성 및 생성된 Q-Type을 컴파일 클래스패스에 포함
+tasks.withType(JavaCompile).configureEach {
+    options.getGeneratedSourceOutputDirectory().set(generatedDir)
+    options.setEncoding("UTF-8")
+
     if (name == "compileJava") {
-        options.compilerArgs += [
-                '-Amapstruct.defaultComponentModel=spring'
-        ]
+        options.getCompilerArgs().add('-Amapstruct.defaultComponentModel=spring')
     }
-
 }
 
-// IntelliJ IDEA 및 다른 IDE에서 생성된 소스를 인식하도록 설정
+// 생성된 Q 클래스를 소스셋에 추가 (IDE에서 인식하도록)
 sourceSets {
     main {
         java {
-            srcDirs += file("${buildDir}/generated/sources/annotationProcessor/java/main")
+            srcDirs += generatedDir
         }
     }
+}
+
+// clean 태스크 실행 시 generatedDir 삭제
+tasks.named('clean', Delete) {
+    delete generatedDir
 }
 
 tasks.named('test') {

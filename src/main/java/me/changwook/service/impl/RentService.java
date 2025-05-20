@@ -61,7 +61,7 @@ public class RentService {
         LocalDate newEndDate = reservationDTO.getRentDTO().getEndDate();
 
         //예약에 대한 유효성 검사
-        if (newStartDate.isAfter(newEndDate)) {
+        if (!newStartDate.isAfter(newEndDate)) {
             throw new IllegalArgumentException("예약 시작일은 종료일보다 이전이어야 합니다.");
         }
 
@@ -72,15 +72,17 @@ public class RentService {
                     newStartDate+ " ~ " + newEndDate + ")에 이미 예약되어 있습니다.");
         }
 
-
         //사용자의 면허 유효성 검사
         if(!member.getLicence()){
             throw new RuntimeException(member.getName() + "님은 운전면허가 확인되지 않았습니다.");
         }
 
         //사용자가 이미 예약한 상태라면 예약할 수 없음
+        //Querydsl을 이용함
+        List<Rent> userOverlapping = rentRepository.findUserOverlappingReservations(member,newStartDate,newEndDate);
 
+        if(!userOverlapping.isEmpty()){
+            throw new RuntimeException(member.getName() +"님은 요청하신 기간(" + newStartDate + " ~ " + newEndDate + ")에 예약이 존재합니다.");
+        }
     }
-
-
 }
