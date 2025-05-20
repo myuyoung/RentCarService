@@ -25,6 +25,8 @@ public class RentCars {
 
     private int totalDistance;
 
+    
+
 
     @Setter
     @ManyToOne(fetch = FetchType.LAZY)
