@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -57,8 +58,8 @@ public class RentService {
     private void validateReservation(Member member, RentCars rentCar ,ReservationDTO reservationDTO) {
 
         //ReservationDTO에서 예약 시작일과 종료일을 가져오기
-        LocalDate newStartDate = reservationDTO.getRentDTO().getRentDate();
-        LocalDate newEndDate = reservationDTO.getRentDTO().getEndDate();
+        LocalDateTime newStartDate = reservationDTO.getRentDTO().getRentTime();
+        LocalDateTime newEndDate = reservationDTO.getRentDTO().getEndTime();
 
         //예약에 대한 유효성 검사
         if (!newStartDate.isAfter(newEndDate)) {

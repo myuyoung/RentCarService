@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2025-05-19T23:57:20+0900",
+    date = "2025-05-24T05:54:05+0900",
     comments = "version: 1.5.5.Final, compiler: javac, environment: Java 21.0.7 (Amazon.com Inc.)"
 )
 @Component
@@ -27,6 +27,7 @@ public class RentCarsMapperImpl implements RentCarsMapper {
         rentCarsDTO.rentPrice( rentCars.getRentPrice() );
         rentCarsDTO.recommend( rentCars.getRecommend() );
         rentCarsDTO.rentCarNumber( rentCars.getRentCarNumber() );
+        rentCarsDTO.reservationStatus( rentCars.getReservationStatus() );
 
         return rentCarsDTO.build();
     }
@@ -57,6 +58,7 @@ public class RentCarsMapperImpl implements RentCarsMapper {
         rentCars.name( rentCarsDTO.getName() );
         rentCars.recommend( rentCarsDTO.getRecommend() );
         rentCars.rentPrice( rentCarsDTO.getRentPrice() );
+        rentCars.reservationStatus( rentCarsDTO.getReservationStatus() );
 
         return rentCars.build();
     }

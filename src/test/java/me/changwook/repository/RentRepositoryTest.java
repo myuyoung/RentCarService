@@ -42,7 +42,6 @@ public class RentRepositoryTest {
                 .rentCarNumber("52바3205")
                 .rentPrice(50000)
                 .name("소나타")
-                .available(true)
                 .recommend(50L)
                 .totalDistance(35000)
                 .category(category)

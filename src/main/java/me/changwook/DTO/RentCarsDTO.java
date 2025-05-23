@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import me.changwook.domain.ReservationStatus;
 
 @Data
 @Builder
@@ -21,6 +22,8 @@ public class RentCarsDTO {
     private Long recommend;
 
     private String rentCarNumber;
+
+    private ReservationStatus reservationStatus;
 
 
 }

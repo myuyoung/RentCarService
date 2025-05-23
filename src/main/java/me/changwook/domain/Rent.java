@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -22,11 +23,11 @@ public class Rent {
     @JoinColumn(name="member_id")
     private Member member;
 
-    private LocalDate rentDate;
+    private LocalDateTime rentDate;
 
     private int duration;
 
-    private LocalDate endDate;
+    private LocalDateTime endDate;
 
     @ManyToOne(fetch = FetchType.LAZY,cascade = CascadeType.ALL)
     @JoinColumn(name = "rentcars_id")

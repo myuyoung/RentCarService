@@ -25,8 +25,9 @@ public class RentCars {
 
     private int totalDistance;
 
-    
-
+    @Enumerated(EnumType.STRING)
+    @Builder.Default
+    private ReservationStatus reservationStatus = ReservationStatus.AVAILABLE;
 
     @Setter
     @ManyToOne(fetch = FetchType.LAZY)
@@ -53,6 +54,13 @@ public class RentCars {
         if (rentCars.getCategory() != null) {
             this.category = rentCars.getCategory();
         }
+        if (rentCars.getReservationStatus() != null) {
+            this.reservationStatus = rentCars.getReservationStatus();
+        }
+    }
+
+    public void updateReservationStatus(ReservationStatus reservationStatus) {
+        this.reservationStatus = reservationStatus;
     }
 
 }

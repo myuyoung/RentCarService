@@ -34,6 +34,8 @@ public class QRentCars extends EntityPathBase<RentCars> {
 
     public final NumberPath<Integer> rentPrice = createNumber("rentPrice", Integer.class);
 
+    public final EnumPath<ReservationStatus> reservationStatus = createEnum("reservationStatus", ReservationStatus.class);
+
     public final NumberPath<Integer> totalDistance = createNumber("totalDistance", Integer.class);
 
     public QRentCars(String variable) {

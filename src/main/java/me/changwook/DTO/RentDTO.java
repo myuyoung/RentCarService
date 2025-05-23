@@ -10,6 +10,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Data
 @AllArgsConstructor
@@ -18,14 +19,15 @@ import java.time.LocalDate;
 public class RentDTO {
 
     @FutureOrPresent
-    private LocalDate rentDate;
+    private LocalDateTime rentTime;
 
     @Min(1)
     private int duration;
 
     @Future
-    private LocalDate endDate;
+    private LocalDateTime endTime;
 
     @NotNull
     private RentCarsDTO rentCars;
+
 }

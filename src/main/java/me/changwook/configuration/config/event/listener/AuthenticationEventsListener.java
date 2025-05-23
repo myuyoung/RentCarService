@@ -1,4 +1,4 @@
-package me.changwook.configuration.config.security;
+package me.changwook.configuration.config.event.listener;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

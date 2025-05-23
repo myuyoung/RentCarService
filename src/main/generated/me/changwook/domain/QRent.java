@@ -24,7 +24,7 @@ public class QRent extends EntityPathBase<Rent> {
 
     public final NumberPath<Integer> duration = createNumber("duration", Integer.class);
 
-    public final DatePath<java.time.LocalDate> endDate = createDate("endDate", java.time.LocalDate.class);
+    public final DateTimePath<java.time.LocalDateTime> endDate = createDateTime("endDate", java.time.LocalDateTime.class);
 
     public final NumberPath<Long> id = createNumber("id", Long.class);
 
@@ -32,7 +32,7 @@ public class QRent extends EntityPathBase<Rent> {
 
     public final QRentCars rentCars;
 
-    public final DatePath<java.time.LocalDate> rentDate = createDate("rentDate", java.time.LocalDate.class);
+    public final DateTimePath<java.time.LocalDateTime> rentDate = createDateTime("rentDate", java.time.LocalDateTime.class);
 
     public QRent(String variable) {
         this(Rent.class, forVariable(variable), INITS);

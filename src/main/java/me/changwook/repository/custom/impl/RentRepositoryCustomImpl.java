@@ -8,6 +8,7 @@ import me.changwook.domain.Rent;
 import me.changwook.repository.custom.RentRepositoryCustom;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static me.changwook.domain.QMember.member;
@@ -20,7 +21,7 @@ public class RentRepositoryCustomImpl implements RentRepositoryCustom {
 
     //회원의 렌트값이 존재한다면 -> 기간을 검색하는 쿼리
     @Override
-    public List<Rent> findUserOverlappingReservations(Member memberParam, LocalDate startDate, LocalDate endDate){
+    public List<Rent> findUserOverlappingReservations(Member memberParam, LocalDateTime startDate, LocalDateTime endDate){
         if(memberParam == null){
             return List.of();
         }
