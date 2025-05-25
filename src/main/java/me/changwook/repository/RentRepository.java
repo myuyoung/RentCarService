@@ -18,11 +18,13 @@ public interface RentRepository extends JpaRepository<Rent,Long>, RentRepository
 
     List<Rent> findByDuration(int duration);
 
-    List<Rent> findByRentDate(LocalDate rentDate);
-
-    List<Rent> findByRentCars(RentCars rentCars);
-
     List<Rent> findByRentCars_Name(String rentCarsName);
+
+    void deleteByRentCars(RentCars rentCars);
+
+    //특정 기간의 모든 Rent 정보를 Member와 RentCars 정보와 함께 조회
+    @Query("SELECT r FROM Rent r JOIN FETCH r.member JOIN FETCH r.rentCars WHERE r.rentDate = :rentDate")
+    List<Rent> findAllWithDetailsByRentDate(LocalDate rentDate);
 
     //새로운 예약 기간과 겹치는 기존 예약이 있는지 확인하는 쿼리
     @Query("""

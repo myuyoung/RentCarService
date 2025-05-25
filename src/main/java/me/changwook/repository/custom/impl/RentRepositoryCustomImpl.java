@@ -1,15 +1,14 @@
 package me.changwook.repository.custom.impl;
 
-import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import me.changwook.domain.Member;
 import me.changwook.domain.Rent;
 import me.changwook.repository.custom.RentRepositoryCustom;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import static me.changwook.domain.QMember.member;
 import static me.changwook.domain.QRent.rent;
@@ -33,4 +32,6 @@ public class RentRepositoryCustomImpl implements RentRepositoryCustom {
                 )
                 .fetch();
     }
+
+
 }

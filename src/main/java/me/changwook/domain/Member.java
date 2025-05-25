@@ -35,8 +35,6 @@ public class Member {
 
     private String password;
 
-
-
     @Column(columnDefinition = "integer default 0")
     @Builder.Default
     private int failedLoginAttempts = 0;
@@ -45,7 +43,7 @@ public class Member {
     @Column
     private LocalDateTime accountLockedUntil;
 
-    @OneToMany(mappedBy = "member",fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "member",fetch = FetchType.LAZY)
     @Builder.Default
     private List<Rent> rent = new ArrayList<>();
 
@@ -77,7 +75,6 @@ public class Member {
         }
 
     }
-
 
     //연관관계 편의 메서드
     public void setMemberAndRent(Rent rent){

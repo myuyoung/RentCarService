@@ -25,5 +25,7 @@ public interface RentCarsRepository extends JpaRepository<RentCars, Long>, RentC
 
     Optional<RentCars> findByRentCarNumber(String rentCarNumber);
 
+    @Query("SELECT rc FROM RentCars rc LEFT JOIN FETCH rc.category")
+    List<RentCars> findAllWithCategory();
 
 }

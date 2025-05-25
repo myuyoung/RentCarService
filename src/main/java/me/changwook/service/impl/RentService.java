@@ -15,9 +15,9 @@ import me.changwook.repository.RentRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -55,6 +55,7 @@ public class RentService {
         return rentMapper.rentToRentDTO(newRent);
     }
 
+    //예약의 유효성을 검증하는 로직
     private void validateReservation(Member member, RentCars rentCar ,ReservationDTO reservationDTO) {
 
         //ReservationDTO에서 예약 시작일과 종료일을 가져오기
@@ -85,5 +86,20 @@ public class RentService {
         if(!userOverlapping.isEmpty()){
             throw new RuntimeException(member.getName() +"님은 요청하신 기간(" + newStartDate + " ~ " + newEndDate + ")에 예약이 존재합니다.");
         }
+    }
+
+    //예약을 취소하는 로직
+    @Transactional
+    public void cancelReservation(Long memberId) {
+        Optional<Member> byIdWithRent = memberRepository.findByIdWithRent(memberId);
+        byIdWithRent.ifPresent(member -> member.setMemberAndRent(null));
+        //Member를 찾아서 join된 Rent 객체를 지우는 rentRepository.delete를 쓰는것을 고려
+        //아니면 Member 엔티티 객체에서 지우는 메서드를 사용하여 더티체킹을 할 것인지
+
+        //연관관계로 된 엔티티 객체를 찾아와서 -> 그 객체의 관계를 끊어버린 후 -> 해당 객체를 지우는 것을 할까 고민중
+        //그러나 과연 관계를 끊어버리는 로직이 필요할지는 의문인 상태
+
+
+
     }
 }

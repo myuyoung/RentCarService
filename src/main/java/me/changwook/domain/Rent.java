@@ -29,7 +29,7 @@ public class Rent {
 
     private LocalDateTime endDate;
 
-    @ManyToOne(fetch = FetchType.LAZY,cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "rentcars_id")
     private RentCars rentCars;
 
