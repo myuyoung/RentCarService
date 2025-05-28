@@ -23,6 +23,7 @@ import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 @SpringBootTest
@@ -80,7 +81,6 @@ public class RentServiceTests {
                 .rentCarNumber("21가5231")
                 .rentPrice(50000)
                 .name("소나타")
-                .available(true)
                 .recommend(50L)
                 .totalDistance(35000)
                 .category(category)
@@ -89,9 +89,9 @@ public class RentServiceTests {
 
     private Rent createTestRent() {
         return Rent.builder()
-                .endDate(LocalDate.now().plusDays(2))
+                .endDate(LocalDate.now().plusDays(2).atStartOfDay())
                 .duration(2)
-                .rentDate(LocalDate.now())
+                .rentDate(LocalDate.now().atStartOfDay())
                 .build();
     }
 
@@ -103,8 +103,8 @@ public class RentServiceTests {
 
         // RentDTO 생성
         RentDTO rentDTO = RentDTO.builder()
-                .rentDate(LocalDate.now())
-                .endDate(LocalDate.now().plusDays(2))
+                .rentTime(LocalDateTime.now())
+                .endTime(LocalDate.now().plusDays(2).atStartOfDay())
                 .duration(2)
                 .build();
 
@@ -125,7 +125,9 @@ public class RentServiceTests {
     void reservationTest() {
         ReservationDTO reservationDTO = createTestReservationDTO();
 
-        RentDTO resultRentDTO = rentService.rentInformation(reservationDTO, "guildong@email.com");
+        Member member = memberRepository.findByEmail("guildong@email.com").orElseThrow(() -> new RuntimeException(""));
+
+        RentDTO resultRentDTO = rentService.rentInformation(reservationDTO,member.getId() );
 
         Assertions.assertThat(resultRentDTO).isNotNull();
 
@@ -134,14 +136,6 @@ public class RentServiceTests {
         log.info("savedRent.getMember().getName():{}",savedRent.get().getMember().getName());
 
         Assertions.assertThat(savedRent.orElseThrow(()->new RuntimeException("회원을 찾을 수 없습니다")).getMember().getName()).isEqualTo("홍길동");
-
-
-
-
-
-
-
-
     }
 
 }

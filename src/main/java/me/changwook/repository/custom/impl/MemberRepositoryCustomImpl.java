@@ -20,18 +20,18 @@ public class MemberRepositoryCustomImpl implements MemberRepositoryCustom {
 
     /**
      * 회원이 현재시간 이후의 모든 예약을 모두 가져오는 로직
-     * @param id 외부에서 받아오는 memeber의 primary key 값
+     * @param memberId 외부에서 받아오는 memeber의 primary key 값
      * @return Optional<Member>
      */
     @Override
-    public Optional<Member> findByIdWithRent(String email) {
+    public Optional<Member> findByIdWithRent(UUID memberId) {
         Member foundMember = jpaQueryFactory
                 .selectFrom(member)
                 .leftJoin(member.rent,rent)
                 .on(rent.rentDate.after(LocalDateTime.now()))
                 .fetchJoin()
                 .where(
-                        member.email.eq(email)
+                        member.id.eq(memberId)
                 ).fetchOne();
         return Optional.ofNullable(foundMember);
     }

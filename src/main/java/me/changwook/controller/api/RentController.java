@@ -15,20 +15,27 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
 
-@RestController("api/rent")
+@RestController("/api/rent")
 @RequiredArgsConstructor
 public class RentController {
 
     private final RentService rentService;
 
+
+    /**
+     * 차량을 예약하는 로직
+     * @param reservationDTO RentDTO와 RentCarsDTO를 담은 DTO
+     * @param userDetails 인증된 사용자 정보를 추출하기 위한 변수
+     * @return ResponseEntity<ApiResponseDTO<RentDTO>>
+     */
     @PostMapping("/reservation")
     public ResponseEntity<ApiResponseDTO<RentDTO>> reserveCar(
             @Validated @RequestBody ReservationDTO reservationDTO,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
 
-        String username = userDetails.getUsername();
+        UUID id = userDetails.getMember().getId();
 
-        RentDTO createDTO = rentService.rentInformation(reservationDTO,username);
+        RentDTO createDTO = rentService.rentInformation(reservationDTO,id);
 
         ApiResponseDTO<RentDTO> response = new ApiResponseDTO<>(true,"차량 예약 성공하였습니다",createDTO);
 
@@ -52,15 +59,14 @@ public class RentController {
     //현재 시간이후의 선택한 예약을 조회하는 컨트롤러
     @GetMapping("/reservation/list/{reservationId}")
     public ResponseEntity<ApiResponseDTO<RentDTO>> getReservation(
-            @PathVariable UUID reservationId ,@AuthenticationPrincipal CustomUserDetails userDetails){
+            @PathVariable UUID reservationId){
 
-        UUID id = userDetails.getMember().getId();
+        RentDTO reservation = rentService.findReservation(reservationId);
+
+        ApiResponseDTO<RentDTO> responseDTO = new ApiResponseDTO<>(true,"조회를 성공했습니다.",reservation);
 
 
-        ApiResponseDTO<RentDTO> responseDTO = new ApiResponseDTO<>(true,"조회를 성공했습니다.",);
-
-
-        return ResponseEntity.ok()
+        return ResponseEntity.ok(responseDTO);
     }
 
     /**
@@ -73,9 +79,9 @@ public class RentController {
     public ResponseEntity<ApiResponseDTO<Void>> cancelReservation(
             @PathVariable UUID reservationId, @AuthenticationPrincipal CustomUserDetails userDetails) {
 
-        String username = userDetails.getUsername();
+        UUID memberId = userDetails.getMember().getId();
 
-        rentService.cancelReservation(reservationId,username);
+        rentService.cancelReservation(memberId,reservationId);
 
         ApiResponseDTO<Void> responseDTO = new ApiResponseDTO<>(true,"예약이 성공적으로 취소되었습니다.",null);
 

@@ -50,9 +50,9 @@ public class RentRepositoryTest {
     
     private Rent createTestRent(RentCars rentCars) {
         return Rent.builder()
-                .endDate(LocalDate.now().plusDays(2))
+                .endDate(LocalDate.now().plusDays(2).atStartOfDay())
                 .duration(2)
-                .rentDate(LocalDate.now())
+                .rentDate(LocalDate.now().atStartOfDay())
                 .rentCars(rentCars)
                 .build();
     }

@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2025-05-28T10:59:56+0900",
+    date = "2025-05-28T17:56:02+0900",
     comments = "version: 1.5.5.Final, compiler: javac, environment: Java 21.0.7 (Amazon.com Inc.)"
 )
 @Component
@@ -60,14 +60,14 @@ public class RentMapperImpl implements RentMapper {
     }
 
     @Override
-    public List<Rent> rentDTOListToRentList(List<Rent> rentList) {
+    public List<Rent> rentDTOListToRentList(List<RentDTO> rentList) {
         if ( rentList == null ) {
             return null;
         }
 
         List<Rent> list = new ArrayList<Rent>( rentList.size() );
-        for ( Rent rent : rentList ) {
-            list.add( rent );
+        for ( RentDTO rentDTO : rentList ) {
+            list.add( rentDTOToRent( rentDTO ) );
         }
 
         return list;

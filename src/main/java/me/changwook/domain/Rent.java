@@ -5,6 +5,7 @@ import lombok.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Getter
@@ -14,9 +15,9 @@ import java.time.LocalDateTime;
 public class Rent {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(updatable = false,name = "rent_id")
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(updatable = false,name = "rent_id", columnDefinition = "UUID")
+    private UUID id;
 
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -54,8 +55,8 @@ public class Rent {
         if(rent.getEndDate() != null) {
             this.endDate = rent.getEndDate();
         }
-        if (rent.getRentDate() != null){
-            this.rentDate = rent.getRentDate();
+        if (rent.getRentCars() != null){
+            this.rentCars = rent.getRentCars();
         }
         if ( rent.getMember() != null){
             this.member = rent.getMember();

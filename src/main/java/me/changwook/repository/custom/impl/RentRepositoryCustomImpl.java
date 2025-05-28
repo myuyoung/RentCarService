@@ -33,10 +33,10 @@ public class RentRepositoryCustomImpl implements RentRepositoryCustom {
     }
 
     @Override
-    public List<Rent> findByDuration(UUID uuid) {
+    public List<Rent> findByDuration(UUID memberID) {
         return jpaQueryFactory.selectFrom(rent)
                 .where(
-                        rent.member.id.eq(uuid),
+                        rent.member.id.eq(memberID),
                         rent.rentDate.after(LocalDateTime.now())
                 )
                 .fetch();

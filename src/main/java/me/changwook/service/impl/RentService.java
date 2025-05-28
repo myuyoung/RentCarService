@@ -42,12 +42,12 @@ public class RentService {
 
     //렌트카정보를 받아오고,회원의 정보를 받아오고,렌트를 하는 로직
     @Transactional
-    public RentDTO rentInformation(ReservationDTO reservationDTO, String memberEmail) {
+    public RentDTO rentInformation(ReservationDTO reservationDTO, UUID memberId) {
         //렌트카 정보 찾기
         RentCars rentCar = rentCarsRepository.findByRentCarNumber(reservationDTO.getRentCarsDTO().getRentCarNumber()).orElseThrow(()-> new EntityNotFoundException("차량 정보가 확인되지 않습니다."));
 
         //회원 찾기
-        Member member = memberRepository.findByEmail(memberEmail).orElseThrow(()->new EntityNotFoundException("회원이 존재하지 않습니다."));
+        Member member = memberRepository.findById(memberId).orElseThrow(()->new EntityNotFoundException("회원이 존재하지 않습니다."));
 
         validateReservation(member, rentCar,reservationDTO);
 
@@ -99,15 +99,19 @@ public class RentService {
 
     //선택한 예약을 보여주는 로직
     public RentDTO findReservation(UUID rentId) {
-        Rent rent = rentRepository.findById(rentId);
+        Rent rent = rentRepository.findById(rentId).orElseThrow(()->new EntityNotFoundException("예약이 없습니다."));
 
         return rentMapper.rentToRentDTO(rent);
     }
 
     //예약을 취소하는 로직
     @Transactional
-    public void cancelReservation(UUID memberId,String username) {
-        Member member = memberRepository.findById(memberId).orElseThrow(() -> new EntityNotFoundException("회원정보를 찾을 수 없습니다."));
+    public void cancelReservation(UUID memberId,UUID rentId) {
+        Member member = memberRepository.findByIdWithRents(memberId).orElseThrow(() -> new EntityNotFoundException("회원과 관련된 예약이 존재하지 않습니다."));
+
+        member.getRent().stream().filter(r -> r.getId().equals(rentId)).findFirst().ifPresent(rentRepository::delete);
+
+
 
         //Member를 찾아서 join된 Rent 객체를 지우는 rentRepository.delete를 쓰는것을 고려
         //아니면 Member 엔티티 객체에서 지우는 메서드를 사용하여 더티체킹을 할 것인지

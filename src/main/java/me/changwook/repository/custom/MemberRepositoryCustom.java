@@ -7,5 +7,6 @@ import java.util.UUID;
 
 public interface MemberRepositoryCustom {
 
-    Optional<Member> findByIdWithRent(String email);
+    Optional<Member> findByIdWithRent(UUID id);
+
 }
