@@ -2,6 +2,7 @@ package me.changwook.service.impl;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import me.changwook.DTO.RentDTO;
 import me.changwook.DTO.ReservationDTO;
 import me.changwook.domain.Member;
@@ -17,10 +18,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class RentService {
 
     private final RentRepository rentRepository;
@@ -33,7 +35,7 @@ public class RentService {
     protected Rent reservation(RentDTO rentDTO,RentCars rentCar,Member member) {
         Rent rent = rentMapper.rentDTOToRent(rentDTO);
         //엔티티 간 연관관계 설정 -> 더티체킹
-        member.setMemberAndRent(rent);
+        member.addMemberAndRent(rent);
         rent.setRentCar(rentCar);
         return rentRepository.save(rent);
     }
@@ -88,18 +90,30 @@ public class RentService {
         }
     }
 
+    //시스템 시간 이후의 예약리스트를 보여주는 로직
+    public List<RentDTO> findReservationList(UUID memberId) {
+        List<Rent> rents = rentRepository.findByDuration(memberId);
+
+        return rentMapper.rentListToRentDTOs(rents);
+    }
+
+    //선택한 예약을 보여주는 로직
+    public RentDTO findReservation(UUID rentId) {
+        Rent rent = rentRepository.findById(rentId);
+
+        return rentMapper.rentToRentDTO(rent);
+    }
+
     //예약을 취소하는 로직
     @Transactional
-    public void cancelReservation(Long memberId) {
-        Optional<Member> byIdWithRent = memberRepository.findByIdWithRent(memberId);
-        byIdWithRent.ifPresent(member -> member.setMemberAndRent(null));
+    public void cancelReservation(UUID memberId,String username) {
+        Member member = memberRepository.findById(memberId).orElseThrow(() -> new EntityNotFoundException("회원정보를 찾을 수 없습니다."));
+
         //Member를 찾아서 join된 Rent 객체를 지우는 rentRepository.delete를 쓰는것을 고려
         //아니면 Member 엔티티 객체에서 지우는 메서드를 사용하여 더티체킹을 할 것인지
 
         //연관관계로 된 엔티티 객체를 찾아와서 -> 그 객체의 관계를 끊어버린 후 -> 해당 객체를 지우는 것을 할까 고민중
         //그러나 과연 관계를 끊어버리는 로직이 필요할지는 의문인 상태
-
-
 
     }
 }

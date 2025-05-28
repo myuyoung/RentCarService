@@ -45,6 +45,7 @@ public class DataInitializer {
                         .password(passwordEncoder.encode("Password123!"))
                         .licence(true)
                         .address("서울시 은평구")
+                        .phone("010-1234-5678")
                         .build();
                 memberRepository.save(user1);
             }
@@ -57,6 +58,7 @@ public class DataInitializer {
                         .password(passwordEncoder.encode("Password1234@"))
                         .licence(false)
                         .address("경기도 안산")
+                        .phone("02-1234-5678")
                         .build();
                 memberRepository.save(user2);
             }

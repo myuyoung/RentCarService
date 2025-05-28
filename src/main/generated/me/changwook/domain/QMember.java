@@ -28,7 +28,7 @@ public class QMember extends EntityPathBase<Member> {
 
     public final NumberPath<Integer> failedLoginAttempts = createNumber("failedLoginAttempts", Integer.class);
 
-    public final NumberPath<Long> id = createNumber("id", Long.class);
+    public final ComparablePath<java.util.UUID> id = createComparable("id", java.util.UUID.class);
 
     public final BooleanPath licence = createBoolean("licence");
 

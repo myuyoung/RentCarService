@@ -7,6 +7,7 @@ import me.changwook.repository.custom.MemberRepositoryCustom;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
+import java.util.UUID;
 
 import static me.changwook.domain.QMember.member;
 import static me.changwook.domain.QRent.rent;
@@ -23,14 +24,14 @@ public class MemberRepositoryCustomImpl implements MemberRepositoryCustom {
      * @return Optional<Member>
      */
     @Override
-    public Optional<Member> findByIdWithRent(Long id) {
+    public Optional<Member> findByIdWithRent(String email) {
         Member foundMember = jpaQueryFactory
                 .selectFrom(member)
                 .leftJoin(member.rent,rent)
+                .on(rent.rentDate.after(LocalDateTime.now()))
                 .fetchJoin()
                 .where(
-                        member.id.eq(id)
-                                .and(rent.rentDate.after(LocalDateTime.now()))
+                        member.email.eq(email)
                 ).fetchOne();
         return Optional.ofNullable(foundMember);
     }

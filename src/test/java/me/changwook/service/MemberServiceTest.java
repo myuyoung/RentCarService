@@ -5,6 +5,7 @@ import jakarta.persistence.PersistenceContext;
 import lombok.extern.slf4j.Slf4j;
 import me.changwook.DTO.MemberDTO;
 import me.changwook.domain.Member;
+import me.changwook.mapper.MemberMapper;
 import me.changwook.repository.MemberRepository;
 import me.changwook.service.impl.MemberService;
 import org.junit.jupiter.api.DisplayName;
@@ -28,6 +29,8 @@ class MemberServiceTest {
 
     @Autowired
     private MemberRepository memberRepository;
+    @Autowired
+    private MemberMapper memberMapper;
 
 
     @Test
@@ -44,7 +47,7 @@ class MemberServiceTest {
 
         //when
         Member one1 = memberRepository.findById(member.getId()).orElseThrow();
-        MemberDTO memberDTO = new MemberDTO(one1);
+        MemberDTO memberDTO = memberMapper.memberToMemberDTO(one1);
         memberDTO.setEmail("jjjonga33@naver.com");
         memberService.update(memberDTO);
         entityManager.flush();

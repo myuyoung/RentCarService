@@ -13,11 +13,11 @@ public interface RentMapper  {
 
     RentDTO rentToRentDTO(Rent rent);
 
-    List<RentDTO> rentDTOListToRentDTOs(List<Rent> rents);
+    List<RentDTO> rentListToRentDTOs(List<Rent> rents);
 
     Rent rentDTOToRent(RentDTO rentDTO);
 
-    List<Rent> rentListToRents(List<RentDTO> rentDTOList);
+    List<Rent> rentDTOListToRentList(List<Rent> rentList);
 
 
 

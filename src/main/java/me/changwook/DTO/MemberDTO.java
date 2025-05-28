@@ -1,14 +1,11 @@
 package me.changwook.DTO;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import me.changwook.domain.Member;
+
+import java.util.UUID;
 
 @Data
 @Builder
@@ -16,7 +13,7 @@ import me.changwook.domain.Member;
 @NoArgsConstructor
 public class MemberDTO {
 
-    private Long id;
+    private UUID id;
 
     private String name;
 
@@ -28,10 +25,4 @@ public class MemberDTO {
 
     private String address;
 
-    public MemberDTO(Member member) {
-        this.id = member.getId();
-        this.name = member.getName();
-        this.licence = member.getLicence();
-        this.email = member.getEmail();
-    }
 }

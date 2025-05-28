@@ -10,28 +10,23 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.UUID;
+
 @Service
 @RequiredArgsConstructor
 public class MemberService {
 
     private final MemberRepository memberRepository;
-    private final PasswordEncoder passwordEncoder;
     private final MemberMapper memberMapper;
 
     @Transactional(readOnly = true)
-    public MemberDTO findById(Long id) {
+    public MemberDTO findById(UUID id) {
         Member member = memberRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(String.valueOf(id)));
-        return new MemberDTO(member);
+        return memberMapper.memberToMemberDTO(member);
     }
 
     @Transactional
-    public void create(MemberDTO memberDTO) {
-        Member member = Member.builder().name(memberDTO.getName()).email(memberDTO.getEmail()).licence(memberDTO.getLicence()).build();
-        memberRepository.save(member);
-    }
-
-    @Transactional
-    public MemberDTO inquiry(Long id) {
+    public MemberDTO inquiry(UUID id) {
         Member member = memberRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(String.valueOf(id)));
         return memberMapper.memberToMemberDTO(member);
     }

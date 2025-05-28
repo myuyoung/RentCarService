@@ -2,12 +2,12 @@ package me.changwook.domain;
 
 import jakarta.persistence.*;
 import lombok.*;
-import me.changwook.DTO.MemberDTO;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 
 @Entity
 @Getter
@@ -16,9 +16,9 @@ import java.util.List;
 @Builder
 public class Member {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "member_id",updatable = false)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "member_id",updatable = false, nullable = false, columnDefinition = "UUID")
+    private UUID id;
 
     private String name;
 
@@ -48,51 +48,51 @@ public class Member {
     private List<Rent> rent = new ArrayList<>();
 
     //더티체킹을 위한 메서드
-    public void updateMember(Member member) {
+    public void updateMember(Member memberUpdates) {
 
-        if(member.getName() != null) {
-            this.name = member.getName();
+        if(memberUpdates.getName() != null) {
+            this.name = memberUpdates.getName();
         }
 
-        if(member.getLicence() != null) {
-            this.licence = member.getLicence();
+        if(memberUpdates.getLicence() != null) {
+            this.licence = memberUpdates.getLicence();
         }
 
-        if(member.getEmail() != null) {
-            this.email = member.getEmail();
+        if(memberUpdates.getEmail() != null) {
+            this.email = memberUpdates.getEmail();
         }
 
-        if(member.getPhone() != null) {
-            this.phone = member.getPhone();
+        if(memberUpdates.getPhone() != null) {
+            this.phone = memberUpdates.getPhone();
         }
 
-        if(member.getAddress() != null) {
-            this.address = member.getAddress();
+        if(memberUpdates.getAddress() != null) {
+            this.address = memberUpdates.getAddress();
         }
 
-        if(member.getPassword() != null) {
-            this.password = member.getPassword();
+        if(memberUpdates.getPassword() != null) {
+            this.password = memberUpdates.getPassword();
         }
 
     }
 
     //연관관계 편의 메서드
-    public void setMemberAndRent(Rent rent){
-        this.rent.add(rent);
+    public void addMemberAndRent(Rent rentItem){
+        this.rent.add(rentItem);
         //반대편 설정
-        rent.setMemberReference(this);
+        rentItem.setMemberReference(this);
     }
 
     //연관관계 제거 메서드
-    public void removeRent(Rent rent){
-        this.rent.remove(rent);
+    public void removeRent(Rent rentItem){
+        this.rent.remove(rentItem);
         //반대편 설정
-        rent.setMemberReference(null);
+        rentItem.setMemberReference(null);
     }
 
     //Getter(변경 불가능 List반환)
     public List<Rent> getRent(){
-        return Collections.unmodifiableList(rent);
+        return Collections.unmodifiableList(this.rent);
     }
 
     // 로그인 시도 관련 메서드 추가

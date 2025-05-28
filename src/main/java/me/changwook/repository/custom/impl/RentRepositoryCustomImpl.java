@@ -8,9 +8,8 @@ import me.changwook.repository.custom.RentRepositoryCustom;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
+import java.util.UUID;
 
-import static me.changwook.domain.QMember.member;
 import static me.changwook.domain.QRent.rent;
 
 @RequiredArgsConstructor
@@ -33,5 +32,13 @@ public class RentRepositoryCustomImpl implements RentRepositoryCustom {
                 .fetch();
     }
 
-
+    @Override
+    public List<Rent> findByDuration(UUID uuid) {
+        return jpaQueryFactory.selectFrom(rent)
+                .where(
+                        rent.member.id.eq(uuid),
+                        rent.rentDate.after(LocalDateTime.now())
+                )
+                .fetch();
+    }
 }

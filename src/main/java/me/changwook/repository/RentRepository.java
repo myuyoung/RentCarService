@@ -16,8 +16,6 @@ import java.util.List;
 @Repository
 public interface RentRepository extends JpaRepository<Rent,Long>, RentRepositoryCustom {
 
-    List<Rent> findByDuration(int duration);
-
     List<Rent> findByRentCars_Name(String rentCarsName);
 
     void deleteByRentCars(RentCars rentCars);

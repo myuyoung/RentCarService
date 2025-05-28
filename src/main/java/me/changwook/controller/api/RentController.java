@@ -12,6 +12,9 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+import java.util.UUID;
+
 @RestController("api/rent")
 @RequiredArgsConstructor
 public class RentController {
@@ -30,5 +33,52 @@ public class RentController {
         ApiResponseDTO<RentDTO> response = new ApiResponseDTO<>(true,"차량 예약 성공하였습니다",createDTO);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    //현재 시간이후의 예약들을 조회하는 컨트롤러
+    @GetMapping("/reservation/list")
+    public ResponseEntity<ApiResponseDTO<List<RentDTO>>> getReservationList(
+            @AuthenticationPrincipal CustomUserDetails userDetails){
+
+        UUID memberId = userDetails.getMember().getId();
+
+        List<RentDTO> reservation = rentService.findReservationList(memberId);
+
+        ApiResponseDTO<List<RentDTO>> responseDTO =new ApiResponseDTO<>(true,"조회가 성공했습니다.",reservation);
+
+        return ResponseEntity.ok(responseDTO);
+    }
+
+    //현재 시간이후의 선택한 예약을 조회하는 컨트롤러
+    @GetMapping("/reservation/list/{reservationId}")
+    public ResponseEntity<ApiResponseDTO<RentDTO>> getReservation(
+            @PathVariable UUID reservationId ,@AuthenticationPrincipal CustomUserDetails userDetails){
+
+        UUID id = userDetails.getMember().getId();
+
+
+        ApiResponseDTO<RentDTO> responseDTO = new ApiResponseDTO<>(true,"조회를 성공했습니다.",);
+
+
+        return ResponseEntity.ok()
+    }
+
+    /**
+     * 예약정보를 조회한 페이지에서 요청한 취소요청을 처리하는 컨트롤러
+     * @param reservationId 취소할 예약정보를 식별할 기본키(primary key)
+     * @param userDetails 인증된 사용자의 정보를 받아오는 변수
+     * @return ResponseEntity<ApiResponseDTO<Void>>
+     */
+    @DeleteMapping("/reservation/list/cancel/{reservationId}")
+    public ResponseEntity<ApiResponseDTO<Void>> cancelReservation(
+            @PathVariable UUID reservationId, @AuthenticationPrincipal CustomUserDetails userDetails) {
+
+        String username = userDetails.getUsername();
+
+        rentService.cancelReservation(reservationId,username);
+
+        ApiResponseDTO<Void> responseDTO = new ApiResponseDTO<>(true,"예약이 성공적으로 취소되었습니다.",null);
+
+        return ResponseEntity.ok(responseDTO);
     }
 }
