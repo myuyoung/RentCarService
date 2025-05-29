@@ -15,7 +15,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
 
-@RestController("/api/rent")
+@RestController
+@RequestMapping("/api/rent")
 @RequiredArgsConstructor
 public class RentController {
 
@@ -37,9 +38,9 @@ public class RentController {
 
         RentDTO createDTO = rentService.rentInformation(reservationDTO,id);
 
-        ApiResponseDTO<RentDTO> response = new ApiResponseDTO<>(true,"차량 예약 성공하였습니다",createDTO);
+        ApiResponseDTO<RentDTO> responseDTO = new ApiResponseDTO<>(true,"차량 예약 성공하였습니다",createDTO);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        return ResponseEntity.status(HttpStatus.CREATED).body(responseDTO);
     }
 
     //현재 시간이후의 예약들을 조회하는 컨트롤러

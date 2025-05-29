@@ -110,14 +110,5 @@ public class RentService {
         Member member = memberRepository.findByIdWithRents(memberId).orElseThrow(() -> new EntityNotFoundException("회원과 관련된 예약이 존재하지 않습니다."));
 
         member.getRent().stream().filter(r -> r.getId().equals(rentId)).findFirst().ifPresent(rentRepository::delete);
-
-
-
-        //Member를 찾아서 join된 Rent 객체를 지우는 rentRepository.delete를 쓰는것을 고려
-        //아니면 Member 엔티티 객체에서 지우는 메서드를 사용하여 더티체킹을 할 것인지
-
-        //연관관계로 된 엔티티 객체를 찾아와서 -> 그 객체의 관계를 끊어버린 후 -> 해당 객체를 지우는 것을 할까 고민중
-        //그러나 과연 관계를 끊어버리는 로직이 필요할지는 의문인 상태
-
     }
 }

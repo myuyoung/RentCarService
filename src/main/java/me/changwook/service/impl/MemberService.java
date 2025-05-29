@@ -21,19 +21,13 @@ public class MemberService {
 
     @Transactional(readOnly = true)
     public MemberDTO findById(UUID id) {
-        Member member = memberRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(String.valueOf(id)));
-        return memberMapper.memberToMemberDTO(member);
-    }
-
-    @Transactional
-    public MemberDTO inquiry(UUID id) {
-        Member member = memberRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(String.valueOf(id)));
+        Member member = memberRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("회원을 찾을 수 없습니다."));
         return memberMapper.memberToMemberDTO(member);
     }
 
     @Transactional
     public void update(MemberDTO memberDTO) {
-        Member member = memberRepository.findById(memberDTO.getId()).orElseThrow();
+        Member member = memberRepository.findById(memberDTO.getId()).orElseThrow(()-> new EntityNotFoundException("회원을 찾을 수 없습니다."));
         //업데이트 할 메서드를 작성
         member.updateMember(memberMapper.memberDTOToMember(memberDTO));
     }

@@ -11,18 +11,18 @@ import me.changwook.configuration.config.security.JwtUtil;
 import me.changwook.domain.RefreshToken;
 import me.changwook.repository.RefreshTokenRepository;
 import me.changwook.service.impl.LoginService;
-import org.springframework.http.HttpStatus;
+import me.changwook.service.impl.MemberService;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
 
-@Controller
+@RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
 public class LoginController {
@@ -31,9 +31,17 @@ public class LoginController {
     private final JwtUtil jwtUtil;
     private final RefreshTokenRepository refreshTokenRepository;
     private final LoginService loginService;
+    private final MemberService memberService;
 
+
+    /**
+     *
+     * @param loginRequestDTO 로그인을 할때 입력하는 이메일과 비밀번호를 담아오는 객체
+     * @param response HTTP 응답 Header에 쿠키 항목을 추가하기 위한 변수
+     * @return ResponseEntity<ApiResponseDTO<AuthResponseDTO>>
+     */
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequestDTO loginRequestDTO, HttpServletResponse response) {
+    public ResponseEntity<ApiResponseDTO<AuthResponseDTO>> login(@RequestBody LoginRequestDTO loginRequestDTO, HttpServletResponse response) {
         Map<String, String> token = loginService.login(loginRequestDTO);
 
         ResponseCookie cookie = ResponseCookie.from("refreshToken",token.get("refresh-token"))
@@ -43,25 +51,34 @@ public class LoginController {
                 .build();
         response.addHeader("Set-Cookie", cookie.toString());
 
-        return ResponseEntity.ok(new ApiResponseDTO<>(true,"로그인이 성공했습니다.",new AuthResponseDTO(token.get("access_token"))));
+        AuthResponseDTO accessToken = new AuthResponseDTO(token.get("access_token"));
+
+        ApiResponseDTO<AuthResponseDTO> responseDTO = new ApiResponseDTO<>(true, "로그인이 성공했습니다.", accessToken);
+
+        return ResponseEntity.ok(responseDTO);
     }
 
     @PostMapping("/refresh-token")
-    public ResponseEntity<?> refreshToken(HttpServletRequest request, HttpServletResponse response) {
+    public ResponseEntity<ApiResponseDTO<AuthResponseDTO>> refreshToken(HttpServletRequest request, HttpServletResponse response) {
         String refreshToken = extractRefreshToken(request,"refreshToken");
         if(!jwtUtil.validateToken(refreshToken)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Refresh Token 만료");
+            throw new RuntimeException("토큰이 유효하지 않습니다.");
         }
         String username = jwtUtil.getUsernameFromToken(refreshToken);
 
         RefreshToken savedToken = refreshTokenRepository.findByUsername(username).orElseThrow(()-> new RuntimeException("데이터 베이스에 Refresh Token 존재하지 않습니다"));
 
         if(!savedToken.getToken().equals(refreshToken)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("토큰 불일치");
+            throw new RuntimeException("데이터베이스 RefreshToken과 쿠키에 들어있는 RefreshToken이 일치하지 않습니다.");
         }
 
         String newAccessToken = jwtUtil.generateAccessToken(username);
-        return ResponseEntity.ok(new ApiResponseDTO<>(true,"토큰 재생성",new AuthResponseDTO(newAccessToken)));
+
+        AuthResponseDTO authResponseDTO = new AuthResponseDTO(newAccessToken);
+
+        ApiResponseDTO<AuthResponseDTO> responseDTO = new ApiResponseDTO<>(true, "토큰 재생성", authResponseDTO);
+
+        return ResponseEntity.ok(responseDTO);
     }
 
     private String extractRefreshToken(HttpServletRequest request,String name) {
@@ -77,7 +94,7 @@ public class LoginController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<?> logout(HttpServletRequest request, HttpServletResponse response) {
+    public ResponseEntity<ApiResponseDTO<Void>> logout(HttpServletRequest request, HttpServletResponse response) {
         String refreshToken = extractRefreshToken(request,"refreshToken");
         if(refreshToken != null && jwtUtil.validateToken(refreshToken)) {
             String username = jwtUtil.getUsernameFromToken(refreshToken);
@@ -88,7 +105,10 @@ public class LoginController {
                 .maxAge(0)
                 .build();
         response.addHeader("Set-Cookie", deleteCookie.toString());
-        return ResponseEntity.ok(new ApiResponseDTO<>(true,"로그아웃 되었습니다.",null));
+
+        ApiResponseDTO<Void> responseDTO = new ApiResponseDTO<>(true, "로그아웃 되었습니다.", null);
+
+        return ResponseEntity.ok(responseDTO);
     }
 
 

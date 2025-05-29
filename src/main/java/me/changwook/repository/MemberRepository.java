@@ -13,6 +13,7 @@ public interface MemberRepository extends JpaRepository<Member, UUID>, MemberRep
 
     Optional<Member> findByEmail(String email);
 
+    //회원이 있는지 확인하는 쿼리
     Boolean existsByEmail(String email);
 
     @Query("SELECT m FROM Member m LEFT JOIN FETCH m.rent where m.id= :id")
