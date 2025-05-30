@@ -1,4 +1,4 @@
-package me.changwook.controller.web;
+package me.changwook.controller.api;
 
 import lombok.RequiredArgsConstructor;
 import me.changwook.DTO.ApiResponseDTO;

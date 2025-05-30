@@ -8,6 +8,7 @@ import me.changwook.DTO.ReservationDTO;
 import me.changwook.domain.Member;
 import me.changwook.domain.Rent;
 import me.changwook.domain.RentCars;
+import me.changwook.exception.custom.MemberNotFoundException;
 import me.changwook.exception.custom.ReservationConflictException;
 import me.changwook.mapper.RentMapper;
 import me.changwook.repository.MemberRepository;
@@ -47,7 +48,7 @@ public class RentService {
         RentCars rentCar = rentCarsRepository.findByRentCarNumber(reservationDTO.getRentCarsDTO().getRentCarNumber()).orElseThrow(()-> new EntityNotFoundException("차량 정보가 확인되지 않습니다."));
 
         //회원 찾기
-        Member member = memberRepository.findById(memberId).orElseThrow(()->new EntityNotFoundException("회원이 존재하지 않습니다."));
+        Member member = memberRepository.findById(memberId).orElseThrow(MemberNotFoundException::new);
 
         validateReservation(member, rentCar,reservationDTO);
 

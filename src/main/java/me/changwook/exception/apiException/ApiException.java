@@ -15,7 +15,7 @@ public class ApiException {
     @ExceptionHandler(IllegalArgumentException.class)
     public ErrorDTO handleBadRequest(IllegalArgumentException e) {
         log.error("Exception Handler{}",e.getMessage());
-        return new ErrorDTO("BAD_REQUEST", e.getMessage());
+        return new ErrorDTO("BAD_REQUEST", HttpStatus.BAD_REQUEST.name());
     }
 
 }
