@@ -17,5 +17,4 @@ public class ApiException {
         log.error("Exception Handler{}",e.getMessage());
         return new ErrorDTO("BAD_REQUEST", HttpStatus.BAD_REQUEST.name());
     }
-
 }

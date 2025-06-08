@@ -13,7 +13,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import java.util.Arrays;
 
 @Configuration
-@Profile("!test")
+@Profile("test")
 public class DataInitializer {
 
     @Bean

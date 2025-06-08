@@ -27,8 +27,8 @@ public class MemberService {
     }
 
     @Transactional
-    public void update(MemberDTO memberDTO) {
-        Member member = memberRepository.findById(memberDTO.getId()).orElseThrow( MemberNotFoundException::new);
+    public void update(UUID memberId, MemberDTO memberDTO) {
+        Member member = memberRepository.findById(memberId).orElseThrow( MemberNotFoundException::new);
         //업데이트 할 메서드를 작성
         member.updateMember(memberMapper.memberDTOToMember(memberDTO));
     }

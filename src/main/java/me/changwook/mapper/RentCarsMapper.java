@@ -17,7 +17,7 @@ public interface RentCarsMapper {
 
     RentCars rentCarsDTOToRent(RentCarsDTO rentCarsDTO);
 
-    List<RentCars> rentCarsDTOListToRents(List<RentCarsDTO> rentCarsDTOList);
+    List<RentCars> rentCarsDTOListToRentCars(List<RentCarsDTO> rentCarsDTOList);
 
 
 }

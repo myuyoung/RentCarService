@@ -6,11 +6,10 @@ import me.changwook.DTO.RentCarsDTO;
 import me.changwook.domain.RentCars;
 import me.changwook.mapper.RentCarsMapper;
 import me.changwook.repository.RentCarsRepository;
-import me.changwook.service.BasicService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -35,6 +34,12 @@ public class RentCarService  {
 
     public void delete(RentCarsDTO rentCarsDTO) {
         rentCarsRepository.delete(rentCarsMapper.rentCarsDTOToRent(rentCarsDTO));
+    }
+
+    @Transactional(readOnly = true)
+    public Page<RentCarsDTO> getRankedRentCars(Pageable pageable) {
+        Page<RentCars> rentCarsPage = rentCarsRepository.findAllByOrderByRecommendDesc(pageable);
+        return rentCarsPage.map(rentCarsMapper::rentCarsToRentCarsDTO);
     }
 
 

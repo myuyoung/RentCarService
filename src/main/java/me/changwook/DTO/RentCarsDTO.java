@@ -1,5 +1,6 @@
 package me.changwook.DTO;
 
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -17,6 +18,7 @@ public class RentCarsDTO {
     private String name;
 
     @NotNull
+    @Min(0)
     private int rentPrice;
 
     private Long recommend;
@@ -25,5 +27,6 @@ public class RentCarsDTO {
 
     private ReservationStatus reservationStatus;
 
-
+    @Min(0)
+    private int totalPrice;
 }

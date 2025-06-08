@@ -22,11 +22,19 @@ public class QRent extends EntityPathBase<Rent> {
 
     public static final QRent rent = new QRent("rent");
 
+    public final QBaseEntity _super = new QBaseEntity(this);
+
+    //inherited
+    public final DateTimePath<java.time.LocalDateTime> createdAt = _super.createdAt;
+
     public final NumberPath<Integer> duration = createNumber("duration", Integer.class);
 
     public final DateTimePath<java.time.LocalDateTime> endDate = createDateTime("endDate", java.time.LocalDateTime.class);
 
     public final ComparablePath<java.util.UUID> id = createComparable("id", java.util.UUID.class);
+
+    //inherited
+    public final DateTimePath<java.time.LocalDateTime> lastModifiedDate = _super.lastModifiedDate;
 
     public final QMember member;
 

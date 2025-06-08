@@ -22,9 +22,17 @@ public class QRentCars extends EntityPathBase<RentCars> {
 
     public static final QRentCars rentCars = new QRentCars("rentCars");
 
+    public final QBaseEntity _super = new QBaseEntity(this);
+
     public final QCategory category;
 
+    //inherited
+    public final DateTimePath<java.time.LocalDateTime> createdAt = _super.createdAt;
+
     public final NumberPath<Long> id = createNumber("id", Long.class);
+
+    //inherited
+    public final DateTimePath<java.time.LocalDateTime> lastModifiedDate = _super.lastModifiedDate;
 
     public final StringPath name = createString("name");
 

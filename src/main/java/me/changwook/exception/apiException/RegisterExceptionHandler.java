@@ -13,6 +13,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.View;
 
 import java.util.HashMap;
 import java.util.Locale;
@@ -24,6 +25,7 @@ import java.util.Map;
 public class RegisterExceptionHandler {
 
     private final MessageSource messageSource;
+    private final View error;
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(RegisterException.class)
@@ -42,6 +44,9 @@ public class RegisterExceptionHandler {
             errors.put(error.getField(), message);
         }
         log.error("Exception Handler{}",errors);
-        return ResponseEntity.badRequest().body(new ApiResponseDTO<>(false,"로그인이 실패했습니다",errors));
+
+        ApiResponseDTO<Map<String,String>> response = new ApiResponseDTO<>(false,"로그인이 실패했습니다.",errors);
+
+        return ResponseEntity.badRequest().body(response);
     }
 }

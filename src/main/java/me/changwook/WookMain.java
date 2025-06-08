@@ -18,9 +18,4 @@ public class WookMain {
     public static void main(String[] args) {
         SpringApplication.run(WookMain.class, args);
     }
-
-    @Bean
-    public AuditorAware<String> auditorProvider(){
-        return () -> Optional.of(UUID.randomUUID().toString());
-    }
 }

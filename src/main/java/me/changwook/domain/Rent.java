@@ -12,7 +12,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class Rent {
+public class Rent extends BaseEntity{
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

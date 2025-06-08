@@ -2,9 +2,11 @@ package me.changwook.controller.api;
 
 import lombok.RequiredArgsConstructor;
 import me.changwook.DTO.ApiResponseDTO;
+import me.changwook.DTO.MemberDTO;
 import me.changwook.DTO.RentDTO;
 import me.changwook.DTO.ReservationDTO;
 import me.changwook.configuration.config.security.CustomUserDetails;
+import me.changwook.service.impl.MemberService;
 import me.changwook.service.impl.RentService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,16 +14,39 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+
 import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/rent")
+@RequestMapping("/api/MyPage")
 @RequiredArgsConstructor
-public class RentController {
+public class MyPageController {
+
+    private final MemberService memberService;
 
     private final RentService rentService;
 
+    //회원 정보를 조회하는 컨트롤러
+    @GetMapping("/{memberId}")
+    public ResponseEntity<ApiResponseDTO<MemberDTO>> memberInformation(@PathVariable UUID memberId){
+
+        MemberDTO memberDTO = memberService.findById(memberId);
+
+        ApiResponseDTO<MemberDTO> responseDTO = new ApiResponseDTO<>(true,"회원정보 조회 성공했습니다.",memberDTO);
+
+        return ResponseEntity.ok(responseDTO);
+    }
+
+    //회원 정보를 수정하는 컨트롤러
+    @PostMapping("/{memberId}/change")
+    public ResponseEntity<ApiResponseDTO<Void>> changeMemberInformation(@PathVariable UUID memberId, @RequestBody MemberDTO memberDTO){
+        memberService.update(memberId, memberDTO);
+
+        ApiResponseDTO<Void> responseDTO = new ApiResponseDTO<>(true,"변경 완료되었습니다.",null);
+
+        return ResponseEntity.ok(responseDTO);
+    }
 
     /**
      * 차량을 예약하는 로직
@@ -88,4 +113,5 @@ public class RentController {
 
         return ResponseEntity.ok(responseDTO);
     }
+
 }

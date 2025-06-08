@@ -1,7 +1,6 @@
 package me.changwook.DTO;
 
 import jakarta.validation.constraints.Future;
-import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -20,7 +19,7 @@ public class RentDTO {
 
     private UUID rent_id;
 
-    @FutureOrPresent
+    @Future
     private LocalDateTime rentTime;
 
     @Min(1)

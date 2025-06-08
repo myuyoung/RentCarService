@@ -20,15 +20,23 @@ public class QMember extends EntityPathBase<Member> {
 
     public static final QMember member = new QMember("member1");
 
+    public final QBaseEntity _super = new QBaseEntity(this);
+
     public final DateTimePath<java.time.LocalDateTime> accountLockedUntil = createDateTime("accountLockedUntil", java.time.LocalDateTime.class);
 
     public final StringPath address = createString("address");
+
+    //inherited
+    public final DateTimePath<java.time.LocalDateTime> createdAt = _super.createdAt;
 
     public final StringPath email = createString("email");
 
     public final NumberPath<Integer> failedLoginAttempts = createNumber("failedLoginAttempts", Integer.class);
 
     public final ComparablePath<java.util.UUID> id = createComparable("id", java.util.UUID.class);
+
+    //inherited
+    public final DateTimePath<java.time.LocalDateTime> lastModifiedDate = _super.lastModifiedDate;
 
     public final BooleanPath licence = createBoolean("licence");
 

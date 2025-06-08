@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/protected")
 public class ProtectedApiController {
 
+
+    //테스트용 컨트롤러
     @GetMapping
     public ResponseEntity<String> protectedEndpoint(Authentication authentication) {
         return ResponseEntity.ok("JWT 인증 성공! 유저: " + authentication.getName());
