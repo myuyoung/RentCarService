@@ -1,4 +1,18 @@
 spring:
+  mail:
+    host: smtp.naver.com
+    port: 587
+    username: jjjonga33@naver.com
+    password: WX1QPXDJ87N7
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+          ssl:
+            trust: smtp.naver.com
+            protocols: TLSv1.2
   datasource:
     url: jdbc:h2:tcp://localhost/~/wookdb
     username: sa
@@ -22,7 +36,6 @@ spring:
   messages:
     basename: messages_ko
     encoding: UTF-8
-
 logging:
   level:
     sql: debug
@@ -33,3 +46,8 @@ security:
   login:
     max-attempts: 5
     lockout-duration-minutes: 15
+admin:
+  notification:
+    email: parkcw5784@gmail.com
+server:
+  port: 7950
