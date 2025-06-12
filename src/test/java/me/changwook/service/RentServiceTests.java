@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import me.changwook.DTO.RentCarsDTO;
 import me.changwook.DTO.RentDTO;
 import me.changwook.DTO.ReservationDTO;
+import me.changwook.configuration.config.QuerydslConfig;
 import me.changwook.domain.*;
 import me.changwook.mapper.MemberMapper;
 import me.changwook.mapper.RentCarsMapper;
@@ -19,6 +20,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,6 +32,7 @@ import java.util.Optional;
 @Transactional
 @Rollback
 @Slf4j
+@Import(QuerydslConfig.class)
 public class RentServiceTests {
 
     @Autowired

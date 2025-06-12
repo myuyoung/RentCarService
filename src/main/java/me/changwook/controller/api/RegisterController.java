@@ -22,10 +22,10 @@ public class RegisterController {
 
     //Api 회원가입 컨트롤러
     @PostMapping("/member")
-    public ResponseEntity<ApiResponseDTO<?>> register(@Validated @RequestBody RegisterMemberDTO registerMemberDTO) {
+    public ResponseEntity<ApiResponseDTO<Void>> register(@Validated @RequestBody RegisterMemberDTO registerMemberDTO) {
 
         registerService.registerMember(registerMemberDTO);
-        return ResponseEntity.status(CREATED).body(new ApiResponseDTO<>(true,"로그인이 성공했습니다.",null));
+        return ResponseEntity.status(CREATED).body(new ApiResponseDTO<>(true,"회원 가입이 성공했습니다.",null));
     }
 
 }
