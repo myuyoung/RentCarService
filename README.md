@@ -1,6 +1,7 @@
 # RentCarService 
 ## 프로젝트 소개
 이 프로젝트는 실제 서비스하고 있는 렌트카업체를 참고하여 가상의 렌트카업체 서비스를 설계하였습니다.
+---
 
 ### 💻 Tech Stacks
 
@@ -23,6 +24,14 @@
 ![IntelliJ IDEA](https://img.shields.io/badge/IntelliJ_IDEA-000000?style=for-the-badge&logo=intellij-idea&logoColor=white)
 ![Git](https://img.shields.io/badge/Git-F05032?style=for-the-badge&logo=git&logoColor=white)
 ![GitHub](https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white)
+
+#### Server & Modules 
+![Spring Mail](https://img.shields.io/badge/Spring_Mail-6DB33F?style=for-the-badge&logo=spring&logoColor=white)
+![Spring Scheduling](https://img.shields.io/badge/Spring_Scheduling-6DB33F?style=for-the-badge&logo=spring&logoColor=white)
+
+#### Tools & Libraries
+![Static Badge](https://img.shields.io/badge/MapStruct---?style=for-the-badge&color=red)
+---
 
 ### ERD
 <img src="https://github.com/user-attachments/assets/2d2936cf-edfd-4efb-98bc-4317df9fbd91" width="50%" >
