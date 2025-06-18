@@ -20,7 +20,7 @@ configurations {
     compileOnly {
         extendsFrom annotationProcessor
     }
-    testCompileOnly { // 테스트 코드용 Lombok 등을 위해 필요
+    testCompileOnly { // 테  스트 코드용 Lombok 등을 위해 필요
         extendsFrom annotationProcessor
     }
 }
@@ -70,6 +70,9 @@ dependencies {
     // QueryDSL APT가 참조하는 API (이미 위에서 implementation으로 선언했더라도, APT가 명시적으로 필요)
     annotationProcessor 'jakarta.persistence:jakarta.persistence-api'
     annotationProcessor 'jakarta.annotation:jakarta.annotation-api'
+
+    //Swagger 적용하기
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.5.0'
 }
 
 // QueryDSL Q-Type 생성 경로 설정
