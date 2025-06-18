@@ -33,11 +33,11 @@ Base URLs:
 > Code samples
 
 ```shell
-# You can also use wget
-curl -X POST http://localhost:7950/api/register/member \
-  -H 'Content-Type: application/json' \
-  -H 'Accept: */*'
-
+curl --request POST \
+  --url http://localhost:7950/api/register/member \
+  --header 'Accept: */*' \
+  --header 'Content-Type: application/json' \
+  --data '{"name":"홍길동","email":"test@example.com","password":"Testpassword1!","phone":"010-1234-5678","address":"서울시 강남구"}'
 ```
 
 `POST /api/register/member`
@@ -48,11 +48,11 @@ curl -X POST http://localhost:7950/api/register/member \
 
 ```json
 {
-  "name": "string",
-  "email": "string",
-  "password": "string",
-  "phone": "string",
-  "address": "string"
+  "name": "홍길동",
+  "email": "test@example.com",
+  "password": "Testpassword1!",
+  "phone": "010-1234-5678",
+  "address": "서울시 강남구"
 }
 ```
 
@@ -87,10 +87,9 @@ This operation does not require authentication
 > Code samples
 
 ```shell
-# You can also use wget
-curl -X POST http://localhost:7950/auth/refresh-token \
-  -H 'Accept: */*'
-
+curl --request POST \
+  --url http://localhost:7950/auth/refresh-token \
+  --header 'Accept: */*'
 ```
 
 `POST /auth/refresh-token`
@@ -118,10 +117,9 @@ This operation does not require authentication
 > Code samples
 
 ```shell
-# You can also use wget
-curl -X POST http://localhost:7950/auth/logout \
-  -H 'Accept: */*'
-
+curl --request POST \
+  --url http://localhost:7950/auth/logout \
+  --header 'Accept: */*'
 ```
 
 `POST /auth/logout`
@@ -149,11 +147,11 @@ This operation does not require authentication
 > Code samples
 
 ```shell
-# You can also use wget
-curl -X POST http://localhost:7950/auth/login \
-  -H 'Content-Type: application/json' \
-  -H 'Accept: */*'
-
+curl --request POST \
+  --url http://localhost:7950/auth/login \
+  --header 'Accept: */*' \
+  --header 'Content-Type: application/json' \
+  --data '{"email":"string","password":"string"}'
 ```
 
 `POST /auth/login`
@@ -198,11 +196,11 @@ This operation does not require authentication
 > Code samples
 
 ```shell
-# You can also use wget
-curl -X POST http://localhost:7950/api/MyPage/{memberId}/change \
-  -H 'Content-Type: application/json' \
-  -H 'Accept: */*'
-
+curl --request POST \
+  --url http://localhost:7950/api/MyPage/497f6eca-6276-4993-bfeb-53cbbbba6f08/change \
+  --header 'Accept: */*' \
+  --header 'Content-Type: application/json' \
+  --data '{"id":"497f6eca-6276-4993-bfeb-53cbbbba6f08","name":"string","licence":true,"email":"string","phone":"string","address":"string"}'
 ```
 
 `POST /api/MyPage/{memberId}/change`
@@ -250,11 +248,11 @@ This operation does not require authentication
 > Code samples
 
 ```shell
-# You can also use wget
-curl -X POST http://localhost:7950/api/MyPage/reservation \
-  -H 'Content-Type: application/json' \
-  -H 'Accept: */*'
-
+curl --request POST \
+  --url http://localhost:7950/api/MyPage/reservation \
+  --header 'Accept: */*' \
+  --header 'Content-Type: application/json' \
+  --data '{"rentDTO":{"rent_id":"b2296160-8ede-44df-a694-5844f16b3c86","rentTime":"2019-08-24T14:15:22Z","duration":1,"endTime":"2019-08-24T14:15:22Z","rentCars":{"name":"string","rentPrice":0,"recommend":0,"rentCarNumber":"string","reservationStatus":"AVAILABLE","totalPrice":0}},"rentCarsDTO":{"name":"string","rentPrice":0,"recommend":0,"rentCarNumber":"string","reservationStatus":"AVAILABLE","totalPrice":0}}'
 ```
 
 `POST /api/MyPage/reservation`
@@ -317,10 +315,9 @@ This operation does not require authentication
 > Code samples
 
 ```shell
-# You can also use wget
-curl -X GET http://localhost:7950/api/MyPage/{memberId} \
-  -H 'Accept: */*'
-
+curl --request GET \
+  --url http://localhost:7950/api/MyPage/497f6eca-6276-4993-bfeb-53cbbbba6f08 \
+  --header 'Accept: */*'
 ```
 
 `GET /api/MyPage/{memberId}`
@@ -354,10 +351,9 @@ This operation does not require authentication
 > Code samples
 
 ```shell
-# You can also use wget
-curl -X GET http://localhost:7950/api/MyPage/reservation/list \
-  -H 'Accept: */*'
-
+curl --request GET \
+  --url http://localhost:7950/api/MyPage/reservation/list \
+  --header 'Accept: */*'
 ```
 
 `GET /api/MyPage/reservation/list`
@@ -385,10 +381,9 @@ This operation does not require authentication
 > Code samples
 
 ```shell
-# You can also use wget
-curl -X GET http://localhost:7950/api/MyPage/reservation/list/{reservationId} \
-  -H 'Accept: */*'
-
+curl --request GET \
+  --url http://localhost:7950/api/MyPage/reservation/list/497f6eca-6276-4993-bfeb-53cbbbba6f08 \
+  --header 'Accept: */*'
 ```
 
 `GET /api/MyPage/reservation/list/{reservationId}`
@@ -422,10 +417,9 @@ This operation does not require authentication
 > Code samples
 
 ```shell
-# You can also use wget
-curl -X DELETE http://localhost:7950/api/MyPage/reservation/list/cancel/{reservationId} \
-  -H 'Accept: */*'
-
+curl --request DELETE \
+  --url http://localhost:7950/api/MyPage/reservation/list/cancel/497f6eca-6276-4993-bfeb-53cbbbba6f08 \
+  --header 'Accept: */*'
 ```
 
 `DELETE /api/MyPage/reservation/list/cancel/{reservationId}`
@@ -461,10 +455,9 @@ This operation does not require authentication
 > Code samples
 
 ```shell
-# You can also use wget
-curl -X GET http://localhost:7950/api/rentcars/rank?pageable=page,0,size,1,sort,string \
-  -H 'Accept: */*'
-
+curl --request GET \
+  --url 'http://localhost:7950/api/rentcars/rank?pageable=page%2C0%2Csize%2C1%2Csort%2Cstring' \
+  --header 'Accept: */*'
 ```
 
 `GET /api/rentcars/rank`
@@ -500,10 +493,9 @@ This operation does not require authentication
 > Code samples
 
 ```shell
-# You can also use wget
-curl -X GET http://localhost:7950/api/protected \
-  -H 'Accept: */*'
-
+curl --request GET \
+  --url http://localhost:7950/api/protected \
+  --header 'Accept: */*'
 ```
 
 `GET /api/protected`
@@ -649,11 +641,11 @@ This operation does not require authentication
 
 ```json
 {
-  "name": "string",
-  "email": "string",
-  "password": "string",
-  "phone": "string",
-  "address": "string"
+  "name": "홍길동",
+  "email": "test@example.com",
+  "password": "Testpassword1!",
+  "phone": "010-1234-5678",
+  "address": "서울시 강남구"
 }
 
 ```
@@ -662,11 +654,11 @@ This operation does not require authentication
 
 |Name|Type|Required|Restrictions|Description|
 |---|---|---|---|---|
-|name|string|true|none|none|
-|email|string|true|none|none|
-|password|string|true|write-only|none|
-|phone|string|true|none|none|
-|address|string|true|none|none|
+|name|string|true|none|사용자 이름|
+|email|string|true|none|사용자 이메일|
+|password|string|true|write-only|비밀번호(비밀번호가 영어로만 이루어져야 하고 8자 이상, 특수문자 하나 이상, 숫자가 하나 이상, 16자리 이하로 설정)|
+|phone|string|true|none|전화번호|
+|address|string|true|none|주소|
 
 <h2 id="tocS_MemberDTO">MemberDTO</h2>
 <!-- backwards compatibility -->
