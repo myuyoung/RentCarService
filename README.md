@@ -53,3 +53,7 @@
 |Post| /api/MyPage/reservation| 렌터카 예약|
 |GET| /api/MyPage/reservation/list| 내 예약 목록 조회|
 |DELETE| /api/MyPage/reservation/list/cancel/{id}| 특정 예약 취소|
+
+<br>
+
+**더 자세한 내용은** [전체API 명세(API.md)](./API.md) **파일을 참고해주세요.**
