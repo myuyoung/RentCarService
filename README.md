@@ -36,10 +36,20 @@
 
 ### Auth
 ![JWT](https://img.shields.io/badge/JWT-000000?style=for-the-badge&logo=jsonwebtokens&logoColor=white)
+
 ---
 
 ## ERD
 <img src="https://github.com/user-attachments/assets/2d2936cf-edfd-4efb-98bc-4317df9fbd91" width="50%" >
 
+## API 명세
 
+### 주요 엔드포인트요약
 
+| HTTP Method | Path | Description|
+|-----|----|-----|
+|Post| /api/register/member| 회원 가입 요청|
+|Post| /api/login| 로그인 요청 및 토큰 발급|
+|Post| /api/MyPage/reservation| 렌터카 예약|
+|GET| /api/MyPage/reservation/list| 내 예약 목록 조회|
+|DELETE| /api/MyPage/reservation/list/cancel/{id}| 특정 예약 취소|
