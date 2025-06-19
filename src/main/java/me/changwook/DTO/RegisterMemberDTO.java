@@ -19,7 +19,7 @@ public class RegisterMemberDTO {
     @NotBlank
     private String name;
 
-    @Schema(description = "사용자 이메일", example = "test@example.com",requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(description = "사용자 이메일(이메일 형식 준수)", example = "test@example.com",requiredMode = Schema.RequiredMode.REQUIRED)
     @NotBlank
     @Email
     private String email;
