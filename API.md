@@ -61,6 +61,11 @@ curl --request POST \
 |Name|In|Type|Required|Description|
 |---|---|---|---|---|
 |body|body|[RegisterMemberDTO](#schemaregistermemberdto)|true|none|
+|» name|body|string|true|사용자 이름|
+|» email|body|string|true|사용자 이메일|
+|» password|body|string|true|비밀번호(비밀번호가 영어로만 이루어져야 하고 8자 이상, 특수문자 하나 이상, 숫자가 하나 이상, 16자리 이하로 설정)|
+|» phone|body|string|true|전화번호|
+|» address|body|string|true|주소|
 
 > Example responses
 
@@ -170,6 +175,8 @@ curl --request POST \
 |Name|In|Type|Required|Description|
 |---|---|---|---|---|
 |body|body|[LoginRequestDTO](#schemaloginrequestdto)|true|none|
+|» email|body|string|false|none|
+|» password|body|string|false|none|
 
 > Example responses
 
@@ -224,6 +231,12 @@ curl --request POST \
 |---|---|---|---|---|
 |memberId|path|string(uuid)|true|none|
 |body|body|[MemberDTO](#schemamemberdto)|true|none|
+|» id|body|string(uuid)|false|none|
+|» name|body|string|false|none|
+|» licence|body|boolean|false|none|
+|» email|body|string|false|none|
+|» phone|body|string|false|none|
+|» address|body|string|false|none|
 
 > Example responses
 
@@ -291,6 +304,27 @@ curl --request POST \
 |Name|In|Type|Required|Description|
 |---|---|---|---|---|
 |body|body|[ReservationDTO](#schemareservationdto)|true|none|
+|» rentDTO|body|[RentDTO](#schemarentdto)|true|none|
+|»» rent_id|body|string(uuid)|false|none|
+|»» rentTime|body|string(date-time)|false|none|
+|»» duration|body|integer(int32)|false|none|
+|»» endTime|body|string(date-time)|false|none|
+|»» rentCars|body|[RentCarsDTO](#schemarentcarsdto)|true|none|
+|»»» name|body|string|true|none|
+|»»» rentPrice|body|integer(int32)|true|none|
+|»»» recommend|body|integer(int64)|false|none|
+|»»» rentCarNumber|body|string|false|none|
+|»»» reservationStatus|body|string|false|none|
+|»»» totalPrice|body|integer(int32)|false|none|
+|» rentCarsDTO|body|[RentCarsDTO](#schemarentcarsdto)|true|none|
+
+#### Enumerated Values
+
+|Parameter|Value|
+|---|---|
+|»»» reservationStatus|AVAILABLE|
+|»»» reservationStatus|RENTED|
+|»»» reservationStatus|MAINTENANCE|
 
 > Example responses
 
@@ -882,9 +916,9 @@ This operation does not require authentication
   "data": {
     "totalPages": 0,
     "totalElements": 0,
-    "numberOfElements": 0,
     "first": true,
     "last": true,
+    "numberOfElements": 0,
     "pageable": {
       "pageNumber": 0,
       "pageSize": 0,
@@ -947,9 +981,9 @@ This operation does not require authentication
 {
   "totalPages": 0,
   "totalElements": 0,
-  "numberOfElements": 0,
   "first": true,
   "last": true,
+  "numberOfElements": 0,
   "pageable": {
     "pageNumber": 0,
     "pageSize": 0,
@@ -998,9 +1032,9 @@ This operation does not require authentication
 |---|---|---|---|---|
 |totalPages|integer(int32)|false|none|none|
 |totalElements|integer(int64)|false|none|none|
-|numberOfElements|integer(int32)|false|none|none|
 |first|boolean|false|none|none|
 |last|boolean|false|none|none|
+|numberOfElements|integer(int32)|false|none|none|
 |pageable|[PageableObject](#schemapageableobject)|false|none|none|
 |size|integer(int32)|false|none|none|
 |content|[[RentCarsDTO](#schemarentcarsdto)]|false|none|none|
