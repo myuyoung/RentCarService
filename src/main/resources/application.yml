@@ -2,8 +2,8 @@ spring:
   mail:
     host: smtp.naver.com
     port: 587
-    username: jjjonga33@naver.com
-    password: WX1QPXDJ87N7
+    username: ${Spring_Mail_UserName} #jjjonga33@naver.com
+    password: ${Spring_Mail_Password} #WX1QPXDJ87N7
     properties:
       mail:
         smtp:
@@ -41,7 +41,7 @@ logging:
   level:
     sql: debug
 jwt:
-  secret: "qwertyuiopasdfghjklzxcvbnmqwerty"
+  secret: ${Jwt_Secret} #"qwertyuiopasdfghjklzxcvbnmqwerty"
   expire: 3600000
 security:
   login:
@@ -49,6 +49,6 @@ security:
     lockout-duration-minutes: 15
 admin:
   notification:
-    email: parkcw5784@gmail.com
+    email: ${Admin_Email} #parkcw5784@gmail.com
 server:
   port: 7950
