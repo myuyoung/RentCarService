@@ -32,7 +32,7 @@
 ### 2. 프로젝트 클론
 
 ```
-git clone [https://github.com/myuyoung/RentCarService.git](https://github.com/myuyoung/RentCarService.git)
+git clone https://github.com/myuyoung/RentCarService.git
 cd RentCarService
 ```
 
