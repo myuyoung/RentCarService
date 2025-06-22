@@ -36,6 +36,9 @@ git clone [https://github.com/myuyoung/RentCarService.git](https://github.com/my
 cd RentCarService
 ```
 
+### 3. 애플리케이션 실행
+` ./gradlew bootRun `
+
 ## Tech Stacks
 
 ### Backend
