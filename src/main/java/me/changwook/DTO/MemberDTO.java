@@ -17,6 +17,7 @@ public class MemberDTO {
 
     private String name;
 
+    @Builder.Default
     private Boolean licence = false;
 
     private String email;

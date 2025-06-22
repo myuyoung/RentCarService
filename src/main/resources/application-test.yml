@@ -1,20 +1,5 @@
 spring:
-  mail:
-    host: smtp.naver.com
-    port: 587
-    username: ${Spring_Mail_UserName}
-    password: ${Spring_Mail_Password}
-    properties:
-      mail:
-        smtp:
-          auth: true
-          starttls:
-            enable: true
-          ssl:
-            trust: smtp.naver.com
-            protocols: TLSv1.2
   datasource:
-    ##url: jdbc:h2:tcp://localhost/~/wookdb
     url: jdbc:h2:mem:wookdb
     username: sa
     password:
@@ -25,30 +10,28 @@ spring:
       ddl-auto: create
     properties:
       hibernate:
-#        show_sql: true
+        #        show_sql: true
         format_sql: false
         default_batch_fetch_size: 1000
     database-platform: org.hibernate.dialect.H2Dialect
   h2:
     console:
-      settings:
-        web-allow-others: true
       enabled: true
   messages:
     basename: messages_ko
     encoding: UTF-8
+  profiles:
+    active: test
 logging:
   level:
     sql: debug
 jwt:
-  secret: ${Jwt_Secret}
+  secret: "0c2a7f5b-1e3d4c5ab6e78f9a0b1c2d3e"
   expire: 3600000
 security:
   login:
     max-attempts: 5
     lockout-duration-minutes: 15
-admin:
-  notification:
-    email: ${Admin_Email}
+#swagger사용을 위해서 7950으로 바꿈
 server:
   port: 7950

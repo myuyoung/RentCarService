@@ -1,0 +1,53 @@
+# 워크플로우의 전체 이름을 지정합니다. GitHub 저장소의 'Actions' 탭에 표시됩니다.
+name: Java CI with Gradle
+
+# 워크플로우가 언제 실행될지를 정의하는 트리거(Trigger) 설정입니다.
+on:
+  # 'main' 브랜치로 push 이벤트가 발생했을 때 실행됩니다.
+  push:
+    branches: [ "main" ]
+  # 'main' 브랜치로 향하는 pull_request 이벤트가 발생했을 때 실행됩니다.
+  pull_request:
+    branches: [ "main" ]
+
+# 워크플로우에서 실행될 작업(Job)들을 정의합니다.
+jobs:
+  # 'build'라는 이름의 작업을 정의합니다.
+  build:
+    # 이 작업이 실행될 가상 환경을 지정합니다. 'ubuntu-latest'는 최신 버전의 우분투 리눅스입니다.
+    runs-on: ubuntu-latest
+
+    # 작업 내에서 순차적으로 실행될 단계(Step)들을 정의합니다.
+    steps:
+      # 1. 소스 코드 체크아웃
+      # uses 키워드는 다른 사람이 만든 Action을 가져와 사용하겠다는 의미입니다.
+      # actions/checkout@v4는 저장소의 소스 코드를 가상 환경으로 내려받는 Action입니다.
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      # 2. JDK 설정
+      # Java 개발 환경을 설정합니다.
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          # 사용할 Java 버전을 '21'로 지정합니다.
+          java-version: '21'
+          # 사용할 JDK 배포판을 Amazon의 'corretto'로 지정합니다.
+          distribution: 'corretto'
+
+      # 3. Gradle로 빌드
+      # Gradle을 사용하여 프로젝트를 빌드합니다.
+      - name: Build with Gradle
+        # Gradle 빌드를 도와주는 Action을 사용합니다.
+        uses: gradle/gradle-build-action@v3
+        with:
+          # Gradle에 전달할 인자(argument)를 지정합니다. 여기서는 'build' 명령어를 실행합니다.
+          arguments: build
+
+        # 이 단계(Step)에서 사용할 환경 변수를 설정합니다.
+        # GitHub Secrets에 저장된 값들을 환경 변수로 주입하여 빌드 과정에서 사용합니다.
+        env:
+          Spring_Mail_UserName: ${{ secrets.Spring_Mail_UserName}}
+          Spring_Mail_Password: ${{ secrets.Spring_Mail_Password }}
+          Jwt_Secret: ${{ secrets.Jwt_Secret }}
+          Admin_Email: ${{ secrets.Admin_Email }}
