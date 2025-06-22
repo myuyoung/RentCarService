@@ -16,22 +16,24 @@ spring:
     database-platform: org.hibernate.dialect.H2Dialect
   h2:
     console:
+      settings:
+        web-allow-others: true
       enabled: true
   messages:
     basename: messages_ko
     encoding: UTF-8
-  profiles:
-    active: test
 logging:
   level:
     sql: debug
 jwt:
-  secret: "0c2a7f5b-1e3d4c5ab6e78f9a0b1c2d3e"
+  secret: "qwertyuiopasdfghjklzxcvbnmqwerty"
   expire: 3600000
 security:
   login:
     max-attempts: 5
     lockout-duration-minutes: 15
-#swagger사용을 위해서 7950으로 바꿈
 server:
   port: 7950
+admin:
+  notification:
+    email: "test-admin@example.com"
