@@ -21,6 +21,26 @@
 
 ---
 
+## 로컬 환경에서 실행하기 (Quick Start)
+복잡한 설정 없이 즉시 실행해 볼 수 있도록 구성했습니다. 아래 절차를 따라주세요.
+
+### 1. 사전 요구사항
+
+* **Java 21** (Corretto 21이상)
+* **Gradle 8.10 이상**
+
+### 2. 프로젝트 클론
+
+```
+git clone https://github.com/myuyoung/RentCarService.git
+cd RentCarService
+```
+
+### 3. 애플리케이션 실행
+``` 
+./gradlew bootRun --args='--spring.profiles.active=test'
+```
+
 ## Tech Stacks
 
 ### Backend
