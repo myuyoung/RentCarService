@@ -38,7 +38,7 @@ cd RentCarService
 
 ### 3. 애플리케이션 실행
 ``` 
-./gradlew bootRun
+./gradlew bootRun --args='--spring.profiles.active=test'
 ```
 
 ## Tech Stacks
