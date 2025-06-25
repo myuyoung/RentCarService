@@ -15,7 +15,7 @@ spring:
             protocols: TLSv1.2
   datasource:
     ##url: jdbc:h2:tcp://localhost/~/wookdb
-    url: jdbc:h2:mem:wookdb
+    url: jdbc:h2:mem:testdb
     username: sa
     password:
     driver-class-name: org.h2.Driver
