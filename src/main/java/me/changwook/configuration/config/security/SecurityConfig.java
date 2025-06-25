@@ -33,11 +33,13 @@ public class SecurityConfig {
                                 // Swagger UI 허용 경로
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
-                                "/swagger-ui.html")
+                                "/swagger-ui.html",
+                                "/h2-console/**")
                         .permitAll()
                         .anyRequest()
                         .authenticated()
                 )
+                .headers(headers-> headers.frameOptions(frameOptions -> frameOptions.sameOrigin()))
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .httpBasic(Customizer.withDefaults());
 
