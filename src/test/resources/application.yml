@@ -29,3 +29,6 @@ security:
   login:
     max-attempts: 5
     lockout-duration-minutes: 15
+admin:
+  notification:
+    email: "test-admin@example.com"

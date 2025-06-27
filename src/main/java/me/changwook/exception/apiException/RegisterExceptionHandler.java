@@ -45,7 +45,7 @@ public class RegisterExceptionHandler {
         }
         log.error("Exception Handler{}",errors);
 
-        ApiResponseDTO<Map<String,String>> response = new ApiResponseDTO<>(false,"로그인이 실패했습니다.",errors);
+        ApiResponseDTO<Map<String,String>> response = new ApiResponseDTO<>(false,"회원가입이 실패했습니다.",errors);
 
         return ResponseEntity.badRequest().body(response);
     }

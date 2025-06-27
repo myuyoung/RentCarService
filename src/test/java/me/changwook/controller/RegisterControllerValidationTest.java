@@ -7,11 +7,16 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -29,22 +34,28 @@ public class RegisterControllerValidationTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    private RegisterMemberDTO createValidDTO(){
-        return RegisterMemberDTO.builder()
-                .name("TestUser")
-                .email("test@example.com")
-                .password("ValidPass123!")
-                .phone("010-1234-5678")
-                .address("서울시 강남구")
-                .build();
+    @MockBean
+    private JavaMailSender javaMailSender;
+
+
+    private TestRegisterMemberDTO createValidDTO(){
+        TestRegisterMemberDTO testDTO = new TestRegisterMemberDTO();
+
+        testDTO.setPassword("TestPassword!");
+        testDTO.setAddress("TestAddress");
+        testDTO.setName("TestName");
+        testDTO.setEmail("TestEmail");
+        testDTO.setPhone("TestPhone");
+
+        return testDTO;
     }
 
     @Test
     @DisplayName("회원가입 성공 - 유효한 데이터")
     void register_success_withValidDate() throws Exception{
         //Given
-        RegisterMemberDTO validDTO = createValidDTO();
-        String requestBody = objectMapper.writeValueAsString(validDTO);
+        TestRegisterMemberDTO testDTO = createValidDTO();
+        String requestBody = objectMapper.writeValueAsString(testDTO);
 
         //when
         ResultActions actions = mockMvc.perform(post("/api/register/member")
@@ -55,7 +66,7 @@ public class RegisterControllerValidationTest {
         //then
         actions.andExpect(status().isCreated())
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.message").value("로그인이 성공했습니다."))
+                .andExpect(jsonPath("$.message").value("회원가입이 성공했습니다."))
                 .andExpect(jsonPath("$.data").doesNotExist());
     }
 
@@ -76,7 +87,7 @@ public class RegisterControllerValidationTest {
         //then
         resultActions.andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.success").value(false))
-                .andExpect(jsonPath("$.message").value("로그인 실패"))
+                .andExpect(jsonPath("$.message").value("회원가입이 실패했습니다."))
                 .andExpect(jsonPath("$.data.name").value("이름은 비어 있을 수 없습니다."));
     }
 }

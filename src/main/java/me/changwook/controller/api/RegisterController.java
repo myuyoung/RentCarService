@@ -31,7 +31,7 @@ public class RegisterController {
     public ResponseEntity<ApiResponseDTO<Void>> register(@Validated @RequestBody RegisterMemberDTO registerMemberDTO) {
 
         registerService.registerMember(registerMemberDTO);
-        return ResponseEntity.status(CREATED).body(new ApiResponseDTO<>(true,"회원 가입이 성공했습니다.",null));
+        return ResponseEntity.status(CREATED).body(new ApiResponseDTO<>(true,"회원가입이 성공했습니다.",null));
     }
 
 }
