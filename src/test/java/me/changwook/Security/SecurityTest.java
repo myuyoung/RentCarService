@@ -3,11 +3,14 @@ package me.changwook.Security;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import me.changwook.DTO.LoginRequestDTO;
 import me.changwook.DTO.RegisterMemberDTO;
+import me.changwook.TestConfig;
+import me.changwook.TestRegisterMemberDTO;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -20,6 +23,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@Import(TestConfig.class)
 //통합 테스트 목적 (회원가입 + 로그인{Spring Security와 JWT})
 public class SecurityTest {
 
@@ -28,37 +32,41 @@ public class SecurityTest {
 
     @Autowired
     private ObjectMapper objectMapper;
+    
+    private TestRegisterMemberDTO createAccount(){
+        return TestRegisterMemberDTO.builder()
+                .name("테스트유저")
+                .email("testuser@example.com")
+                .phone("010-111-2222")
+                .password("Test1234!")
+                .address("서울시 테스트구")
+                .build();
+    }
 
     @Test
     @DisplayName("회원가입 후 로그인 및 JWT를 통한 보호된 API 접근 테스트")
     void registerLoginAndAccessProtectedApi() throws Exception {
-        // 1. 회원가입 요청
-        RegisterMemberDTO registerDto = new RegisterMemberDTO();
-        registerDto.setName("테스트유저");
-        registerDto.setEmail("testuser@example.com");
-        registerDto.setPassword("Test1234!");
+        TestRegisterMemberDTO testAccountDTO = createAccount();
 
-        mockMvc.perform(post("/register/detail")
-                        .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                        .param("name", registerDto.getName())
-                        .param("email", registerDto.getEmail())
-                        .param("password", registerDto.getPassword()))
-                .andExpect(status().is3xxRedirection());
+        mockMvc.perform(post("/api/register/member")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(testAccountDTO)))
+                .andExpect(status().isCreated());
 
         // 2. 로그인 요청 및 JWT 발급
         LoginRequestDTO loginRequestDTO = new LoginRequestDTO();
         loginRequestDTO.setEmail("testuser@example.com");
         loginRequestDTO.setPassword("Test1234!");
 
-        MvcResult result = mockMvc.perform(post("/api/auth/login")
+        MvcResult result = mockMvc.perform(post("/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(loginRequestDTO)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.token").exists())
+                .andExpect(jsonPath("$.data.token").exists())
                 .andReturn();
 
         String responseBody = result.getResponse().getContentAsString();
-        String jwt = objectMapper.readTree(responseBody).get("token").asText();
+        String jwt = objectMapper.readTree(responseBody).get("data").get("token").asText();
         assertThat(jwt).isNotEmpty();
 
         // 3. JWT를 이용한 보호된 API 접근 (예시 API)

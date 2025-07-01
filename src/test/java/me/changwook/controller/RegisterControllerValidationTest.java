@@ -1,7 +1,7 @@
 package me.changwook.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import me.changwook.DTO.RegisterMemberDTO;
+import me.changwook.TestRegisterMemberDTO;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,9 +14,6 @@ import org.springframework.test.annotation.Rollback;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.HashMap;
-import java.util.Map;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -38,13 +35,13 @@ public class RegisterControllerValidationTest {
     private JavaMailSender javaMailSender;
 
     private TestRegisterMemberDTO createValidDTO() {
-        TestRegisterMemberDTO testDTO = new TestRegisterMemberDTO();
-        testDTO.setName("TestName");
-        testDTO.setEmail("test@example.com");       // 유효한 이메일 형식
-        testDTO.setPassword("TestPassword1!"); // 유효한 비밀번호 형식
-        testDTO.setPhone("010-1234-5678");
-        testDTO.setAddress("TestAddress");
-        return testDTO;
+        return TestRegisterMemberDTO.builder()
+                .name("TestName")
+                .email("testuser@example.com")
+                .password("Password1234!")
+                .phone("010-1111-2222")
+                .address("서울시 테스트구")
+                .build();
     }
 
     @Test
