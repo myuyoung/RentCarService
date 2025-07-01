@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import me.changwook.DTO.RentCarsDTO;
 import me.changwook.DTO.RentDTO;
 import me.changwook.DTO.ReservationDTO;
+import me.changwook.TestConfig;
 import me.changwook.configuration.config.QuerydslConfig;
 import me.changwook.domain.*;
 import me.changwook.mapper.MemberMapper;
@@ -32,7 +33,7 @@ import java.util.Optional;
 @Transactional
 @Rollback
 @Slf4j
-@Import(QuerydslConfig.class)
+@Import({QuerydslConfig.class,TestConfig.class})
 public class RentServiceTests {
 
     @Autowired

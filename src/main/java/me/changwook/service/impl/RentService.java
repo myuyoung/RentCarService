@@ -66,7 +66,7 @@ public class RentService {
         LocalDateTime newEndDate = reservationDTO.getRentDTO().getEndTime();
 
         //예약에 대한 유효성 검사
-        if (!newStartDate.isAfter(newEndDate)) {
+        if (!newStartDate.isBefore(newEndDate)) {
             throw new IllegalArgumentException("예약 시작일은 종료일보다 이전이어야 합니다.");
         }
 

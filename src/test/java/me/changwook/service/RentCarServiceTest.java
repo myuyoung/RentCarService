@@ -2,6 +2,7 @@ package me.changwook.service;
 
 import lombok.extern.slf4j.Slf4j;
 import me.changwook.DTO.RentCarsDTO;
+import me.changwook.TestConfig;
 import me.changwook.domain.RentCars;
 import me.changwook.repository.RentCarsRepository;
 import me.changwook.service.impl.RentCarService;
@@ -10,10 +11,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.transaction.annotation.Transactional;
 
 @SpringBootTest
 @Slf4j
+@Import(TestConfig.class)
 class RentCarServiceTest {
 
     @Autowired
