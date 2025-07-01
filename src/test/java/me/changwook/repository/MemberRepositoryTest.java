@@ -1,10 +1,13 @@
 package me.changwook.repository;
 
+import me.changwook.configuration.config.QuerydslConfig;
 import me.changwook.domain.Member;
 import me.changwook.domain.RentCars;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,9 +16,8 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
-@SpringBootTest
-@Transactional
-@Rollback
+@DataJpaTest
+@Import(QuerydslConfig.class)
 class MemberRepositoryTest {
 
     @Autowired

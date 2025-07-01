@@ -37,16 +37,13 @@ public class RegisterControllerValidationTest {
     @MockBean
     private JavaMailSender javaMailSender;
 
-
-    private TestRegisterMemberDTO createValidDTO(){
+    private TestRegisterMemberDTO createValidDTO() {
         TestRegisterMemberDTO testDTO = new TestRegisterMemberDTO();
-
-        testDTO.setPassword("TestPassword!");
-        testDTO.setAddress("TestAddress");
         testDTO.setName("TestName");
-        testDTO.setEmail("TestEmail");
-        testDTO.setPhone("TestPhone");
-
+        testDTO.setEmail("test@example.com");       // 유효한 이메일 형식
+        testDTO.setPassword("TestPassword1!"); // 유효한 비밀번호 형식
+        testDTO.setPhone("010-1234-5678");
+        testDTO.setAddress("TestAddress");
         return testDTO;
     }
 
@@ -74,7 +71,7 @@ public class RegisterControllerValidationTest {
     @DisplayName("회원가입 중 이름을 쓰지 않을 때")
     void register_fail_name() throws Exception{
         //given
-        RegisterMemberDTO validDTO = createValidDTO();
+        TestRegisterMemberDTO validDTO = createValidDTO();
         validDTO.setName(" ");
         String requestBody = objectMapper.writeValueAsString(validDTO);
 

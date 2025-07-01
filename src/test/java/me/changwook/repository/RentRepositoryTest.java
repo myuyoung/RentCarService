@@ -1,11 +1,14 @@
 package me.changwook.repository;
 
 import lombok.extern.slf4j.Slf4j;
+import me.changwook.TestConfig;
+import me.changwook.configuration.config.QuerydslConfig;
 import me.changwook.domain.*;
 import me.changwook.mapper.RentMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
@@ -13,8 +16,9 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest
+@DataJpaTest
 @Slf4j
+@Import({QuerydslConfig.class, TestConfig.class})
 public class RentRepositoryTest {
 
     @Autowired

@@ -19,6 +19,9 @@ spring:
       settings:
         web-allow-others: true
       enabled: true
+  messages:
+    basename: messages_ko
+    encoding: UTF-8
 logging:
   level:
     sql: debug
