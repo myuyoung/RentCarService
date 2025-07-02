@@ -1,24 +1,40 @@
 #!/bin/bash
-# start_server.sh
 
 APP_DIR="/home/ec2-user/app"
-JAR_PATH=$(find $APP_DIR -name "*.jar" | head -n 1)
 LOG_FILE="$APP_DIR/deploy.log"
+
+echo "--- ApplicationStart Hook ---" >> "$LOG_FILE"
+echo "[$(date)] Running start_server.sh" >> "$LOG_FILE"
+
+JAR_FILE=$(ls -tr $APP_DIR/*.jar | tail -n 1)
+
+# JAR 파일이 존재하는지 확인하고 로그를 남깁니다.
+if [ -z "$JAR_FILE" ]; then
+    echo "[$(date)] ERROR: No JAR file found in $APP_DIR" >> "$LOG_FILE"
+    exit 1
+fi
+
+echo "[$(date)] Found JAR file to execute: $JAR_FILE" >> "$LOG_FILE"
 
 export Spring_Mail_UserName="jjjonga33@naver.com"
 export Spring_Mail_Password="WX1QPXDJ87N7"
 export Jwt_Secret="qwertyuiopasdfghjklzxcvbnmqwerty"
 export Admin_Email="parkcw5784@gmail.com"
 
-# JAR 파일 존재 여부를 확인하고, 없으면 스크립트를 종료합니다.
-if [ -z "$JAR_PATH" ]; then
-    echo "> JAR 파일을 찾을 수 없습니다." >> $LOG_FILE
+echo "[$(date)] Starting application..." >> "$LOG_FILE"
+echo "[$(date)] Command: nohup java -jar \"$JAR_FILE\" >> \"$LOG_FILE\" 2>&1 &" >> "$LOG_FILE"
+
+nohup java -jar "$JAR_FILE" >> "$LOG_FILE" 2>&1 &
+
+PID=$!
+sleep 2
+if ! ps -p $PID > /dev/null; then
+    echo "[$(date)] ERROR: Failed to start the Java process. Check Java version or JAR file." >> "$LOG_FILE"
+    echo "[$(date)] See details in the log file above." >> "$LOG_FILE"
     exit 1
 fi
 
-echo "> 새 애플리케이션을 배포합니다: $JAR_PATH"
-# nohup: 터미널 세션이 끊겨도 프로세스가 계속 실행되도록 함
-# 2>&1: 표준 에러를 표준 출력으로 리다이렉션
-# > $LOG_FILE: 표준 출력을 로그 파일에 씀
-# &: 백그라운드에서 실행
-nohup java -jar "$JAR_PATH" > $LOG_FILE 2>&1 &
+echo "[$(date)] Application process started successfully with PID: $PID" >> "$LOG_FILE"
+echo "[$(date)] start_server.sh finished." >> "$LOG_FILE"
+
+exit 0
