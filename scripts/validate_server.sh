@@ -15,5 +15,7 @@ done
 
 echo "> 시간 초과: 애플리케이션 시작에 실패했습니다."
 # Print last 10 lines of log for debugging
-tail -n 10 /home/ec2-user/app/deploy.log
+if [ -f "/home/ec2-user/app/deploy.log" ]; then
+  tail -n 10 /home/ec2-user/app/deploy.log
+fi
 exit 1
