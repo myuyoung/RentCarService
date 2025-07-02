@@ -5,11 +5,13 @@ files:
   - source: / # 압축 해제된 파일들의 최상위 경로
     destination: /home/ec2-user/app # EC2 서버에 파일들이 복사될 목적지 디렉터리
 permissions:
-  - object: /home/ec2-user/app
+  - object: /home/ec2-user/app/scripts
+    pattern: "**"
     owner: ec2-user
     group: ec2-user
-  - object: /home/ec2-user/app/scripts/
-    pattern: "**"
+    mode: 755
+  - object: /home/ec2-user/app
+    pattern: "*.jar"
     owner: ec2-user
     group: ec2-user
     mode: 755
@@ -18,10 +20,10 @@ hooks:
     - location: scripts/stop_server.sh
       timeout: 60
       runas: ec2-user
-  AfterInstall: # 파일이 EC2에 복사된 후 실행
-    - location: scripts/after_install.sh
-      timeout: 180
-      runas: ec2-user
+#  AfterInstall: # 파일이 EC2에 복사된 후 실행
+#    - location: scripts/after_install.sh
+#      timeout: 180
+#      runas: ec2-user
   ApplicationStart: # 모든 준비가 끝나고 애플리케이션을 실행
     - location: scripts/start_server.sh
       timeout: 60
