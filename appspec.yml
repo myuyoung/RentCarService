@@ -1,4 +1,3 @@
-# appspec.yml
 version: 0.0
 os: linux
 files:
@@ -13,14 +12,21 @@ permissions:
     mode: 755
 
 hooks:
+  AfterInstall:
+    - location: scripts/set_permissions.sh
+      timeout: 60
+      runas: root
+
   ApplicationStop:
     - location: scripts/stop_server.sh
       timeout: 60
       runas: ec2-user
+
   ApplicationStart:
     - location: scripts/start_server.sh
       timeout: 60
       runas: ec2-user
+
   ValidateService:
     - location: scripts/validate_server.sh
       timeout: 60
