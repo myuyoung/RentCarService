@@ -1,21 +1,29 @@
 #!/bin/bash
-# validate_server.sh
 
-# 30초 동안 1초 간격으로 애플리케이션이 시작되었는지 확인
+APP_DIR="/home/ec2-user/app"
+LOG_FILE="$APP_DIR/deploy.log"
+PORT=7950
+
+echo "--- ValidateService Hook ---" >> "$LOG_FILE"
+echo "[$(date)] Running validate_server.sh" >> "$LOG_FILE"
+
 for i in {1..30}; do
-  # 7950 포트가 LISTEN 상태인지 확인
-  STATUS=$(netstat -tuln | grep 7950)
+  echo "[$(date)] Checking application status on port $PORT... (Attempt $i/30)" >> "$LOG_FILE"
+
+  STATUS=$(netstat -tuln | grep $PORT)
   if [ -n "$STATUS" ]; then
-    echo "> 애플리케이션이 성공적으로 시작되었습니다."
+    echo "[$(date)] SUCCESS: Application is up and running on port $PORT." >> "$LOG_FILE"
     exit 0
   fi
-  echo "> 애플리케이션 시작 대기 중... ($i/30)"
   sleep 1
 done
 
-echo "> 시간 초과: 애플리케이션 시작에 실패했습니다."
-# Print last 10 lines of log for debugging
-if [ -f "/home/ec2-user/app/deploy.log" ]; then
-  tail -n 10 /home/ec2-user/app/deploy.log
+echo "[$(date)] ERROR: Timeout. Application failed to start on port $PORT." >> "$LOG_FILE"
+echo "[$(date)] Displaying last 20 lines from $LOG_FILE for debugging:" >> "$LOG_FILE"
+
+if [ -f "$LOG_FILE" ]; then
+    tail -n 20 "$LOG_FILE" >> "$LOG_FILE"
+    tail -n 20 "$LOG_FILE"
 fi
+
 exit 1
