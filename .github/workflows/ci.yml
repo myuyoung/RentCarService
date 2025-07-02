@@ -89,9 +89,11 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
       - name: Load secrets from AWS Secrets Manager
-        uses: aws-actions/aws-secrets-manager-github-actions@v1
+        uses: aws-actions/aws-secretsmanager-get-secrets@v1
         with:
-         secret-name: 'my-app/secrets'
+          secret-ids: |
+            my-app/secrets
+          parse-json-secrets: true
 
       # S3에 배포 패키지 업로드
       - name: Upload to S3
