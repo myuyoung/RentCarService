@@ -1,4 +1,6 @@
 spring:
+  config:
+    import: "aws-secretsmanager:my-app/secrets"
   mail:
     host: smtp.naver.com
     port: 587

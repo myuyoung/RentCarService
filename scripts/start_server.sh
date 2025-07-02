@@ -31,10 +31,10 @@ fi
 mv "$ACTUAL_JAR" "$APP_TARGET_DIR/$APP_NAME.jar"
 
 echo "Starting application as ec2-user..." >> $LOG_FILE
-export Spring_Mail_UserName="jjjonga33@naver.com"
-export Spring_Mail_Password="WX1QPXDJ87N7"
-export Jwt_Secret="qwertyuiopasdfghjklzxcvbnmqwerty"
-export Admin_Email="parkcw5784@gmail.com"
+#export Spring_Mail_UserName="jjjonga33@naver.com"
+#export Spring_Mail_Password="WX1QPXDJ87N7"
+#export Jwt_Secret="qwertyuiopasdfghjklzxcvbnmqwerty"
+#export Admin_Email="parkcw5784@gmail.com"
 
 su - ec2-user -c "nohup java -jar $APP_TARGET_DIR/$APP_NAME.jar > /dev/null 2>&1 &"
 
