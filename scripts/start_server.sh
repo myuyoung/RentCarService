@@ -1,40 +1,54 @@
 #!/bin/bash
 
-APP_DIR="/home/ec2-user/app"
-LOG_FILE="$APP_DIR/deploy.log"
+DEPLOY_SOURCE_DIR="/tmp/deploy"
+APP_TARGET_DIR="/home/ec2-user/app"
+APP_NAME="rentcarservice"
+JAR_FILE_PATH="$DEPLOY_SOURCE_DIR/build/libs/*.jar"
+LOG_FILE="$APP_TARGET_DIR/deploy.log"
 
-echo "--- ApplicationStart Hook ---" >> "$LOG_FILE"
-echo "[$(date)] Running start_server.sh" >> "$LOG_FILE"
+mkdir -p $APP_TARGET_DIR
+touch $LOG_FILE
+chown ec2-user:ec2-user $APP_TARGET_DIR
+chown ec2-user:ec2-user $LOG_FILE
 
-JAR_FILE=$(ls -tr $APP_DIR/*.jar | tail -n 1)
+echo "--- Deployment script started at $(date) ---" > $LOG_FILE
 
-# JAR 파일이 존재하는지 확인하고 로그를 남깁니다.
-if [ -z "$JAR_FILE" ]; then
-    echo "[$(date)] ERROR: No JAR file found in $APP_DIR" >> "$LOG_FILE"
-    exit 1
+echo "Stopping any running instances of the application..." >> $LOG_FILE
+CURRENT_PID=$(pgrep -f "java -jar $APP_TARGET_DIR/$APP_NAME.jar")
+
+if [ -n "$CURRENT_PID" ]; then
+    echo "Found running process with PID: $CURRENT_PID. Stopping it." >> $LOG_FILE
+    kill -15 "$CURRENT_PID"
+    sleep 5
 fi
 
-echo "[$(date)] Found JAR file to execute: $JAR_FILE" >> "$LOG_FILE"
+echo "Moving deployment files from $DEPLOY_SOURCE_DIR to $APP_TARGET_DIR" >> $LOG_FILE
+ACTUAL_JAR=$(find $DEPLOY_SOURCE_DIR -name "*.jar" | head -n 1)
+if [ -z "$ACTUAL_JAR" ]; then
+    echo "CRITICAL: JAR file not found in $DEPLOY_SOURCE_DIR" >> $LOG_FILE
+    exit 1
+fi
+mv "$ACTUAL_JAR" "$APP_TARGET_DIR/$APP_NAME.jar"
 
+echo "Starting application as ec2-user..." >> $LOG_FILE
 export Spring_Mail_UserName="jjjonga33@naver.com"
 export Spring_Mail_Password="WX1QPXDJ87N7"
 export Jwt_Secret="qwertyuiopasdfghjklzxcvbnmqwerty"
 export Admin_Email="parkcw5784@gmail.com"
 
-echo "[$(date)] Starting application..." >> "$LOG_FILE"
-echo "[$(date)] Command: nohup java -jar \"$JAR_FILE\" >> \"$LOG_FILE\" 2>&1 &" >> "$LOG_FILE"
+su - ec2-user -c "nohup java -jar $APP_TARGET_DIR/$APP_NAME.jar > /dev/null 2>&1 &"
 
-nohup java -jar "$JAR_FILE" >> "$LOG_FILE" 2>&1 &
+echo "Checking if application has started..." >> $LOG_FILE
+sleep 15
 
-PID=$!
-sleep 2
-if ! ps -p $PID > /dev/null; then
-    echo "[$(date)] ERROR: Failed to start the Java process. Check Java version or JAR file." >> "$LOG_FILE"
-    echo "[$(date)] See details in the log file above." >> "$LOG_FILE"
+STATUS_CHECK_PID=$(pgrep -f "java -jar $APP_TARGET_DIR/$APP_NAME.jar")
+if [ -z "$STATUS_CHECK_PID" ]; then
+    echo "CRITICAL: Application failed to start. Check logs." >> $LOG_FILE
+    echo "--- Last 50 lines of log ---" >> $LOG_FILE
     exit 1
 fi
 
-echo "[$(date)] Application process started successfully with PID: $PID" >> "$LOG_FILE"
-echo "[$(date)] start_server.sh finished." >> "$LOG_FILE"
+echo "SUCCESS: Application is running with PID: $STATUS_CHECK_PID" >> $LOG_FILE
+echo "--- Deployment script finished at $(date) ---" >> $LOG_FILE
 
 exit 0
