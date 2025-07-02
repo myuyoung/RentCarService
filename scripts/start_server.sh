@@ -21,4 +21,4 @@ echo "> 새 애플리케이션을 배포합니다: $JAR_PATH"
 # 2>&1: 표준 에러를 표준 출력으로 리다이렉션
 # > $LOG_FILE: 표준 출력을 로그 파일에 씀
 # &: 백그라운드에서 실행
-nohup java -jar $JAR_PATH > $LOG_FILE 2>&1 &
+nohup java -jar "$JAR_PATH" > $LOG_FILE 2>&1 &
