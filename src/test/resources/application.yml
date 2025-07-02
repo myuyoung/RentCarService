@@ -27,7 +27,7 @@ logging:
     sql: debug
 jwt:
   secret: d9f82kd9fkdw92kfslaj2k39fkdslqwe
-  expire: 1800
+  expire: 3600000
 security:
   login:
     max-attempts: 5

@@ -28,5 +28,5 @@ public class RentCarsDTO {
     private ReservationStatus reservationStatus;
 
     @Min(0)
-    private int totalPrice;
+    private int totalDistance;
 }
