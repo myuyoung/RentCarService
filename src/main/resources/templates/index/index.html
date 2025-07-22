@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dream Drive - 렌터카 서비스</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+
+<!-- 1. 헤더 섹션 -->
+<nav class="bg-white shadow-md sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-16">
+            <div class="flex-shrink-0">
+                <a href="#" class="text-2xl font-bold text-indigo-600">Dream Drive</a>
+            </div>
+            <div class="hidden md:block">
+                <div class="ml-10 flex items-baseline space-x-4">
+                    <a href="#home" class="bg-indigo-600 text-white px-3 py-2 rounded-md text-sm font-medium">홈</a>
+                    <a href="#search" class="text-gray-500 hover:bg-gray-100 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">차량 검색</a>
+                    <a href="#cars" class="text-gray-500 hover:bg-gray-100 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">추천 차량</a>
+                    <a href="#" class="text-gray-500 hover:bg-gray-100 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">마이페이지</a>
+                </div>
+            </div>
+            <div class="hidden md:block">
+                <div class="ml-4 flex items-center md:ml-6">
+                    <a href="#" class="bg-gray-100 text-gray-600 hover:bg-gray-200 px-4 py-2 rounded-md text-sm font-medium">로그인</a>
+                    <a href="#" class="bg-indigo-600 text-white hover:bg-indigo-700 ml-2 px-4 py-2 rounded-md text-sm font-medium">회원가입</a>
+                </div>
+            </div>
+            <!-- 모바일 메뉴 버튼 -->
+            <div class="-mr-2 flex md:hidden">
+                <button type="button" id="mobile-menu-button" class="bg-white inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" aria-controls="mobile-menu" aria-expanded="false">
+                    <span class="sr-only">Open main menu</span>
+                    <svg class="block h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                    <svg class="hidden h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+    <!-- 모바일 메뉴 (숨김 상태) -->
+    <div class="md:hidden hidden" id="mobile-menu">
+        <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+            <a href="#home" class="bg-indigo-600 text-white block px-3 py-2 rounded-md text-base font-medium">홈</a>
+            <a href="#search" class="text-gray-500 hover:bg-gray-100 hover:text-gray-900 block px-3 py-2 rounded-md text-base font-medium">차량 검색</a>
+            <a href="#cars" class="text-gray-500 hover:bg-gray-100 hover:text-gray-900 block px-3 py-2 rounded-md text-base font-medium">추천 차량</a>
+            <a href="#" class="text-gray-500 hover:bg-gray-100 hover:text-gray-900 block px-3 py-2 rounded-md text-base font-medium">마이페이지</a>
+        </div>
+        <div class="pt-4 pb-3 border-t border-gray-200">
+            <div class="flex items-center px-5">
+                <a href="#" class="w-full bg-gray-100 text-gray-600 hover:bg-gray-200 text-center px-4 py-2 rounded-md text-sm font-medium">로그인</a>
+            </div>
+            <div class="mt-3 px-5">
+                <a href="#" class="w-full bg-indigo-600 text-white hover:bg-indigo-700 text-center block px-4 py-2 rounded-md text-sm font-medium">회원가입</a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<main>
+    <!-- 2. 히어로 섹션 -->
+    <section id="home" class="relative">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 pt-10">
+            <div class="relative shadow-xl sm:rounded-2xl sm:overflow-hidden">
+                <div class="absolute inset-0">
+                    <img class="h-full w-full object-cover" src="https://images.unsplash.com/photo-1517524008697-84bbe3c3a796?q=80&w=2070&auto=format&fit=crop" alt="차량 이미지">
+                    <div class="absolute inset-0 bg-gradient-to-r from-indigo-700 to-transparent opacity-75"></div>
+                </div>
+                <div class="relative px-4 py-16 sm:px-6 sm:py-24 lg:py-32 lg:px-8">
+                    <h1 class="text-center text-4xl font-extrabold tracking-tight sm:text-5xl lg:text-6xl">
+                        <span class="block text-white">Dream Drive</span>
+                        <span class="block text-indigo-200">당신을 위한 최고의 선택</span>
+                    </h1>
+                    <p class="mt-6 max-w-lg mx-auto text-center text-xl text-indigo-100 sm:max-w-3xl">
+                        간편하게 예약하고 즐거운 여행을 떠나세요. 다양한 차종을 최적의 가격으로 제공합니다.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 3. 차량 검색 섹션 -->
+    <section id="search" class="bg-gray-50 py-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="bg-white rounded-lg shadow-lg p-8">
+                <h2 class="text-2xl font-bold text-gray-900 mb-6">어떤 차를 찾고 계신가요?</h2>
+                <form id="car-search-form" class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <div>
+                        <label for="car-type" class="block text-sm font-medium text-gray-700">차종</label>
+                        <select id="car-type" name="car-type" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                            <option>전체</option>
+                            <option>소형</option>
+                            <option>중형</option>
+                            <option>대형</option>
+                            <option>SUV</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="fuel-type" class="block text-sm font-medium text-gray-700">연료</label>
+                        <select id="fuel-type" name="fuel-type" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                            <option>전체</option>
+                            <option>가솔린</option>
+                            <option>디젤</option>
+                            <option>전기</option>
+                            <option>LPG</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="location" class="block text-sm font-medium text-gray-700">대여/반납 장소</label>
+                        <input type="text" name="location" id="location" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" placeholder="예: 서울역">
+                    </div>
+                    <div class="flex items-end">
+                        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-md">
+                            검색하기
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- 4. 추천 차량 목록 섹션 -->
+    <section id="cars" class="bg-white">
+        <div class="max-w-2xl mx-auto py-16 px-4 sm:py-24 sm:px-6 lg:max-w-7xl lg:px-8">
+            <h2 class="text-2xl font-extrabold tracking-tight text-gray-900">이달의 추천 차량</h2>
+
+            <!-- 차량 목록이 동적으로 삽입될 컨테이너 -->
+            <div id="car-list-container" class="mt-6 grid grid-cols-1 gap-y-10 gap-x-6 sm:grid-cols-2 lg:grid-cols-4 xl:gap-x-8">
+
+                <!-- 예시 차량 아이템 1 -->
+                <div class="group relative">
+                    <div class="w-full min-h-80 bg-gray-200 aspect-w-1 aspect-h-1 rounded-md overflow-hidden group-hover:opacity-75 lg:h-80 lg:aspect-none">
+                        <img src="https://images.unsplash.com/photo-1631125994759-376328392f33?q=80&w=2070&auto=format&fit=crop" alt="현대 아반떼" class="w-full h-full object-center object-cover lg:w-full lg:h-full">
+                    </div>
+                    <div class="mt-4 flex justify-between">
+                        <div>
+                            <h3 class="text-sm text-gray-700">
+                                <a href="#">
+                                    <span aria-hidden="true" class="absolute inset-0"></span>
+                                    현대 아반떼
+                                </a>
+                            </h3>
+                            <p class="mt-1 text-sm text-gray-500">가솔린 / 준중형</p>
+                        </div>
+                        <p class="text-sm font-medium text-gray-900">₩85,000 / 일</p>
+                    </div>
+                </div>
+
+                <!-- 예시 차량 아이템 2 -->
+                <div class="group relative">
+                    <div class="w-full min-h-80 bg-gray-200 aspect-w-1 aspect-h-1 rounded-md overflow-hidden group-hover:opacity-75 lg:h-80 lg:aspect-none">
+                        <img src="https://images.unsplash.com/photo-1616421233882-9f3b8a7f9e8c?q=80&w=2070&auto=format&fit=crop" alt="기아 K5" class="w-full h-full object-center object-cover lg:w-full lg:h-full">
+                    </div>
+                    <div class="mt-4 flex justify-between">
+                        <div>
+                            <h3 class="text-sm text-gray-700">
+                                <a href="#">
+                                    <span aria-hidden="true" class="absolute inset-0"></span>
+                                    기아 K5
+                                </a>
+                            </h3>
+                            <p class="mt-1 text-sm text-gray-500">LPG / 중형</p>
+                        </div>
+                        <p class="text-sm font-medium text-gray-900">₩100,000 / 일</p>
+                    </div>
+                </div>
+
+                <!-- 예시 차량 아이템 3 -->
+                <div class="group relative">
+                    <div class="w-full min-h-80 bg-gray-200 aspect-w-1 aspect-h-1 rounded-md overflow-hidden group-hover:opacity-75 lg:h-80 lg:aspect-none">
+                        <img src="https://images.unsplash.com/photo-1593192159331-43e685593843?q=80&w=2070&auto=format&fit=crop" alt="기아 셀토스" class="w-full h-full object-center object-cover lg:w-full lg:h-full">
+                    </div>
+                    <div class="mt-4 flex justify-between">
+                        <div>
+                            <h3 class="text-sm text-gray-700">
+                                <a href="#">
+                                    <span aria-hidden="true" class="absolute inset-0"></span>
+                                    기아 셀토스
+                                </a>
+                            </h3>
+                            <p class="mt-1 text-sm text-gray-500">디젤 / 소형 SUV</p>
+                        </div>
+                        <p class="text-sm font-medium text-gray-900">₩120,000 / 일</p>
+                    </div>
+                </div>
+
+                <!-- 예시 차량 아이템 4 -->
+                <div class="group relative">
+                    <div class="w-full min-h-80 bg-gray-200 aspect-w-1 aspect-h-1 rounded-md overflow-hidden group-hover:opacity-75 lg:h-80 lg:aspect-none">
+                        <img src="https://images.unsplash.com/photo-1661552062973-b5242c5173a7?q=80&w=2070&auto=format&fit=crop" alt="현대 아이오닉 5" class="w-full h-full object-center object-cover lg:w-full lg:h-full">
+                    </div>
+                    <div class="mt-4 flex justify-between">
+                        <div>
+                            <h3 class="text-sm text-gray-700">
+                                <a href="#">
+                                    <span aria-hidden="true" class="absolute inset-0"></span>
+                                    현대 아이오닉 5
+                                </a>
+                            </h3>
+                            <p class="mt-1 text-sm text-gray-500">전기 / 중형 SUV</p>
+                        </div>
+                        <p class="text-sm font-medium text-gray-900">₩150,000 / 일</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+</main>
+
+<!-- 5. 푸터 섹션 -->
+<footer class="bg-gray-800">
+    <div class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+        <div class="mt-8 border-t border-gray-700 pt-8 md:flex md:items-center md:justify-between">
+            <p class="text-base text-gray-400 md:order-1">&copy; 2024 Dream Drive. All rights reserved.</p>
+        </div>
+    </div>
+</footer>
+
+<script>
+    // --- API 연동을 위한 JavaScript 코드 작성 영역 ---
+
+    document.addEventListener('DOMContentLoaded', () => {
+        // 페이지가 로드되면 실행할 코드
+
+        // 예시: 추천 차량 목록을 API로 불러와서 렌더링하는 함수
+        async function fetchAndRenderCars() {
+            const carListContainer = document.getElementById('car-list-container');
+            try {
+                // 1. API 호출 (예: /api/rent-cars/recommended)
+                // const response = await fetch('/api/rent-cars/recommended');
+                // const cars = await response.json();
+
+                // 2. 지금은 목업 데이터를 사용합니다.
+                const cars = [
+                    { id: 1, name: '현대 아반떼', segment: '준중형', fuelType: '가솔린', pricePerDay: 85000, imageUrl: 'https://images.unsplash.com/photo-1631125994759-376328392f33?q=80&w=2070&auto=format&fit=crop' },
+                    { id: 2, name: '기아 K5', segment: '중형', fuelType: 'LPG', pricePerDay: 100000, imageUrl: 'https://images.unsplash.com/photo-1616421233882-9f3b8a7f9e8c?q=80&w=2070&auto=format&fit=crop' },
+                    { id: 3, name: '기아 셀토스', segment: '소형 SUV', fuelType: '디젤', pricePerDay: 120000, imageUrl: 'https://images.unsplash.com/photo-1593192159331-43e685593843?q=80&w=2070&auto=format&fit=crop' },
+                    { id: 4, name: '현대 아이오닉 5', segment: '중형 SUV', fuelType: '전기', pricePerDay: 150000, imageUrl: 'https://images.unsplash.com/photo-1661552062973-b5242c5173a7?q=80&w=2070&auto=format&fit=crop' }
+                ];
+
+                // 3. 기존 목록을 비우고 새로운 데이터로 채웁니다.
+                carListContainer.innerHTML = '';
+                cars.forEach(car => {
+                    const carElementHTML = `
+                            <div class="group relative">
+                                <div class="w-full min-h-80 bg-gray-200 aspect-w-1 aspect-h-1 rounded-md overflow-hidden group-hover:opacity-75 lg:h-80 lg:aspect-none">
+                                    <img src="${car.imageUrl}" alt="${car.name}" class="w-full h-full object-center object-cover lg:w-full lg:h-full">
+                                </div>
+                                <div class="mt-4 flex justify-between">
+                                    <div>
+                                        <h3 class="text-sm text-gray-700">
+                                            <a href="#">
+                                                <span aria-hidden="true" class="absolute inset-0"></span>
+                                                ${car.name}
+                                            </a>
+                                        </h3>
+                                        <p class="mt-1 text-sm text-gray-500">${car.fuelType} / ${car.segment}</p>
+                                    </div>
+                                    <p class="text-sm font-medium text-gray-900">₩${car.pricePerDay.toLocaleString()} / 일</p>
+                                </div>
+                            </div>
+                        `;
+                    carListContainer.innerHTML += carElementHTML;
+                });
+
+            } catch (error) {
+                console.error('차량 정보를 불러오는 데 실패했습니다:', error);
+                carListContainer.innerHTML = '<p class="col-span-full text-center text-gray-500">차량 정보를 불러올 수 없습니다.</p>';
+            }
+        }
+
+        // 페이지 로드 시 차량 목록 렌더링 함수 실행
+        // fetchAndRenderCars(); // 실제 API 연동 시 이 주석을 해제하세요.
+
+        // 차량 검색 폼 제출 이벤트 처리
+        const searchForm = document.getElementById('car-search-form');
+        searchForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            // 폼 데이터를 기반으로 검색 API를 호출하는 로직을 여기에 작성합니다.
+            alert('검색 API를 호출합니다.');
+        });
+
+        // 모바일 메뉴 토글
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+        mobileMenuButton.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+    });
+</script>
+
+</body>
+</html>

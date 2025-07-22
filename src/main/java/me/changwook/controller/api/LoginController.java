@@ -66,7 +66,7 @@ public class LoginController {
     @PostMapping("/refresh-token")
     @Transactional
     public ResponseEntity<ApiResponseDTO<AuthResponseDTO>> refreshToken(HttpServletRequest request, HttpServletResponse response) {
-        String oldRefreshToken = extractRefreshToken(request, "oldRefreshToken");
+        String oldRefreshToken = extractRefreshToken(request, "refreshToken");
 
         if (oldRefreshToken == null) {
             return ResponseEntity.status(401).body(new ApiResponseDTO<>(false, "Refresh Token이 존재하지 않습니다.", null));
@@ -82,7 +82,7 @@ public class LoginController {
         Optional<RefreshToken> tokenOpt = refreshTokenRepository.findByUsername(username);
 
         //탈취 감지 로직
-        //DB에 저장된 토큰이 없거나, 요청으로 들어 토큰과 일치하지 않으면 탈취로 간주
+        //DB에 저장된 토큰이 없거나, 요청으로 들어온 토큰과 일치하지 않으면 탈취로 간주
         if (tokenOpt.isEmpty() || !tokenOpt.get().getToken().equals(oldRefreshToken)) {
             log.error("CRITICAL: Refresh Token 탈취 의심이 됩니다!! 사용자:{}, IP:{}", username, getClientIp(request));
 

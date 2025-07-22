@@ -1,11 +1,9 @@
 spring:
-  config:
-    import: "aws-secretsmanager:my-app/secrets"
   mail:
     host: smtp.naver.com
     port: 587
-    username: ${Spring_Mail_UserName}
-    password: ${Spring_Mail_Password}
+    username: ${Spring_Mail_UserName:}
+    password: ${Spring_Mail_Password:}
     properties:
       mail:
         smtp:
@@ -15,19 +13,12 @@ spring:
           ssl:
             trust: smtp.naver.com
             protocols: TLSv1.2
-  datasource:
-    ##url: jdbc:h2:tcp://localhost/~/wookdb
-    url: jdbc:h2:mem:wookdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
-    username: sa
-    password:
-    driver-class-name: org.h2.Driver
   jpa:
     open-in-view: false
     hibernate:
       ddl-auto: create
     properties:
       hibernate:
-#        show_sql: true
         format_sql: false
         default_batch_fetch_size: 1000
     database-platform: org.hibernate.dialect.H2Dialect
@@ -39,18 +30,53 @@ spring:
   messages:
     basename: messages_ko
     encoding: UTF-8
-logging:
-  level:
-    sql: debug
-jwt:
-  secret: ${Jwt_Secret}
-  expire: 3600000
+  profiles:
+    group:
+      "prod": ["aws"]
+
 security:
   login:
     max-attempts: 5
     lockout-duration-minutes: 15
 admin:
   notification:
-    email: ${Admin_Email}
+    email: ${Admin_Email:}
 server:
   port: 7950
+
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: aws
+    import: "aws-secretsmanager:my-app/secrets"
+
+jwt:
+  secret: ${Jwt_Secret}
+  expire: 3600000
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: test
+  datasource:
+    url: jdbc:h2:mem:wookdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+  jpa:
+    properties:
+      hibernate:
+        format_sql: true
+
+logging:
+  level:
+    sql: debug
+
+jwt:
+  secret: d9f82kd9fkdw92kfslaj2k39fkdslqwe
+  expire: 3600000

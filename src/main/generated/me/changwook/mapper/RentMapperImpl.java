@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2025-06-23T08:04:21+0900",
+    date = "2025-07-23T00:11:12+0900",
     comments = "version: 1.5.5.Final, compiler: IncrementalProcessingEnvironment from gradle-language-java-8.10.jar, environment: Java 21.0.7 (Amazon.com Inc.)"
 )
 @Component
@@ -85,6 +85,7 @@ public class RentMapperImpl implements RentMapper {
         rentCarsDTO.recommend( rentCars.getRecommend() );
         rentCarsDTO.rentCarNumber( rentCars.getRentCarNumber() );
         rentCarsDTO.reservationStatus( rentCars.getReservationStatus() );
+        rentCarsDTO.totalDistance( rentCars.getTotalDistance() );
 
         return rentCarsDTO.build();
     }
@@ -100,6 +101,7 @@ public class RentMapperImpl implements RentMapper {
         rentCars.name( rentCarsDTO.getName() );
         rentCars.recommend( rentCarsDTO.getRecommend() );
         rentCars.rentPrice( rentCarsDTO.getRentPrice() );
+        rentCars.totalDistance( rentCarsDTO.getTotalDistance() );
         rentCars.reservationStatus( rentCarsDTO.getReservationStatus() );
 
         return rentCars.build();
