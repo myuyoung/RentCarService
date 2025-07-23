@@ -16,6 +16,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 @Component
 @RequiredArgsConstructor
@@ -24,6 +25,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final UserDetailsService userDetailsService;
 
     private final JwtUtil jwtUtil;
+
+    private static final String[] EXCLUDE_PATH = {
+            "/", "/index.html", "/login", "/logout", "/register", "/auth/login", "/api/register/member",
+            "/v3/api-docs/", "/swagger-ui/", "/h2-console/"
+    };
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -39,11 +45,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     SecurityContextHolder.getContext().setAuthentication(authentication);
                 }
             }catch(Exception e){
-                throw new ServletException(e);
+                logger.error("Could not set user authentication in security context", e);
             }
         }
         filterChain.doFilter(request, response);
+    }
 
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String uri = request.getRequestURI();
+        return Arrays.stream(EXCLUDE_PATH).anyMatch(uri::startsWith);
     }
 
     private String getJwtFromRequest(HttpServletRequest request) {

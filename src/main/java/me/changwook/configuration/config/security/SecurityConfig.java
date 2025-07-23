@@ -29,7 +29,7 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/login", "/logout","/register/**","/auth/login","/api/register/member",
+                        .requestMatchers("/","/templates/**", "/css/**", "/js/**", "/images/**", "/favicon.ico","/login", "/logout","/register/**","/auth/login","/api/register/member",
                                 // Swagger UI 허용 경로
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
@@ -41,7 +41,7 @@ public class SecurityConfig {
                 )
                 .headers(headers-> headers.frameOptions(frameOptions -> frameOptions.sameOrigin()))
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-                .httpBasic(Customizer.withDefaults());
+                .httpBasic(AbstractHttpConfigurer::disable);
 
         return http.build();
     }
