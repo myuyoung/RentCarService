@@ -117,25 +117,6 @@ public class LoginController {
         ApiResponseDTO<AuthResponseDTO> responseDTO = new ApiResponseDTO<>(true, "토큰이 성공적으로 갱신되었습니다.", authResponseDTO);
 
         return ResponseEntity.ok(responseDTO);
-
-//        if(!jwtUtil.validateToken(oldRefreshToken)) {
-//            throw new RuntimeException("토큰이 유효하지 않습니다.");
-//        }
-//        String username = jwtUtil.getUsernameFromToken(oldRefreshToken);
-//
-//        RefreshToken savedToken = refreshTokenRepository.findByUsername(username).orElseThrow(()-> new RuntimeException("데이터 베이스에 Refresh Token 존재하지 않습니다"));
-//
-//        if(!savedToken.getToken().equals(oldRefreshToken)) {
-//            throw new RuntimeException("데이터베이스 RefreshToken과 쿠키에 들어있는 RefreshToken이 일치하지 않습니다.");
-//        }
-//
-//        String newAccessToken = jwtUtil.generateAccessToken(username);
-//
-//        AuthResponseDTO authResponseDTO = new AuthResponseDTO(newAccessToken);
-//
-//        ApiResponseDTO<AuthResponseDTO> responseDTO = new ApiResponseDTO<>(true, "토큰 재생성", authResponseDTO);
-//
-//        return ResponseEntity.ok(responseDTO);
     }
 
 
