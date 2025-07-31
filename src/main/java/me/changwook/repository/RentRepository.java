@@ -33,6 +33,7 @@ public interface RentRepository extends JpaRepository<Rent, UUID>, RentRepositor
                                            @Param("newStartDate") LocalDateTime newStartDate,
                                            @Param("newEndDate") LocalDateTime newEndDate);
 
-
+    // 관리자 기능을 위한 메서드
+    long countByEndDateAfter(LocalDateTime dateTime);
 
 }

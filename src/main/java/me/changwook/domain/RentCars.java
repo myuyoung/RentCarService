@@ -3,6 +3,8 @@ package me.changwook.domain;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDate;
+
 @Entity
 @Getter
 @Builder
@@ -24,6 +26,9 @@ public class RentCars extends BaseEntity {
     private int rentPrice;
 
     private int totalDistance;
+
+    //정기 검사 유효기간
+    private LocalDate inspectionValidityPeriod;
 
     @Enumerated(EnumType.STRING)
     @Builder.Default

@@ -48,6 +48,8 @@ public class QMember extends EntityPathBase<Member> {
 
     public final ListPath<Rent, QRent> rent = this.<Rent, QRent>createList("rent", Rent.class, QRent.class, PathInits.DIRECT2);
 
+    public final EnumPath<Role> role = createEnum("role", Role.class);
+
     public QMember(String variable) {
         super(Member.class, forVariable(variable));
     }

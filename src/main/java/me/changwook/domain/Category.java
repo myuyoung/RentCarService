@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
+
 @Entity
 @Getter
 @Builder
@@ -23,6 +25,17 @@ public class Category {
 
     @Enumerated(EnumType.STRING)
     private FuelType fuelType;
+
+    //출력
+    private int power;
+
+    //배기량
+    private int engineDisplacement;
+
+    //승차정원
+    private int passengerCapacity;
+
+    private LocalDate modelYear;
 
     public void updateCategory(Category category) {
         this.rentCarsSegment = category.rentCarsSegment;

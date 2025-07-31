@@ -47,18 +47,23 @@ public class LoginController {
      */
     @PostMapping("/login")
     public ResponseEntity<ApiResponseDTO<AuthResponseDTO>> login(@RequestBody LoginRequestDTO loginRequestDTO, HttpServletResponse response) {
-        Map<String, String> token = loginService.login(loginRequestDTO);
+        Map<String, Object> loginResult = loginService.login(loginRequestDTO);
+        
+        AuthResponseDTO authResponse = (AuthResponseDTO) loginResult.get("authResponse");
+        String refreshToken = (String) loginResult.get("refresh-token");
 
-        ResponseCookie cookie = ResponseCookie.from("refreshToken", token.get("refresh-token"))
+        ResponseCookie cookie = ResponseCookie.from("refreshToken", refreshToken)
                 .httpOnly(true)
                 .path("/")
                 .maxAge(jwtUtil.getRefreshInterval() / 1000)
                 .build();
         response.addHeader("Set-Cookie", cookie.toString());
 
-        AuthResponseDTO accessToken = new AuthResponseDTO(token.get("access_token"));
-
-        ApiResponseDTO<AuthResponseDTO> responseDTO = new ApiResponseDTO<>(true, "로그인이 성공했습니다.", accessToken);
+        ApiResponseDTO<AuthResponseDTO> responseDTO = ApiResponseDTO.<AuthResponseDTO>builder()
+                .success(true)
+                .message("로그인이 성공했습니다.")
+                .data(authResponse)
+                .build();
 
         return ResponseEntity.ok(responseDTO);
     }
@@ -69,39 +74,45 @@ public class LoginController {
         String oldRefreshToken = extractRefreshToken(request, "refreshToken");
 
         if (oldRefreshToken == null) {
-            return ResponseEntity.status(401).body(new ApiResponseDTO<>(false, "Refresh Token이 존재하지 않습니다.", null));
+            return ResponseEntity.status(401).body(ApiResponseDTO.<AuthResponseDTO>builder()
+                    .success(false)
+                    .message("Refresh Token이 존재하지 않습니다.")
+                    .build());
         }
 
-        //토큰 유효성 검증 및 사용자 이름 추출
+        // 토큰 유효성 검증 및 사용자 이름 추출
         String username = jwtUtil.validateToken(oldRefreshToken) ? jwtUtil.getUsernameFromToken(oldRefreshToken) : null;
+        String role = jwtUtil.validateToken(oldRefreshToken) ? jwtUtil.getRoleFromToken(oldRefreshToken) : null;
 
-        if (username == null) {
-            return ResponseEntity.status(401).body(new ApiResponseDTO<>(false, "유효하지 않는 Refresh Token 입니다.", null));
+        if (username == null || role == null) {
+            return ResponseEntity.status(401).body(ApiResponseDTO.<AuthResponseDTO>builder()
+                    .success(false)
+                    .message("유효하지 않는 Refresh Token 입니다.")
+                    .build());
         }
 
         Optional<RefreshToken> tokenOpt = refreshTokenRepository.findByUsername(username);
 
-        //탈취 감지 로직
-        //DB에 저장된 토큰이 없거나, 요청으로 들어온 토큰과 일치하지 않으면 탈취로 간주
+        // 탈취 감지 로직
         if (tokenOpt.isEmpty() || !tokenOpt.get().getToken().equals(oldRefreshToken)) {
             log.error("CRITICAL: Refresh Token 탈취 의심이 됩니다!! 사용자:{}, IP:{}", username, getClientIp(request));
 
-            //해당 유저의 모든 Refresh Token삭제하여 모든 세션 무효화
             refreshTokenRepository.deleteByUsername(username);
-
-            //관리자에게 알림 발송하는 로직 호출
             notificationService.notifyAdminOfTokenTheft(username, getClientIp(request));
 
-            return ResponseEntity.status(401).body(new ApiResponseDTO<>(false, "비정상적인 접근이 감지되었습니다.", null));
+            return ResponseEntity.status(401).body(ApiResponseDTO.<AuthResponseDTO>builder()
+                    .success(false)
+                    .message("비정상적인 접근이 감지되었습니다.")
+                    .build());
         }
 
-        //토큰 순환: 새로운 토큰들을 발급하는 로직
-        String newAccessToken = jwtUtil.generateAccessToken(username);
-        String newRefreshToken = jwtUtil.generateRefreshToken(username);
+        // 토큰 순환: 새로운 토큰들을 발급
+        String newAccessToken = jwtUtil.generateAccessToken(username, role);
+        String newRefreshToken = jwtUtil.generateRefreshToken(username, role);
 
-        //DB 새로운 Refresh Token저장 (기존 토큰 업데이트)
+        // DB 새로운 Refresh Token저장 (기존 토큰 업데이트)
         RefreshToken savedToken = tokenOpt.get();
-        savedToken.setToken(newAccessToken);
+        savedToken.setToken(newRefreshToken);
         savedToken.setExpiryDate(jwtUtil.getExpirationDateFromToken(newRefreshToken).getTime());
         refreshTokenRepository.save(savedToken);
 
@@ -109,12 +120,25 @@ public class LoginController {
                 .httpOnly(true)
                 .path("/")
                 .maxAge(jwtUtil.getRefreshInterval() / 1000)
-                .sameSite("Strict") //CRSF 공경 방어
+                .sameSite("Strict")
                 .build();
         response.addHeader("Set-Cookie", cookie.toString());
 
-        AuthResponseDTO authResponseDTO = new AuthResponseDTO(newAccessToken);
-        ApiResponseDTO<AuthResponseDTO> responseDTO = new ApiResponseDTO<>(true, "토큰이 성공적으로 갱신되었습니다.", authResponseDTO);
+        // 사용자 정보를 다시 조회하여 최신 정보 반환
+        MemberDTO memberInfo = memberService.findByEmail(username);
+        
+        AuthResponseDTO authResponseDTO = AuthResponseDTO.builder()
+                .token(newAccessToken)
+                .email(memberInfo.getEmail())
+                .name(memberInfo.getName())
+                .role(Role.valueOf(role.replace("ROLE_", "")))
+                .build();
+
+        ApiResponseDTO<AuthResponseDTO> responseDTO = ApiResponseDTO.<AuthResponseDTO>builder()
+                .success(true)
+                .message("토큰이 성공적으로 갱신되었습니다.")
+                .data(authResponseDTO)
+                .build();
 
         return ResponseEntity.ok(responseDTO);
     }

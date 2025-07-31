@@ -19,9 +19,17 @@ public class QCategory extends EntityPathBase<Category> {
 
     public static final QCategory category = new QCategory("category");
 
+    public final NumberPath<Integer> engineDisplacement = createNumber("engineDisplacement", Integer.class);
+
     public final EnumPath<FuelType> fuelType = createEnum("fuelType", FuelType.class);
 
     public final NumberPath<Long> id = createNumber("id", Long.class);
+
+    public final DatePath<java.time.LocalDate> modelYear = createDate("modelYear", java.time.LocalDate.class);
+
+    public final NumberPath<Integer> passengerCapacity = createNumber("passengerCapacity", Integer.class);
+
+    public final NumberPath<Integer> power = createNumber("power", Integer.class);
 
     public final EnumPath<RentCarsSegment> rentCarsSegment = createEnum("rentCarsSegment", RentCarsSegment.class);
 

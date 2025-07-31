@@ -31,6 +31,8 @@ public class QRentCars extends EntityPathBase<RentCars> {
 
     public final NumberPath<Long> id = createNumber("id", Long.class);
 
+    public final DatePath<java.time.LocalDate> inspectionValidityPeriod = createDate("inspectionValidityPeriod", java.time.LocalDate.class);
+
     //inherited
     public final DateTimePath<java.time.LocalDateTime> lastModifiedDate = _super.lastModifiedDate;
 

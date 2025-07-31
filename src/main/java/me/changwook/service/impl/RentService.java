@@ -14,6 +14,8 @@ import me.changwook.mapper.RentMapper;
 import me.changwook.repository.MemberRepository;
 import me.changwook.repository.RentCarsRepository;
 import me.changwook.repository.RentRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -111,5 +113,24 @@ public class RentService {
         Member member = memberRepository.findByIdWithRents(memberId).orElseThrow(() -> new EntityNotFoundException("회원과 관련된 예약이 존재하지 않습니다."));
 
         member.getRent().stream().filter(r -> r.getId().equals(rentId)).findFirst().ifPresent(rentRepository::delete);
+    }
+
+    // 관리자 전용 메서드들
+    
+    @Transactional(readOnly = true)
+    public Page<RentDTO> getAllRentals(Pageable pageable) {
+        Page<Rent> rentals = rentRepository.findAll(pageable);
+        return rentals.map(rentMapper::rentToRentDTO);
+    }
+
+    @Transactional(readOnly = true)
+    public long getTotalRentalCount() {
+        return rentRepository.count();
+    }
+
+    @Transactional(readOnly = true)
+    public long getActiveRentalCount() {
+        LocalDateTime now = LocalDateTime.now();
+        return rentRepository.countByEndDateAfter(now);
     }
 }

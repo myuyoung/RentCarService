@@ -35,6 +35,11 @@ public class Member extends BaseEntity {
 
     private String password;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    @Builder.Default
+    private Role role = Role.USER;
+
     @Column(columnDefinition = "integer default 0")
     @Builder.Default
     private int failedLoginAttempts = 0;

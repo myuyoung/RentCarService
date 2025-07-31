@@ -27,22 +27,24 @@ public class JwtUtil {
         this.refreshInterval = expiration/2;
     }
 
-    public String generateAccessToken(String username) {
+    public String generateAccessToken(String username, String role) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + expiration);
         return Jwts.builder()
                 .setSubject(username)
+                .claim("role", role)  // 권한 정보 추가
                 .setIssuedAt(now)
                 .setExpiration(expiryDate)
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
     }
 
-    public String generateRefreshToken(String username) {
+    public String generateRefreshToken(String username, String role) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + refreshInterval);
         return Jwts.builder()
                 .setSubject(username)
+                .claim("role", role)  // 권한 정보 추가
                 .setIssuedAt(now)
                 .setExpiration(expiryDate)
                 .signWith(key, SignatureAlgorithm.HS256)
@@ -64,6 +66,23 @@ public class JwtUtil {
 
     public Date getExpirationDateFromToken(String token) {
         return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody().getExpiration();
+    }
+
+    public String getRoleFromToken(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .get("role", String.class);
+    }
+
+    public String generateAccessToken(String username) {
+        return generateAccessToken(username, "ROLE_USER");
+    }
+
+    public String generateRefreshToken(String username) {
+        return generateRefreshToken(username, "ROLE_USER");
     }
 
 }
