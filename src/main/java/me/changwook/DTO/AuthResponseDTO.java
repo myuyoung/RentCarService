@@ -9,10 +9,9 @@ import me.changwook.domain.Role;
 @AllArgsConstructor
 @Builder
 public class AuthResponseDTO {
-
     private String token;
     private String email;
     private String name;
     private Role role;
-
+    private String redirectUrl;
 }

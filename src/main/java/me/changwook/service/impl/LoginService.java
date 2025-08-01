@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
 import java.util.Map;
+import me.changwook.domain.Role;
 
 @Service
 @RequiredArgsConstructor
@@ -52,20 +53,36 @@ public class LoginService {
                 .expiryDate(jwtUtil.getExpirationDateFromToken(refreshToken).getTime())
                 .build());
 
+        // 권한에 따른 리다이렉트 URL 결정
+        String redirectUrl = determineRedirectUrl(member.getRole());
+
         // 사용자 정보를 포함한 응답 생성
         AuthResponseDTO authResponse = AuthResponseDTO.builder()
                 .token(accessToken)
                 .email(member.getEmail())
                 .name(member.getName())
                 .role(member.getRole())
+                .redirectUrl(redirectUrl) 
                 .build();
 
         Map<String, Object> response = new HashMap<>();
         response.put("authResponse", authResponse);
         response.put("refresh-token", refreshToken);
 
-        log.info("사용자 로그인 성공: {} (권한: {})", member.getEmail(), member.getRole());
+        log.info("사용자 로그인 성공: {} (권한: {}, 리다이렉트: {})", 
+                member.getEmail(), member.getRole(), redirectUrl);
         
         return response;
+    }
+
+    /**
+     * 사용자 권한에 따른 리다이렉트 URL 결정
+     */
+    private String determineRedirectUrl(Role role) {
+        return switch (role) {
+            case ADMIN -> "/admin/dashboard";  
+            case USER -> "/user/dashboard";    
+            default -> "/";                    
+        };
     }
 }

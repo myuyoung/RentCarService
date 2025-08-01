@@ -8,8 +8,10 @@ import lombok.extern.slf4j.Slf4j;
 import me.changwook.DTO.ApiResponseDTO;
 import me.changwook.DTO.AuthResponseDTO;
 import me.changwook.DTO.LoginRequestDTO;
+import me.changwook.DTO.MemberDTO;
 import me.changwook.configuration.config.security.JwtUtil;
 import me.changwook.domain.RefreshToken;
+import me.changwook.domain.Role;
 import me.changwook.repository.RefreshTokenRepository;
 import me.changwook.service.NotificationService;
 import me.changwook.service.impl.LoginService;
@@ -177,7 +179,7 @@ public class LoginController {
     }
 
         @PostMapping("/logout")
-        public ResponseEntity<ApiResponseDTO<Void>> logout (HttpServletRequest request, HttpServletResponse response){
+        public ResponseEntity<ApiResponseDTO<Void>> logout(HttpServletRequest request, HttpServletResponse response) {
             String refreshToken = extractRefreshToken(request, "refreshToken");
             if (refreshToken != null && jwtUtil.validateToken(refreshToken)) {
                 String username = jwtUtil.getUsernameFromToken(refreshToken);
@@ -189,7 +191,10 @@ public class LoginController {
                     .build();
             response.addHeader("Set-Cookie", deleteCookie.toString());
 
-            ApiResponseDTO<Void> responseDTO = new ApiResponseDTO<>(true, "로그아웃 되었습니다.", null);
+            ApiResponseDTO<Void> responseDTO = ApiResponseDTO.<Void>builder()
+                    .success(true)
+                    .message("로그아웃 되었습니다.")
+                    .build();
 
             return ResponseEntity.ok(responseDTO);
         }
