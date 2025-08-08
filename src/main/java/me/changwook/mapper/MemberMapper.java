@@ -18,10 +18,13 @@ public interface MemberMapper {
 
     @Mapping(target = "password", ignore = true)
     @Mapping(target = "id", ignore = true)
+    @Mapping(target = "role", ignore = true)
+    @Mapping(target = "failedLoginAttempts", ignore = true)
+    @Mapping(target = "accountLockedUntil", ignore = true)
+    @Mapping(target = "rent", ignore = true)
+    @Mapping(target = "images", ignore = true)
     Member memberDTOToMember(MemberDTO memberDTO);
 
-    @Mapping(target = "password", ignore = true)
-    @Mapping(target = "member_id", ignore = true)
     List<Member> memberDTOsToMembers(List<MemberDTO> memberDTOs);
 
 }

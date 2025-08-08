@@ -1,8 +1,11 @@
-package me.changwook.repository;
+package me.changwook.test_repository;
 
 import me.changwook.configuration.config.QuerydslConfig;
 import me.changwook.domain.Member;
 import me.changwook.domain.RentCars;
+import me.changwook.repository.MemberRepository;
+import me.changwook.repository.RentCarsRepository;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;

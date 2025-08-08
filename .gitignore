@@ -40,3 +40,17 @@ bin/
 
 ### Mac OS ###
 .DS_Store
+
+### Cursor AI Settings ###
+.cursor/
+
+### Generated Sources (QueryDSL) ###
+src/main/generated/
+
+### Application Settings ###
+*.log
+application-*.yml
+!application-test.yml
+
+### Uploads Directory ###
+uploads/

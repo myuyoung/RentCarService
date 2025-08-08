@@ -2,14 +2,13 @@ package me.changwook.configuration.config.security;
 
 
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import javax.crypto.SecretKey;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.security.Key;
 import java.util.Date;
 
 @Component
@@ -17,7 +16,7 @@ import java.util.Date;
 @Setter
 public class JwtUtil {
 
-    private final Key key;
+    private final SecretKey key;
     private final long expiration;
     private final long refreshInterval;
 
@@ -31,11 +30,11 @@ public class JwtUtil {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + expiration);
         return Jwts.builder()
-                .setSubject(username)
+                .subject(username)
                 .claim("role", role)  // 권한 정보 추가
-                .setIssuedAt(now)
-                .setExpiration(expiryDate)
-                .signWith(key, SignatureAlgorithm.HS256)
+                .issuedAt(now)
+                .expiration(expiryDate)
+                .signWith(key)
                 .compact();
     }
 
@@ -43,17 +42,17 @@ public class JwtUtil {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + refreshInterval);
         return Jwts.builder()
-                .setSubject(username)
+                .subject(username)
                 .claim("role", role)  // 권한 정보 추가
-                .setIssuedAt(now)
-                .setExpiration(expiryDate)
-                .signWith(key, SignatureAlgorithm.HS256)
+                .issuedAt(now)
+                .expiration(expiryDate)
+                .signWith(key)
                 .compact();
     }
 
     public boolean validateToken(String token) {
         try{
-            Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
+            Jwts.parser().verifyWith(key).build().parseSignedClaims(token);
             return true;
         } catch (Exception e) {
             return false;
@@ -61,19 +60,19 @@ public class JwtUtil {
     }
 
     public String getUsernameFromToken(String token) {
-        return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody().getSubject();
+        return Jwts.parser().verifyWith(key).build().parseSignedClaims(token).getPayload().getSubject();
     }
 
     public Date getExpirationDateFromToken(String token) {
-        return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody().getExpiration();
+        return Jwts.parser().verifyWith(key).build().parseSignedClaims(token).getPayload().getExpiration();
     }
 
     public String getRoleFromToken(String token) {
-        return Jwts.parserBuilder()
-                .setSigningKey(key)
+        return Jwts.parser()
+                .verifyWith(key)
                 .build()
-                .parseClaimsJws(token)
-                .getBody()
+                .parseSignedClaims(token)
+                .getPayload()
                 .get("role", String.class);
     }
 

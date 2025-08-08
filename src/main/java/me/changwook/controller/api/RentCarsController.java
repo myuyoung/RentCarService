@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import me.changwook.DTO.ApiResponseDTO;
 import me.changwook.DTO.RentCarsDTO;
 import me.changwook.service.impl.RentCarService;
+import me.changwook.util.ResponseFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class RentCarsController {
 
     private final RentCarService rentCarService;
+    private final ResponseFactory responseFactory;
 
 
     //렌트카의 랭킹을 조회하는 컨트롤러
@@ -27,8 +29,6 @@ public class RentCarsController {
             @PageableDefault(size = 10, sort = "recommend", direction = Sort.Direction.DESC)Pageable pageable
             ){
         Page<RentCarsDTO> rankedCarsPage = rentCarService.getRankedRentCars(pageable);
-        ApiResponseDTO<Page<RentCarsDTO>> response = new ApiResponseDTO<>(true,"렌트카 랭킹 조회 성공",rankedCarsPage);
-
-        return ResponseEntity.ok(response);
+        return responseFactory.success("렌트카 랭킹 조회 성공", rankedCarsPage);
     }
 }

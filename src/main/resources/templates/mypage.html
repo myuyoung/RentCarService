@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dream Drive - 마이페이지</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="bg-gray-50">
+
+<!-- 헤더 -->
+<nav class="bg-white shadow-md sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-16">
+            <div class="flex-shrink-0">
+                <a href="/" class="text-2xl font-bold text-indigo-600">Dream Drive</a>
+            </div>
+            <div class="hidden md:block">
+                <div class="ml-10 flex items-baseline space-x-4">
+                    <a href="/" class="text-gray-500 hover:bg-gray-100 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">홈</a>
+                    <a href="/mypage" class="bg-indigo-600 text-white px-3 py-2 rounded-md text-sm font-medium">마이페이지</a>
+                </div>
+            </div>
+            <div class="hidden md:block">
+                <div class="ml-4 flex items-center md:ml-6">
+                    <span id="user-name" class="text-gray-600 text-sm mr-4"></span>
+                    <button id="logout-btn" class="bg-gray-100 text-gray-600 hover:bg-gray-200 px-4 py-2 rounded-md text-sm font-medium">로그아웃</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- 메인 컨텐츠 -->
+<main class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900">마이페이지</h1>
+        <p class="mt-2 text-gray-600">회원 정보와 예약 내역을 관리하세요</p>
+    </div>
+
+    <!-- 탭 네비게이션 -->
+    <div class="border-b border-gray-200 mb-6">
+        <nav class="-mb-px flex space-x-8">
+            <button class="tab-btn active" data-tab="profile">
+                <span class="py-2 px-1 border-b-2 border-indigo-500 text-indigo-600 font-medium text-sm">프로필</span>
+            </button>
+            <button class="tab-btn" data-tab="reservations">
+                <span class="py-2 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 font-medium text-sm">예약 내역</span>
+            </button>
+            <button class="tab-btn" data-tab="history">
+                <span class="py-2 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 font-medium text-sm">이용 기록</span>
+            </button>
+        </nav>
+    </div>
+
+    <!-- 탭 컨텐츠 -->
+    <div class="tab-content">
+        <!-- 프로필 탭 -->
+        <div id="profile-tab" class="tab-panel active">
+            <div class="bg-white shadow-lg rounded-lg">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h3 class="text-lg font-semibold text-gray-900">회원 정보</h3>
+                </div>
+                <div class="p-6">
+                    <form id="profile-form" class="space-y-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label for="name" class="block text-sm font-medium text-gray-700">이름</label>
+                                <input type="text" id="name" name="name" readonly
+                                       class="mt-1 block w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md shadow-sm text-gray-500 sm:text-sm">
+                            </div>
+                            <div>
+                                <label for="email" class="block text-sm font-medium text-gray-700">이메일</label>
+                                <input type="email" id="email" name="email" readonly
+                                       class="mt-1 block w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md shadow-sm text-gray-500 sm:text-sm">
+                            </div>
+                            <div>
+                                <label for="phone" class="block text-sm font-medium text-gray-700">전화번호</label>
+                                <input type="tel" id="phone" name="phone" readonly
+                                       class="mt-1 block w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md shadow-sm text-gray-500 sm:text-sm">
+                            </div>
+                            <div>
+                                <label for="address" class="block text-sm font-medium text-gray-700">주소</label>
+                                <input type="text" id="address" name="address" readonly
+                                       class="mt-1 block w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md shadow-sm text-gray-500 sm:text-sm">
+                            </div>
+                        </div>
+                        
+                        <div class="flex justify-end space-x-3">
+                            <button type="button" id="edit-btn" class="btn-secondary px-4 py-2 rounded-md">정보 수정</button>
+                            <button type="button" id="cancel-btn" class="btn-secondary px-4 py-2 rounded-md hidden">취소</button>
+                            <button type="submit" id="save-btn" class="btn-primary px-4 py-2 rounded-md text-white hidden">저장</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- 예약 내역 탭 -->
+        <div id="reservations-tab" class="tab-panel hidden">
+            <div class="bg-white shadow-lg rounded-lg">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h3 class="text-lg font-semibold text-gray-900">예약 내역</h3>
+                </div>
+                <div class="p-6">
+                    <div id="reservations-container" class="space-y-4">
+                        <!-- 예약 목록이 동적으로 삽입됩니다 -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 이용 기록 탭 -->
+        <div id="history-tab" class="tab-panel hidden">
+            <div class="bg-white shadow-lg rounded-lg">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h3 class="text-lg font-semibold text-gray-900">이용 기록</h3>
+                </div>
+                <div class="p-6">
+                    <p class="text-gray-500 text-center py-8">이용 기록 기능은 준비 중입니다.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- 예약 상세 모달 -->
+<div id="reservation-detail-modal" class="modal-backdrop fixed inset-0 z-50 hidden">
+    <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="modal-content bg-white rounded-lg shadow-xl max-w-md w-full">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-lg font-semibold text-gray-900">예약 상세 정보</h3>
+                    <button class="close-modal text-gray-400 hover:text-gray-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <div id="modal-content" class="p-6">
+                <!-- 예약 상세 정보가 동적으로 삽입됩니다 -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript 파일들 -->
+<script src="/js/common.js"></script>
+<script src="/js/auth.js"></script>
+<script src="/js/mypage.js"></script>
+
+</body>
+</html>

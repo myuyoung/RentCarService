@@ -16,7 +16,7 @@ spring:
   jpa:
     open-in-view: false
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
     properties:
       hibernate:
         format_sql: false
@@ -25,7 +25,7 @@ spring:
   h2:
     console:
       settings:
-        web-allow-others: true
+        web-allow-others: false
       enabled: true
   messages:
     basename: messages_ko
@@ -43,7 +43,25 @@ admin:
     email: ${Admin_Email:}
 server:
   port: 7950
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+      enabled: true
+  file:
+    upload:
+      dir: ${user.home}/uploads/images
+      url-path: /images
 
+# 커스텀 파일 업로드 설정 (서비스 주입 키)
+file:
+  upload:
+    dir: ${user.home}/uploads/images
+    url-path: /images
+
+jwt:
+  secret: ${Jwt_Secret:d9f82kd9fkdw92kfslaj2k39fkdslqwe}
+  expire: 3600000
 
 ---
 
@@ -78,5 +96,5 @@ logging:
     sql: debug
 
 jwt:
-  secret: d9f82kd9fkdw92kfslaj2k39fkdslqwe
+  secret: ${d9f82kd9fkdw92kfslaj2k39fkdslqwe}
   expire: 3600000

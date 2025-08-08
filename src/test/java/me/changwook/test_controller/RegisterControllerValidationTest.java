@@ -1,4 +1,4 @@
-package me.changwook.controller;
+package me.changwook.test_controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import me.changwook.TestRegisterMemberDTO;

@@ -13,12 +13,12 @@ import me.changwook.domain.Role;
 import me.changwook.service.impl.MemberService;
 import me.changwook.service.impl.RentCarService;
 import me.changwook.service.impl.RentService;
+import me.changwook.util.ResponseFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.Map;
 import java.util.UUID;
 
@@ -33,6 +33,7 @@ public class AdminController {
     private final MemberService memberService;
     private final RentService rentService;
     private final RentCarService rentCarService;
+    private final ResponseFactory responseFactory;
 
     @GetMapping("/members")
     @Operation(summary = "전체 회원 조회", description = "모든 회원 정보를 페이징하여 조회합니다.")
@@ -43,13 +44,7 @@ public class AdminController {
         
         Page<MemberDTO> members = memberService.getAllMembers(pageable);
         
-        return ResponseEntity.ok(
-            ApiResponseDTO.<Page<MemberDTO>>builder()
-                .success(true)
-                .data(members)
-                .message("전체 회원 조회 성공")
-                .build()
-        );
+        return responseFactory.success("전체 회원 조회 성공", members);
     }
 
     @GetMapping("/members/{memberId}")
@@ -60,13 +55,7 @@ public class AdminController {
         
         MemberDTO member = memberService.getMemberById(memberId);
         
-        return ResponseEntity.ok(
-            ApiResponseDTO.<MemberDTO>builder()
-                .success(true)
-                .data(member)
-                .message("회원 조회 성공")
-                .build()
-        );
+        return responseFactory.success("회원 조회 성공", member);
     }
 
     @PutMapping("/members/{memberId}/role")
@@ -82,13 +71,7 @@ public class AdminController {
         Role newRole = Role.valueOf(roleUpdate.get("role"));
         MemberDTO updatedMember = memberService.updateMemberRole(memberId, newRole);
         
-        return ResponseEntity.ok(
-            ApiResponseDTO.<MemberDTO>builder()
-                .success(true)
-                .data(updatedMember)
-                .message("회원 권한 변경 성공")
-                .build()
-        );
+        return responseFactory.success("회원 권한 변경 성공", updatedMember);
     }
 
     @DeleteMapping("/members/{memberId}")
@@ -99,12 +82,7 @@ public class AdminController {
         
         memberService.deleteMember(memberId);
         
-        return ResponseEntity.ok(
-            ApiResponseDTO.<Void>builder()
-                .success(true)
-                .message("회원 삭제 성공")
-                .build()
-        );
+        return responseFactory.success("회원 삭제 성공");
     }
 
     @GetMapping("/rentals")
@@ -116,13 +94,7 @@ public class AdminController {
         
         Page<RentDTO> rentals = rentService.getAllRentals(pageable);
         
-        return ResponseEntity.ok(
-            ApiResponseDTO.<Page<RentDTO>>builder()
-                .success(true)
-                .data(rentals)
-                .message("전체 예약 조회 성공")
-                .build()
-        );
+        return responseFactory.success("전체 예약 조회 성공", rentals);
     }
 
     @GetMapping("/cars")
@@ -134,13 +106,7 @@ public class AdminController {
         
         Page<RentCarsDTO> cars = rentCarService.getAllCars(pageable);
         
-        return ResponseEntity.ok(
-            ApiResponseDTO.<Page<RentCarsDTO>>builder()
-                .success(true)
-                .data(cars)
-                .message("전체 차량 조회 성공")
-                .build()
-        );
+        return responseFactory.success("전체 차량 조회 성공", cars);
     }
 
     @DeleteMapping("/cars/{carId}")
@@ -151,12 +117,7 @@ public class AdminController {
         
         rentCarService.deleteRentCar(carId);
         
-        return ResponseEntity.ok(
-            ApiResponseDTO.<Void>builder()
-                .success(true)
-                .message("차량 삭제 성공")
-                .build()
-        );
+        return responseFactory.success("차량 삭제 성공");
     }
 
     @GetMapping("/statistics")
@@ -172,12 +133,8 @@ public class AdminController {
             "activeRentals", rentService.getActiveRentalCount()
         );
         
-        return ResponseEntity.ok(
-            ApiResponseDTO.<Map<String, Object>>builder()
-                .success(true)
-                .data(statistics)
-                .message("시스템 통계 조회 성공")
-                .build()
-        );
+        return responseFactory.success("시스템 통계 조회 성공", statistics);
     }
+
+
 }

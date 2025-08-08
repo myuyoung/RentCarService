@@ -1,4 +1,4 @@
-package me.changwook.service;
+package me.changwook.test_service;
 
 import lombok.extern.slf4j.Slf4j;
 import me.changwook.DTO.RentCarsDTO;

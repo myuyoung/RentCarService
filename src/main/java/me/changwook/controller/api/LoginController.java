@@ -16,9 +16,10 @@ import me.changwook.repository.RefreshTokenRepository;
 import me.changwook.service.NotificationService;
 import me.changwook.service.impl.LoginService;
 import me.changwook.service.impl.MemberService;
+import me.changwook.util.ResponseFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -34,12 +35,12 @@ import java.util.Optional;
 @Slf4j
 public class LoginController {
 
-    private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
     private final RefreshTokenRepository refreshTokenRepository;
     private final LoginService loginService;
     private final MemberService memberService;
     private final NotificationService notificationService;
+    private final ResponseFactory responseFactory;
 
 
     /**
@@ -61,13 +62,7 @@ public class LoginController {
                 .build();
         response.addHeader("Set-Cookie", cookie.toString());
 
-        ApiResponseDTO<AuthResponseDTO> responseDTO = ApiResponseDTO.<AuthResponseDTO>builder()
-                .success(true)
-                .message("로그인이 성공했습니다.")
-                .data(authResponse)
-                .build();
-
-        return ResponseEntity.ok(responseDTO);
+        return responseFactory.success("로그인이 성공했습니다.", authResponse);
     }
 
     @PostMapping("/refresh-token")
@@ -76,10 +71,7 @@ public class LoginController {
         String oldRefreshToken = extractRefreshToken(request, "refreshToken");
 
         if (oldRefreshToken == null) {
-            return ResponseEntity.status(401).body(ApiResponseDTO.<AuthResponseDTO>builder()
-                    .success(false)
-                    .message("Refresh Token이 존재하지 않습니다.")
-                    .build());
+            return responseFactory.error("Refresh Token이 존재하지 않습니다.", HttpStatus.UNAUTHORIZED);
         }
 
         // 토큰 유효성 검증 및 사용자 이름 추출
@@ -87,10 +79,7 @@ public class LoginController {
         String role = jwtUtil.validateToken(oldRefreshToken) ? jwtUtil.getRoleFromToken(oldRefreshToken) : null;
 
         if (username == null || role == null) {
-            return ResponseEntity.status(401).body(ApiResponseDTO.<AuthResponseDTO>builder()
-                    .success(false)
-                    .message("유효하지 않는 Refresh Token 입니다.")
-                    .build());
+            return responseFactory.error("유효하지 않는 Refresh Token 입니다.", HttpStatus.UNAUTHORIZED);
         }
 
         Optional<RefreshToken> tokenOpt = refreshTokenRepository.findByUsername(username);
@@ -102,10 +91,7 @@ public class LoginController {
             refreshTokenRepository.deleteByUsername(username);
             notificationService.notifyAdminOfTokenTheft(username, getClientIp(request));
 
-            return ResponseEntity.status(401).body(ApiResponseDTO.<AuthResponseDTO>builder()
-                    .success(false)
-                    .message("비정상적인 접근이 감지되었습니다.")
-                    .build());
+            return responseFactory.error("비정상적인 접근이 감지되었습니다.", HttpStatus.UNAUTHORIZED);
         }
 
         // 토큰 순환: 새로운 토큰들을 발급
@@ -136,13 +122,7 @@ public class LoginController {
                 .role(Role.valueOf(role.replace("ROLE_", "")))
                 .build();
 
-        ApiResponseDTO<AuthResponseDTO> responseDTO = ApiResponseDTO.<AuthResponseDTO>builder()
-                .success(true)
-                .message("토큰이 성공적으로 갱신되었습니다.")
-                .data(authResponseDTO)
-                .build();
-
-        return ResponseEntity.ok(responseDTO);
+        return responseFactory.success("토큰이 성공적으로 갱신되었습니다.", authResponseDTO);
     }
 
 
@@ -191,11 +171,6 @@ public class LoginController {
                     .build();
             response.addHeader("Set-Cookie", deleteCookie.toString());
 
-            ApiResponseDTO<Void> responseDTO = ApiResponseDTO.<Void>builder()
-                    .success(true)
-                    .message("로그아웃 되었습니다.")
-                    .build();
-
-            return ResponseEntity.ok(responseDTO);
+            return responseFactory.success("로그아웃 되었습니다.");
         }
     }

@@ -35,6 +35,8 @@ public class QMember extends EntityPathBase<Member> {
 
     public final ComparablePath<java.util.UUID> id = createComparable("id", java.util.UUID.class);
 
+    public final ListPath<Image, QImage> images = this.<Image, QImage>createList("images", Image.class, QImage.class, PathInits.DIRECT2);
+
     //inherited
     public final DateTimePath<java.time.LocalDateTime> lastModifiedDate = _super.lastModifiedDate;
 

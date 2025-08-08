@@ -1,10 +1,14 @@
-package me.changwook.repository;
+package me.changwook.test_repository;
 
 import lombok.extern.slf4j.Slf4j;
 import me.changwook.TestConfig;
 import me.changwook.configuration.config.QuerydslConfig;
 import me.changwook.domain.*;
 import me.changwook.mapper.RentMapper;
+import me.changwook.repository.CategoryRepository;
+import me.changwook.repository.RentCarsRepository;
+import me.changwook.repository.RentRepository;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;

@@ -52,6 +52,11 @@ public class Member extends BaseEntity {
     @Builder.Default
     private List<Rent> rent = new ArrayList<>();
 
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @JoinColumn(name = "member_id")
+    @Builder.Default
+    private List<Image> images = new ArrayList<>();
+
     //더티체킹을 위한 메서드
     public void updateMember(Member memberUpdates) {
 

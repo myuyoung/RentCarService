@@ -11,6 +11,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -32,12 +33,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     };
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(@NonNull HttpServletRequest request,
+                                    @NonNull HttpServletResponse response,
+                                    @NonNull FilterChain filterChain) throws ServletException, IOException {
 
         String token = getJwtFromRequest(request);
         if (StringUtils.hasText(token)) {
             try{
-                Claims claims = jwtUtil.validateToken(token)? Jwts.parserBuilder().setSigningKey(jwtUtil.getKey()).build().parseClaimsJws(token).getBody() : null;
+                Claims claims = jwtUtil.validateToken(token)? Jwts.parser().verifyWith(jwtUtil.getKey()).build().parseSignedClaims(token).getPayload() : null;
                 String username = (claims != null) ? claims.getSubject() : null;
                 if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                     UserDetails userDetails = userDetailsService.loadUserByUsername(username);
@@ -52,7 +55,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     @Override
-    protected boolean shouldNotFilter(HttpServletRequest request) {
+    protected boolean shouldNotFilter(@NonNull HttpServletRequest request) {
         String uri = request.getRequestURI();
         return Arrays.stream(EXCLUDE_PATH).anyMatch(uri::startsWith);
     }

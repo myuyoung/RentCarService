@@ -3,19 +3,21 @@ package me.changwook.mapper;
 import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.processing.Generated;
-import me.changwook.DTO.RentCarsDTO;
 import me.changwook.DTO.RentDTO;
 import me.changwook.domain.Rent;
-import me.changwook.domain.RentCars;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2025-07-31T14:46:32+0900",
-    comments = "version: 1.5.5.Final, compiler: IncrementalProcessingEnvironment from gradle-language-java-8.10.jar, environment: Java 21.0.7 (Amazon.com Inc.)"
+    date = "2025-08-08T15:17:14+0900",
+    comments = "version: 1.5.5.Final, compiler: javac, environment: Java 21.0.8 (Amazon.com Inc.)"
 )
 @Component
 public class RentMapperImpl implements RentMapper {
+
+    @Autowired
+    private RentCarsMapper rentCarsMapper;
 
     @Override
     public RentDTO rentToRentDTO(Rent rent) {
@@ -25,8 +27,11 @@ public class RentMapperImpl implements RentMapper {
 
         RentDTO.RentDTOBuilder rentDTO = RentDTO.builder();
 
+        rentDTO.rent_id( rent.getId() );
+        rentDTO.rentTime( rent.getRentDate() );
+        rentDTO.endTime( rent.getEndDate() );
+        rentDTO.rentCars( rentCarsMapper.rentCarsToRentCarsDTO( rent.getRentCars() ) );
         rentDTO.duration( rent.getDuration() );
-        rentDTO.rentCars( rentCarsToRentCarsDTO( rent.getRentCars() ) );
 
         return rentDTO.build();
     }
@@ -53,8 +58,10 @@ public class RentMapperImpl implements RentMapper {
 
         Rent.RentBuilder rent = Rent.builder();
 
+        rent.rentDate( rentDTO.getRentTime() );
+        rent.endDate( rentDTO.getEndTime() );
+        rent.rentCars( rentCarsMapper.rentCarsDTOToRent( rentDTO.getRentCars() ) );
         rent.duration( rentDTO.getDuration() );
-        rent.rentCars( rentCarsDTOToRentCars( rentDTO.getRentCars() ) );
 
         return rent.build();
     }
@@ -71,39 +78,5 @@ public class RentMapperImpl implements RentMapper {
         }
 
         return list;
-    }
-
-    protected RentCarsDTO rentCarsToRentCarsDTO(RentCars rentCars) {
-        if ( rentCars == null ) {
-            return null;
-        }
-
-        RentCarsDTO.RentCarsDTOBuilder rentCarsDTO = RentCarsDTO.builder();
-
-        rentCarsDTO.name( rentCars.getName() );
-        rentCarsDTO.rentPrice( rentCars.getRentPrice() );
-        rentCarsDTO.recommend( rentCars.getRecommend() );
-        rentCarsDTO.rentCarNumber( rentCars.getRentCarNumber() );
-        rentCarsDTO.reservationStatus( rentCars.getReservationStatus() );
-        rentCarsDTO.totalDistance( rentCars.getTotalDistance() );
-
-        return rentCarsDTO.build();
-    }
-
-    protected RentCars rentCarsDTOToRentCars(RentCarsDTO rentCarsDTO) {
-        if ( rentCarsDTO == null ) {
-            return null;
-        }
-
-        RentCars.RentCarsBuilder rentCars = RentCars.builder();
-
-        rentCars.rentCarNumber( rentCarsDTO.getRentCarNumber() );
-        rentCars.name( rentCarsDTO.getName() );
-        rentCars.recommend( rentCarsDTO.getRecommend() );
-        rentCars.rentPrice( rentCarsDTO.getRentPrice() );
-        rentCars.totalDistance( rentCarsDTO.getTotalDistance() );
-        rentCars.reservationStatus( rentCarsDTO.getReservationStatus() );
-
-        return rentCars.build();
     }
 }

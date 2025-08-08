@@ -8,7 +8,8 @@ import me.changwook.DTO.ReservationDTO;
 import me.changwook.configuration.config.security.CustomUserDetails;
 import me.changwook.service.impl.MemberService;
 import me.changwook.service.impl.RentService;
-import org.springframework.http.HttpStatus;
+import me.changwook.util.ResponseFactory;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
@@ -26,6 +27,7 @@ public class MyPageController {
     private final MemberService memberService;
 
     private final RentService rentService;
+    private final ResponseFactory responseFactory;
 
     //회원 정보를 조회하는 컨트롤러
     @GetMapping("/{memberId}")
@@ -33,9 +35,7 @@ public class MyPageController {
 
         MemberDTO memberDTO = memberService.findById(memberId);
 
-        ApiResponseDTO<MemberDTO> responseDTO = new ApiResponseDTO<>(true,"회원정보 조회 성공했습니다.",memberDTO);
-
-        return ResponseEntity.ok(responseDTO);
+        return responseFactory.success("회원정보 조회 성공했습니다.", memberDTO);
     }
 
     //회원 정보를 수정하는 컨트롤러
@@ -43,9 +43,7 @@ public class MyPageController {
     public ResponseEntity<ApiResponseDTO<Void>> changeMemberInformation(@PathVariable UUID memberId, @RequestBody MemberDTO memberDTO){
         memberService.update(memberId, memberDTO);
 
-        ApiResponseDTO<Void> responseDTO = new ApiResponseDTO<>(true,"변경 완료되었습니다.",null);
-
-        return ResponseEntity.ok(responseDTO);
+        return responseFactory.success("변경 완료되었습니다.");
     }
 
     /**
@@ -63,9 +61,7 @@ public class MyPageController {
 
         RentDTO createDTO = rentService.rentInformation(reservationDTO,id);
 
-        ApiResponseDTO<RentDTO> responseDTO = new ApiResponseDTO<>(true,"차량 예약 성공하였습니다",createDTO);
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(responseDTO);
+        return responseFactory.created("차량 예약 성공하였습니다", createDTO);
     }
 
     //현재 시간이후의 예약들을 조회하는 컨트롤러
@@ -77,9 +73,7 @@ public class MyPageController {
 
         List<RentDTO> reservation = rentService.findReservationList(memberId);
 
-        ApiResponseDTO<List<RentDTO>> responseDTO =new ApiResponseDTO<>(true,"조회가 성공했습니다.",reservation);
-
-        return ResponseEntity.ok(responseDTO);
+        return responseFactory.success("조회가 성공했습니다.", reservation);
     }
 
     //현재 시간이후의 선택한 예약을 조회하는 컨트롤러
@@ -89,10 +83,7 @@ public class MyPageController {
 
         RentDTO reservation = rentService.findReservation(reservationId);
 
-        ApiResponseDTO<RentDTO> responseDTO = new ApiResponseDTO<>(true,"조회를 성공했습니다.",reservation);
-
-
-        return ResponseEntity.ok(responseDTO);
+        return responseFactory.success("조회를 성공했습니다.", reservation);
     }
 
     /**
@@ -109,9 +100,7 @@ public class MyPageController {
 
         rentService.cancelReservation(memberId,reservationId);
 
-        ApiResponseDTO<Void> responseDTO = new ApiResponseDTO<>(true,"예약이 성공적으로 취소되었습니다.",null);
-
-        return ResponseEntity.ok(responseDTO);
+        return responseFactory.success("예약이 성공적으로 취소되었습니다.");
     }
 
 }
