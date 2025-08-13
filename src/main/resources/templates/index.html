@@ -94,26 +94,33 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="bg-white rounded-lg shadow-lg p-8">
                 <h2 class="text-2xl font-bold text-gray-900 mb-6">어떤 차를 찾고 계신가요?</h2>
-                <form id="car-search-form" class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <form id="car-search-form" class="grid grid-cols-1 md:grid-cols-6 gap-6">
                     <div>
                         <label for="car-type" class="block text-sm font-medium text-gray-700">차종</label>
                         <select id="car-type" name="car-type" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
-                            <option>전체</option>
-                            <option>소형</option>
-                            <option>중형</option>
-                            <option>대형</option>
-                            <option>SUV</option>
+                            <option value="ALL">전체</option>
+                            <option value="SMALL">소형</option>
+                            <option value="MEDIUM">중형</option>
+                            <option value="LARGE">대형</option>
                         </select>
                     </div>
                     <div>
                         <label for="fuel-type" class="block text-sm font-medium text-gray-700">연료</label>
                         <select id="fuel-type" name="fuel-type" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
-                            <option>전체</option>
-                            <option>가솔린</option>
-                            <option>디젤</option>
-                            <option>전기</option>
-                            <option>LPG</option>
+                            <option value="ALL">전체</option>
+                            <option value="GASOLINE">가솔린</option>
+                            <option value="DIESEL">디젤</option>
+                            <option value="ELECTRIC">전기</option>
+                            <option value="HYBRID">하이브리드</option>
                         </select>
+                    </div>
+                    <div>
+                        <label for="min-price" class="block text-sm font-medium text-gray-700">최소 가격(원/일)</label>
+                        <input type="number" min="0" step="1000" name="min-price" id="min-price" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" placeholder="예: 20000">
+                    </div>
+                    <div>
+                        <label for="max-price" class="block text-sm font-medium text-gray-700">최대 가격(원/일)</label>
+                        <input type="number" min="0" step="1000" name="max-price" id="max-price" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" placeholder="예: 100000">
                     </div>
                     <div>
                         <label for="location" class="block text-sm font-medium text-gray-700">대여/반납 장소</label>

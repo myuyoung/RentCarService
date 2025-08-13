@@ -80,8 +80,8 @@ public class LoginService {
      */
     private String determineRedirectUrl(Role role) {
         return switch (role) {
-            case ADMIN -> "/admin/dashboard";  
-            case USER -> "/user/dashboard";    
+            case ADMIN -> "/admin";  
+            case USER -> "/";    
             default -> "/";                    
         };
     }

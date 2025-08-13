@@ -17,7 +17,7 @@ import java.util.UUID;
 public class Member extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "member_id",updatable = false, nullable = false, columnDefinition = "UUID")
+    @Column(name = "member_id", updatable = false, nullable = false, columnDefinition = "BINARY(16)")
     private UUID id;
 
     private String name;

@@ -1,7 +1,5 @@
 package me.changwook.service;
 
-import org.springframework.data.crossstore.ChangeSetPersister;
-
 import java.util.List;
 
 public interface BasicService<T> {

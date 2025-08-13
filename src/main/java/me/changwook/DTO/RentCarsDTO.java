@@ -14,6 +14,8 @@ import me.changwook.domain.ReservationStatus;
 @NoArgsConstructor
 public class RentCarsDTO {
 
+    private Long id;
+
     @NotNull
     private String name;
 

@@ -40,6 +40,13 @@ public class Image extends BaseEntity {
     private String filePath;
 
     /**
+     * 업로드 루트 기준 상대 경로 (yyyy/MM/dd/uuid.ext)
+     * - 정적 리소스 매핑 시 URL 구성에 사용
+     */
+    @Column(nullable = false)
+    private String relativePath;
+
+    /**
      * 파일 크기 (bytes)
      * - 용량 관리 및 통계 분석에 사용
      * - 업로드 제한 검증에 활용
@@ -69,8 +76,12 @@ public class Image extends BaseEntity {
      * - 회원별 이미지 조회 시 사용
      */
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id")
+    @JoinColumn(name = "member_id", columnDefinition = "BINARY(16)")
     private Member member;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "submission_id")
+    private CarRegistrationSubmission submission;
 
 
 

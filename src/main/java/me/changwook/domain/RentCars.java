@@ -27,6 +27,8 @@ public class RentCars extends BaseEntity {
 
     private int totalDistance;
 
+    // Todo  "소유자" 등급의 사용자는 반드시 하나 이상의 차량을 등록해야 함.
+
     //정기 검사 유효기간
     private LocalDate inspectionValidityPeriod;
 

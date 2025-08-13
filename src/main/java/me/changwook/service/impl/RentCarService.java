@@ -38,8 +38,15 @@ public class RentCarService  {
 
     @Transactional(readOnly = true)
     public Page<RentCarsDTO> getRankedRentCars(Pageable pageable) {
-        Page<RentCars> rentCarsPage = rentCarsRepository.findAllByOrderByRecommendDesc(pageable);
+        Page<RentCars> rentCarsPage = rentCarsRepository.findRecommendedForHome(pageable);
         return rentCarsPage.map(rentCarsMapper::rentCarsToRentCarsDTO);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<RentCarsDTO> searchCars(String segment, String fuelType, String keyword,
+                                        Integer minPrice, Integer maxPrice, Pageable pageable) {
+        Page<RentCars> result = rentCarsRepository.searchCars(segment, fuelType, keyword, minPrice, maxPrice, pageable);
+        return result.map(rentCarsMapper::rentCarsToRentCarsDTO);
     }
 
     @Transactional

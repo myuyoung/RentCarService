@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.changwook.DTO.ApiResponseDTO;
 import me.changwook.DTO.MemberDTO;
+import me.changwook.service.impl.CarRegistrationSubmissionService;
 import me.changwook.DTO.RentCarsDTO;
 import me.changwook.DTO.RentDTO;
 import me.changwook.domain.Role;
@@ -34,6 +35,7 @@ public class AdminController {
     private final RentService rentService;
     private final RentCarService rentCarService;
     private final ResponseFactory responseFactory;
+    private final CarRegistrationSubmissionService submissionService;
 
     @GetMapping("/members")
     @Operation(summary = "전체 회원 조회", description = "모든 회원 정보를 페이징하여 조회합니다.")
@@ -109,6 +111,40 @@ public class AdminController {
         return responseFactory.success("전체 차량 조회 성공", cars);
     }
 
+    // --- 차량 등록 신청 관리 ---
+    @GetMapping("/car-submissions")
+    @Operation(summary = "차량 등록 신청 목록", description = "PENDING 상태의 신청 목록을 조회합니다.")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponseDTO<Page<me.changwook.DTO.CarRegistrationSubmissionViewDTO>>> listSubmissions(Pageable pageable) {
+        Page<me.changwook.DTO.CarRegistrationSubmissionViewDTO> page = submissionService.listPending(pageable);
+        return responseFactory.success("차량 등록 신청 목록 조회 성공", page);
+    }
+
+    @GetMapping("/car-submissions/{submissionId}")
+    @Operation(summary = "차량 등록 신청 상세", description = "특정 신청의 상세 정보를 조회합니다.")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponseDTO<me.changwook.DTO.CarRegistrationSubmissionViewDTO>> getSubmission(
+            @PathVariable java.util.UUID submissionId) {
+        var dto = submissionService.getSubmissionDetail(submissionId);
+        return responseFactory.success("차량 등록 신청 상세 조회 성공", dto);
+    }
+
+    @PostMapping("/car-submissions/{submissionId}/approve")
+    @Operation(summary = "차량 등록 신청 승인", description = "신청을 승인하고 차량으로 등록합니다.")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponseDTO<Void>> approveSubmission(@PathVariable java.util.UUID submissionId) {
+        submissionService.approveSubmission(submissionId);
+        return responseFactory.success("신청이 승인되어 차량이 등록되었습니다.");
+    }
+
+    @PostMapping("/car-submissions/{submissionId}/reject")
+    @Operation(summary = "차량 등록 신청 반려", description = "신청을 반려합니다.")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponseDTO<Void>> rejectSubmission(@PathVariable java.util.UUID submissionId) {
+        submissionService.rejectSubmission(submissionId);
+        return responseFactory.success("신청이 반려되었습니다.");
+    }
+
     @DeleteMapping("/cars/{carId}")
     @Operation(summary = "차량 삭제", description = "차량을 삭제합니다.")
     @PreAuthorize("hasRole('ADMIN')")
@@ -118,6 +154,15 @@ public class AdminController {
         rentCarService.deleteRentCar(carId);
         
         return responseFactory.success("차량 삭제 성공");
+    }
+
+    @PostMapping("/cars")
+    @Operation(summary = "차량 추가", description = "차량을 신규로 등록합니다.")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponseDTO<Void>> createCar(@RequestBody RentCarsDTO dto) {
+        log.info("관리자가 차량을 등록합니다. 차량번호: {}, 이름: {}", dto.getRentCarNumber(), dto.getName());
+        rentCarService.registerCar(dto);
+        return responseFactory.success("차량 등록 성공");
     }
 
     @GetMapping("/statistics")

@@ -25,29 +25,46 @@ class MainPage {
         
         if (token && userInfo) {
             // 로그인된 상태
+            const isAdmin = userInfo.role === 'ADMIN';
             if (authButtonsContainer) {
-                authButtonsContainer.innerHTML = `
-                    <span class="text-gray-600 text-sm mr-4">${userInfo.name}님</span>
-                    <a href="/mypage" class="bg-gray-100 text-gray-600 hover:bg-gray-200 px-4 py-2 rounded-md text-sm font-medium">마이페이지</a>
-                    <button id="logout-btn" class="bg-red-100 text-red-600 hover:bg-red-200 ml-2 px-4 py-2 rounded-md text-sm font-medium">로그아웃</button>
-                `;
+                authButtonsContainer.innerHTML = isAdmin
+                    ? `
+                        <span class="text-gray-600 text-sm mr-4">${userInfo.name}님</span>
+                        <button id="logout-btn" class="bg-red-100 text-red-600 hover:bg-red-200 ml-2 px-4 py-2 rounded-md text-sm font-medium">로그아웃</button>
+                      `
+                    : `
+                        <span class="text-gray-600 text-sm mr-4">${userInfo.name}님</span>
+                        <a href="/mypage" class="bg-gray-100 text-gray-600 hover:bg-gray-200 px-4 py-2 rounded-md text-sm font-medium">마이페이지</a>
+                        <button id="logout-btn" class="bg-red-100 text-red-600 hover:bg-red-200 ml-2 px-4 py-2 rounded-md text-sm font-medium">로그아웃</button>
+                      `;
             }
-            
+
             if (mobileAuthContainer) {
-                mobileAuthContainer.innerHTML = `
-                    <div class="flex items-center px-5 mb-3">
-                        <span class="text-gray-600 text-sm">${userInfo.name}님</span>
-                    </div>
-                    <div class="px-5">
-                        <a href="/mypage" class="w-full bg-gray-100 text-gray-600 hover:bg-gray-200 text-center block px-4 py-2 rounded-md text-sm font-medium mb-2">마이페이지</a>
-                        <button id="mobile-logout-btn" class="w-full bg-red-100 text-red-600 hover:bg-red-200 text-center block px-4 py-2 rounded-md text-sm font-medium">로그아웃</button>
-                    </div>
-                `;
+                mobileAuthContainer.innerHTML = isAdmin
+                    ? `
+                        <div class="flex items-center px-5 mb-3">
+                            <span class="text-gray-600 text-sm">${userInfo.name}님</span>
+                        </div>
+                        <div class="px-5">
+                            <button id="mobile-logout-btn" class="w-full bg-red-100 text-red-600 hover:bg-red-200 text-center block px-4 py-2 rounded-md text-sm font-medium">로그아웃</button>
+                        </div>
+                      `
+                    : `
+                        <div class="flex items-center px-5 mb-3">
+                            <span class="text-gray-600 text-sm">${userInfo.name}님</span>
+                        </div>
+                        <div class="px-5">
+                            <a href="/mypage" class="w-full bg-gray-100 text-gray-600 hover:bg-gray-200 text-center block px-4 py-2 rounded-md text-sm font-medium mb-2">마이페이지</a>
+                            <button id="mobile-logout-btn" class="w-full bg-red-100 text-red-600 hover:bg-red-200 text-center block px-4 py-2 rounded-md text-sm font-medium">로그아웃</button>
+                        </div>
+                      `;
             }
-            
+
             // 로그아웃 버튼 이벤트 추가
             document.getElementById('logout-btn')?.addEventListener('click', this.handleLogout);
             document.getElementById('mobile-logout-btn')?.addEventListener('click', this.handleLogout);
+
+            // 관리자 전용 별도 링크 추가는 하지 않음 (전역에서 마이페이지 → 관리자 메뉴로 치환)
         }
     }
 
@@ -183,15 +200,40 @@ class MainPage {
      */
     async handleCarSearch() {
         const formData = utils.formToObject(this.searchForm);
-        
-        console.log('검색 조건:', formData);
-        
-        // TODO: 실제 검색 API 구현 시 활성화
-        notification.warning('검색 기능은 현재 준비 중입니다.');
-        
-        // 검색 결과 페이지로 이동하는 로직 (추후 구현)
-        // const searchParams = new URLSearchParams(formData);
-        // window.location.href = `/search?${searchParams.toString()}`;
+        const params = new URLSearchParams();
+
+        // UI 필드명에 맞춰 파라미터 구성
+        // 차종: ALL/SMALL/MEDIUM/LARGE (서버 enum과 일치)
+        if (formData['car-type'] && formData['car-type'] !== 'ALL') {
+            params.set('segment', formData['car-type']);
+        }
+        // 연료: ALL/GASOLINE/DIESEL/ELECTRIC/HYBRID (서버 enum과 일치)
+        if (formData['fuel-type'] && formData['fuel-type'] !== 'ALL') {
+            params.set('fuelType', formData['fuel-type']);
+        }
+        // 가격 필드 추가 전달 및 검증
+        const minPrice = parseInt(formData['min-price'], 10);
+        const maxPrice = parseInt(formData['max-price'], 10);
+        if (!Number.isNaN(minPrice)) params.set('minPrice', String(minPrice));
+        if (!Number.isNaN(maxPrice)) params.set('maxPrice', String(maxPrice));
+        if (!Number.isNaN(minPrice) && !Number.isNaN(maxPrice) && maxPrice < minPrice) {
+            notification.warning('최대 가격은 최소 가격보다 크거나 같아야 합니다.');
+            return;
+        }
+        // 위치는 현재 서버 검색 조건에 없음 → 키워드로 포함
+        if (formData['location']) {
+            params.set('q', formData['location']);
+        }
+
+        try {
+            // 별도 검색 결과 페이지로 이동
+            window.location.href = `/search?${params.toString()}`;
+        } catch (error) {
+            console.error('검색 오류:', error);
+            notification.error('검색 중 오류가 발생했습니다.');
+        } finally {
+            // no-op
+        }
     }
 }
 

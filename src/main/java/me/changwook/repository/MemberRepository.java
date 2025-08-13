@@ -1,6 +1,7 @@
 package me.changwook.repository;
 
 import me.changwook.domain.Member;
+import me.changwook.domain.Role;
 import me.changwook.repository.custom.MemberRepositoryCustom;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -18,5 +19,7 @@ public interface MemberRepository extends JpaRepository<Member, UUID>, MemberRep
 
     @Query("SELECT m FROM Member m LEFT JOIN FETCH m.rent where m.id= :id")
     Optional<Member> findByIdWithRents(@Param("id") UUID id);
+
+    Optional<Member> findFirstByRole(Role role);
 
 }

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>차량 검색 결과 - Dream Drive</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/css/style.css" />
+  <style>
+    .badge { padding: 2px 8px; border-radius: 9999px; font-size: 12px; }
+    .badge-primary { background: #EEF2FF; color: #4338CA; }
+    .badge-success { background: #ECFDF5; color: #065F46; }
+  </style>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      if (window.pageInitializers?.initSearchPage) {
+        window.pageInitializers.initSearchPage();
+      }
+    });
+  </script>
+</head>
+<body class="bg-gray-50">
+  <nav class="bg-white shadow-md sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        <div class="flex-shrink-0">
+          <a href="/" class="text-2xl font-bold text-indigo-600">Dream Drive</a>
+        </div>
+        <div class="hidden md:block">
+          <div class="ml-10 flex items-baseline space-x-4">
+            <a href="/" class="text-gray-500 hover:bg-gray-100 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">홈</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <section class="bg-gray-50 py-10">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h1 class="text-2xl font-bold text-gray-900">차량 검색 결과</h1>
+
+        <div id="search-summary" class="text-sm text-gray-500 mt-2"></div>
+
+        <div id="search-results" class="mt-6 grid grid-cols-1 gap-y-10 gap-x-6 sm:grid-cols-2 lg:grid-cols-4 xl:gap-x-8">
+          <!-- 검색 결과가 렌더링됩니다. -->
+        </div>
+
+        <div id="search-empty" class="hidden mt-10 text-center text-gray-500">검색 결과가 없습니다.</div>
+      </div>
+    </section>
+  </main>
+
+  <script src="/js/common.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/search.js"></script>
+</body>
+</html>
+
+

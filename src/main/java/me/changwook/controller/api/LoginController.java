@@ -55,12 +55,23 @@ public class LoginController {
         AuthResponseDTO authResponse = (AuthResponseDTO) loginResult.get("authResponse");
         String refreshToken = (String) loginResult.get("refresh-token");
 
-        ResponseCookie cookie = ResponseCookie.from("refreshToken", refreshToken)
+        // RefreshToken 쿠키 설정
+        ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", refreshToken)
                 .httpOnly(true)
                 .path("/")
                 .maxAge(jwtUtil.getRefreshInterval() / 1000)
+                .sameSite("Lax")
                 .build();
-        response.addHeader("Set-Cookie", cookie.toString());
+        response.addHeader("Set-Cookie", refreshCookie.toString());
+
+        // AccessToken도 쿠키에 저장 (페이지 네비게이션 시 자동 인증을 위해)
+        ResponseCookie accessCookie = ResponseCookie.from("accessToken", authResponse.getToken())
+                .httpOnly(false)  // JavaScript에서 접근 가능하도록
+                .path("/")
+                .maxAge(jwtUtil.getExpiration() / 1000)
+                .sameSite("Lax")
+                .build();
+        response.addHeader("Set-Cookie", accessCookie.toString());
 
         return responseFactory.success("로그인이 성공했습니다.", authResponse);
     }
@@ -104,13 +115,23 @@ public class LoginController {
         savedToken.setExpiryDate(jwtUtil.getExpirationDateFromToken(newRefreshToken).getTime());
         refreshTokenRepository.save(savedToken);
 
-        ResponseCookie cookie = ResponseCookie.from("refreshToken", newRefreshToken)
+        // RefreshToken 쿠키 업데이트
+        ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", newRefreshToken)
                 .httpOnly(true)
                 .path("/")
                 .maxAge(jwtUtil.getRefreshInterval() / 1000)
-                .sameSite("Strict")
+                .sameSite("Lax")
                 .build();
-        response.addHeader("Set-Cookie", cookie.toString());
+        response.addHeader("Set-Cookie", refreshCookie.toString());
+
+        // AccessToken 쿠키도 업데이트
+        ResponseCookie accessCookie = ResponseCookie.from("accessToken", newAccessToken)
+                .httpOnly(false)
+                .path("/")
+                .maxAge(jwtUtil.getExpiration() / 1000)
+                .sameSite("Lax")
+                .build();
+        response.addHeader("Set-Cookie", accessCookie.toString());
 
         // 사용자 정보를 다시 조회하여 최신 정보 반환
         MemberDTO memberInfo = memberService.findByEmail(username);
@@ -165,11 +186,19 @@ public class LoginController {
                 String username = jwtUtil.getUsernameFromToken(refreshToken);
                 refreshTokenRepository.deleteByUsername(username);
             }
-            ResponseCookie deleteCookie = ResponseCookie.from("refreshToken", "")
+            // RefreshToken 쿠키 삭제
+            ResponseCookie deleteRefreshCookie = ResponseCookie.from("refreshToken", "")
                     .path("/")
                     .maxAge(0)
                     .build();
-            response.addHeader("Set-Cookie", deleteCookie.toString());
+            response.addHeader("Set-Cookie", deleteRefreshCookie.toString());
+            
+            // AccessToken 쿠키도 삭제
+            ResponseCookie deleteAccessCookie = ResponseCookie.from("accessToken", "")
+                    .path("/")
+                    .maxAge(0)
+                    .build();
+            response.addHeader("Set-Cookie", deleteAccessCookie.toString());
 
             return responseFactory.success("로그아웃 되었습니다.");
         }

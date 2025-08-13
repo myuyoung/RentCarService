@@ -24,4 +24,30 @@ public class PageController {
     public String mypage() {
         return "mypage";
     }
+
+    
+    @GetMapping("/search")
+    public String search() {
+        return "search";
+    }
+
+    @GetMapping("/admin")
+    public String admin() {
+        return "admin";
+    }
+
+    @GetMapping("/admin/car-submissions/{id}")
+    public String adminSubmissionDetail() {
+        return "admin_submission_detail";
+    }
+
+    @GetMapping("/test-image")
+    public String testImage() {
+        return "test_image";
+    }
+
+    @GetMapping("/debug-admin")
+    public String debugAdmin() {
+        return "debug_admin";
+    }
 }

@@ -41,12 +41,13 @@ public class UserImageController {
     public ResponseEntity<ApiResponseDTO<Void>> uploadImage(
             @RequestParam("file") MultipartFile file,
             @RequestParam(value = "memberId", required = false) UUID memberId,
+            @RequestParam(value = "submissionId", required = false) UUID submissionId,
             Authentication authentication) throws IOException {
 
         // 요청 데이터 전처리
         String uploadedBy = authentication.getName(); // JWT 토큰에서 사용자 정보 추출
 
-        fileUploadService.uploadImage(file, uploadedBy, memberId);
+        fileUploadService.uploadImage(file, uploadedBy, memberId, submissionId);
 
         // 성공 응답 반환 (GlobalExceptionHandler에서 예외 처리)
         return responseFactory.success("이미지 업로드 성공");

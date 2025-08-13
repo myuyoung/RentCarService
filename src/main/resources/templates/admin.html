@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>관리자 대시보드 - Dream Drive</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body class="bg-gray-50">
+  <nav class="bg-white shadow-md sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        <div class="flex-shrink-0">
+          <a href="/" class="text-2xl font-bold text-indigo-600">Dream Drive</a>
+        </div>
+        <div class="hidden md:block">
+          <div class="ml-10 flex items-baseline space-x-4">
+            <a href="/" class="text-gray-500 hover:bg-gray-100 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">홈</a>
+            <a href="/admin" class="bg-indigo-600 text-white px-3 py-2 rounded-md text-sm font-medium">관리자</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <main class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+    <div class="mb-8">
+      <h1 class="text-3xl font-bold text-gray-900">관리자 대시보드</h1>
+      <p class="mt-2 text-gray-600">회원, 차량, 예약을 관리하고 통계를 확인하세요.</p>
+    </div>
+
+    <div class="border-b border-gray-200 mb-6">
+      <nav class="-mb-px flex space-x-8">
+        <button class="admin-tab-btn active" data-tab="stats">
+          <span class="py-2 px-1 border-b-2 border-indigo-500 text-indigo-600 font-medium text-sm">통계</span>
+        </button>
+        <button class="admin-tab-btn" data-tab="members">
+          <span class="py-2 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 font-medium text-sm">회원</span>
+        </button>
+        <button class="admin-tab-btn" data-tab="cars">
+          <span class="py-2 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 font-medium text-sm">차량</span>
+        </button>
+        <button class="admin-tab-btn" data-tab="rentals">
+          <span class="py-2 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 font-medium text-sm">예약</span>
+        </button>
+        <button class="admin-tab-btn" data-tab="submissions">
+          <span class="py-2 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 font-medium text-sm">차량 등록 신청</span>
+        </button>
+      </nav>
+    </div>
+
+    <div class="admin-tab-content">
+      <div id="stats-tab" class="admin-tab-panel">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div class="bg-white p-6 rounded-lg shadow">
+            <div class="text-gray-500 text-sm">전체 회원</div>
+            <div id="stat-total-members" class="text-2xl font-bold mt-2">-</div>
+          </div>
+          <div class="bg-white p-6 rounded-lg shadow">
+            <div class="text-gray-500 text-sm">전체 예약</div>
+            <div id="stat-total-rentals" class="text-2xl font-bold mt-2">-</div>
+          </div>
+          <div class="bg-white p-6 rounded-lg shadow">
+            <div class="text-gray-500 text-sm">전체 차량</div>
+            <div id="stat-total-cars" class="text-2xl font-bold mt-2">-</div>
+          </div>
+          <div class="bg-white p-6 rounded-lg shadow">
+            <div class="text-gray-500 text-sm">진행중 예약</div>
+            <div id="stat-active-rentals" class="text-2xl font-bold mt-2">-</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="members-tab" class="admin-tab-panel hidden">
+        <div class="bg-white p-4 rounded-lg shadow">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-semibold">회원 목록</h3>
+          </div>
+          <div id="admin-members-container" class="overflow-x-auto"></div>
+        </div>
+      </div>
+
+      <div id="cars-tab" class="admin-tab-panel hidden">
+        <div class="bg-white p-4 rounded-lg shadow">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-semibold">차량 목록</h3>
+          </div>
+          <div id="admin-cars-container" class="overflow-x-auto"></div>
+        </div>
+      </div>
+
+      <div id="rentals-tab" class="admin-tab-panel hidden">
+        <div class="bg-white p-4 rounded-lg shadow">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-semibold">예약 목록</h3>
+          </div>
+          <div id="admin-rentals-container" class="overflow-x-auto"></div>
+        </div>
+      </div>
+
+      <div id="submissions-tab" class="admin-tab-panel hidden">
+        <div class="bg-white p-4 rounded-lg shadow">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-semibold">차량 등록 신청 목록</h3>
+            <button id="refresh-submissions" class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">새로고침</button>
+          </div>
+          <div id="admin-submissions-container" class="overflow-x-auto">
+            <!-- 차량 등록 신청 목록이 여기에 표시됩니다 -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="/js/common.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/admin.js"></script>
+</body>
+</html>
+
+

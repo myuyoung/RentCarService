@@ -53,6 +53,78 @@ class MyPage {
         document.querySelectorAll('.close-modal').forEach(btn => {
             btn.addEventListener('click', () => this.closeModal());
         });
+        // 차량 등록 신청: 통합된 신청 제출 (차량 정보 + 이미지)
+        const submissionForm = document.getElementById('car-submission-form');
+        const submitBtn = document.getElementById('submit-btn');
+        
+        if (submissionForm) {
+            submissionForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                // 버튼 비활성화 및 로딩 표시
+                const btnText = submitBtn.querySelector('.btn-text');
+                const loader = submitBtn.querySelector('.loader');
+                
+                submitBtn.disabled = true;
+                btnText.classList.add('hidden');
+                loader.classList.remove('hidden');
+                
+                try {
+                    // FormData로 차량 정보 + 이미지 파일들 함께 전송
+                    const formData = new FormData();
+                    
+                    // 차량 정보 추가
+                    const carName = submissionForm.querySelector('[name="carName"]').value;
+                    const rentCarNumber = submissionForm.querySelector('[name="rentCarNumber"]').value;
+                    const rentPrice = submissionForm.querySelector('[name="rentPrice"]').value;
+                    
+                    formData.append('carName', carName);
+                    formData.append('rentCarNumber', rentCarNumber);
+                    formData.append('rentPrice', rentPrice);
+                    
+                    // 이미지 파일들 추가
+                    const imagesInput = submissionForm.querySelector('[name="images"]');
+                    if (imagesInput && imagesInput.files.length > 0) {
+                        for (let i = 0; i < imagesInput.files.length; i++) {
+                            formData.append('images', imagesInput.files[i]);
+                        }
+                    }
+                    
+                    // API 호출
+                    const response = await fetch('/api/MyPage/car-submission', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': 'Bearer ' + apiClient.getAuthToken()
+                        },
+                        body: formData
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        notification.success('차량 등록 신청이 완료되었습니다!');
+                        submissionForm.reset();
+                        document.getElementById('submission-message').innerHTML = 
+                            '<div class="text-green-600">✓ 신청이 완료되었습니다. 관리자 승인을 기다려주세요.</div>';
+                    } else {
+                        notification.error(result.message || '신청에 실패했습니다.');
+                        document.getElementById('submission-message').innerHTML = 
+                            '<div class="text-red-600">✗ ' + (result.message || '신청에 실패했습니다.') + '</div>';
+                    }
+                    
+                } catch (err) {
+                    console.error('차량 등록 신청 오류:', err);
+                    notification.error('신청 처리 중 오류가 발생했습니다.');
+                    document.getElementById('submission-message').innerHTML = 
+                        '<div class="text-red-600">✗ 신청 처리 중 오류가 발생했습니다.</div>';
+                } finally {
+                    // 버튼 상태 복원
+                    submitBtn.disabled = false;
+                    btnText.classList.remove('hidden');
+                    loader.classList.add('hidden');
+                }
+            });
+        }
 
         // 모달 배경 클릭 시 닫기
         document.getElementById('reservation-detail-modal').addEventListener('click', (e) => {

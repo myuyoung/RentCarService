@@ -23,8 +23,18 @@ class LoginPage {
     // 이미 로그인된 상태인지 확인
     checkExistingLogin() {
         const token = apiClient.getAuthToken();
-        if (token) {
-            // 토큰이 있으면 메인 페이지로 리다이렉트
+        const userInfoRaw = localStorage.getItem('userInfo');
+        if (!token || !userInfoRaw) return;
+
+        try {
+            const user = JSON.parse(userInfoRaw);
+            if (user?.role === 'ADMIN') {
+                window.location.href = '/admin';
+            } else {
+                window.location.href = '/';
+            }
+        } catch (_) {
+            // 파싱 에러 시 기본 동작
             window.location.href = '/';
         }
     }
@@ -66,9 +76,20 @@ class LoginPage {
 
         this.showSuccessMessage(result.message);
         
-        // 1초 후 메인 페이지로 리디렉션
+        // 1초 후 역할 기반 리디렉션 (관리자는 /admin, 일반 사용자는 / 혹은 redirect 파라미터)
+        const role = result.data.role;
+        const params = new URLSearchParams(window.location.search);
+        const redirectParam = params.get('redirect');
+
+        let target = '/';
+        if (role === 'ADMIN') {
+            target = '/admin';
+        } else if (redirectParam) {
+            target = redirectParam;
+        }
+
         setTimeout(() => {
-            window.location.href = '/';
+            window.location.href = target;
         }, 1000);
     }
 

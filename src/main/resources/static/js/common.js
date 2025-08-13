@@ -29,12 +29,19 @@ class ApiClient {
     saveAuthToken(token) {
         localStorage.setItem('accessToken', token);
         this.setAuthToken(token);
+        // 쿠키에도 저장하여 페이지 네비게이션 시 자동 전송되도록
+        try {
+            document.cookie = `accessToken=${token}; Path=/; SameSite=Lax`;
+        } catch (_) {}
     }
 
     // 토큰 삭제
     removeAuthToken() {
         localStorage.removeItem('accessToken');
         delete this.defaultHeaders['Authorization'];
+        try {
+            document.cookie = 'accessToken=; Max-Age=0; Path=/;';
+        } catch (_) {}
     }
 
     // GET 요청
@@ -53,6 +60,21 @@ class ApiClient {
             ...options
         });
     }
+
+  // multipart/form-data POST (FormData)
+  async postForm(url, formData, options = {}) {
+    const headers = { ...this.defaultHeaders, ...options.headers };
+    // FormData 사용 시 브라우저가 boundary가 포함된 Content-Type을 설정하도록 제거
+    if (headers['Content-Type']) {
+      delete headers['Content-Type'];
+    }
+    return this.request(url, {
+      method: 'POST',
+      body: formData,
+      headers,
+      ...options
+    });
+  }
 
     // PUT 요청
     async put(url, data, options = {}) {
@@ -73,8 +95,15 @@ class ApiClient {
 
     // 기본 request 메소드
     async request(url, options = {}) {
-        const config = {
-            headers: { ...this.defaultHeaders, ...options.headers },
+    // 헤더 병합. FormData 사용 시 Content-Type 제거하여 브라우저가 boundary를 포함해 자동 설정하도록 함
+    const mergedHeaders = { ...this.defaultHeaders, ...options.headers };
+    const isFormData = typeof FormData !== 'undefined' && options.body instanceof FormData;
+    if (isFormData && mergedHeaders['Content-Type']) {
+      delete mergedHeaders['Content-Type'];
+    }
+
+    const config = {
+      headers: mergedHeaders,
             credentials: 'include', // 쿠키 포함
             ...options
         };
@@ -355,10 +384,32 @@ document.addEventListener('DOMContentLoaded', () => {
     const savedToken = apiClient.getAuthToken();
     if (savedToken) {
         apiClient.setAuthToken(savedToken);
+        // 재방문 시에도 서버 렌더 페이지 접근 가능하도록 쿠키에 동기화
+        try {
+            document.cookie = `accessToken=${savedToken}; Path=/; SameSite=Lax`;
+        } catch (_) {}
     }
 
     // 모바일 메뉴 초기화
     initializeMobileMenu();
+
+    // 역할에 따라 내비게이션 문구/링크 조정
+    try {
+        const userInfoRaw = localStorage.getItem('userInfo');
+        if (userInfoRaw) {
+            const user = JSON.parse(userInfoRaw);
+            const isAdmin = user?.role === 'ADMIN';
+            document.querySelectorAll('a[href="/mypage"]').forEach((a) => {
+                if (isAdmin) {
+                    a.href = '/admin';
+                    a.textContent = '관리자 메뉴';
+                } else {
+                    a.href = '/mypage';
+                    a.textContent = '마이페이지';
+                }
+            });
+        }
+    } catch (_) {}
 });
 
 // 전역 객체로 내보내기

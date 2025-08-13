@@ -35,3 +35,9 @@ security:
 admin:
   notification:
     email: "test-admin@example.com"
+
+# 파일 업로드 기본 설정 (테스트 환경용)
+file:
+  upload:
+    dir: ${user.home}/uploads/images
+    url-path: /images

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>차량 등록 신청 상세 - Dream Drive</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body class="bg-gray-50">
+  <nav class="bg-white shadow-md sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        <div class="flex-shrink-0">
+          <a href="/" class="text-2xl font-bold text-indigo-600">Dream Drive</a>
+        </div>
+        <div class="hidden md:block">
+          <div class="ml-10 flex items-baseline space-x-4">
+            <a href="/admin" class="bg-indigo-600 text-white px-3 py-2 rounded-md text-sm font-medium">관리자</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <main class="max-w-5xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+    <div class="mb-6">
+      <h1 class="text-2xl font-bold text-gray-900">차량 등록 신청 상세</h1>
+      <p class="mt-2 text-gray-600">신청 정보를 확인하고 승인/반려할 수 있습니다.</p>
+    </div>
+
+    <div id="submission-detail" class="bg-white p-6 rounded-lg shadow"></div>
+
+    <div class="mt-6 flex gap-2">
+      <button id="approve-btn" class="px-4 py-2 bg-green-600 text-white rounded">승인</button>
+      <button id="reject-btn" class="px-4 py-2 bg-red-600 text-white rounded">반려</button>
+      <a href="/admin#submissions" class="px-4 py-2 border rounded">목록</a>
+    </div>
+  </main>
+
+  <script src="/js/common.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/admin_submission_detail.js"></script>
+</body>
+</html>
+
+

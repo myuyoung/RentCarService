@@ -30,15 +30,25 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/templates/**", "/css/**", "/js/**", "/images/**", "/favicon.ico","/login", "/logout","/register/**","/auth/login","/api/register/member",
+                        .requestMatchers("/", "/templates/**", "/css/**", "/js/**", "/images/**", "/favicon.ico", "/login", "/logout", "/register/**", "/auth/login", "/api/register/member", 
+                                "/api/rentcars/**",
+                                // 공개 페이지: 마이페이지 뷰(내부 API는 계속 보호)
+                                "/mypage",
+                                // 검색 결과 페이지
+                                "/search",
+                                // 테스트 페이지
+                                "/test-image", "/debug-admin",
+                                // 이미지 서빙 테스트 API
+                                "/api/test/**",
                                 // Swagger UI 허용 경로
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
-                                "/h2-console/**")
+                                "/h2-console/**",
+                                "/actuator/**")
                         .permitAll()
-                        // 관리자 전용 API
-                        .requestMatchers("/api/admin/**")
+                        // 관리자 전용 API & 페이지
+                        .requestMatchers("/api/admin/**", "/admin", "/admin/**")
                         .hasRole("ADMIN")
                         .anyRequest()
                         .authenticated()

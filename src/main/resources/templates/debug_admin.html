@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>관리자 이미지 디버깅</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 20px; border: 1px solid #ccc; }
+        img { max-width: 300px; margin: 10px; border: 1px solid #ddd; }
+        pre { background: #f5f5f5; padding: 10px; overflow: auto; }
+    </style>
+</head>
+<body>
+    <h1>관리자 페이지 이미지 디버깅</h1>
+    
+    <div class="test-section">
+        <h2>직접 이미지 URL 테스트</h2>
+        <p>데이터베이스에 있는 이미지들을 직접 테스트합니다.</p>
+        
+        <h3>이미지 1: test_upload.png</h3>
+        <img src="/images/2025/08/13/c0d84d15-39de-4c00-9a2d-fab1e69bfd7a.png" alt="test_upload.png" />
+        <p>URL: /images/2025/08/13/c0d84d15-39de-4c00-9a2d-fab1e69bfd7a.png</p>
+        
+        <h3>이미지 2: IMG_4823.jpg</h3>
+        <img src="/images/2025/08/13/06dc12f7-8940-4e56-9a0c-3fbf329c37e0.jpg" alt="IMG_4823.jpg" />
+        <p>URL: /images/2025/08/13/06dc12f7-8940-4e56-9a0c-3fbf329c37e0.jpg</p>
+        
+        <h3>이미지 3: IMG_4822.jpg</h3>
+        <img src="/images/2025/08/13/2c51c1bf-964e-49b8-a7f4-cac60e33b1fe.jpg" alt="IMG_4822.jpg" />
+        <p>URL: /images/2025/08/13/2c51c1bf-964e-49b8-a7f4-cac60e33b1fe.jpg</p>
+    </div>
+
+    <div class="test-section">
+        <h2>관리자 API 테스트</h2>
+        <button id="test-admin-api">차량 등록 신청 상세 조회 (이미지 포함)</button>
+        <pre id="api-result">여기에 API 응답이 표시됩니다.</pre>
+        
+        <div id="rendered-images">
+            <!-- 여기에 API로 받은 이미지들이 렌더링됩니다 -->
+        </div>
+    </div>
+
+    <script>
+        // 관리자 API 테스트
+        document.getElementById('test-admin-api').addEventListener('click', async function() {
+            try {
+                // 이미지가 있는 신청 ID들 테스트
+                const submissionIds = [
+                    '2477e3e2-34a2-4afe-9f08-cef613fdfe6e',
+                    'd1f3e6fa-801f-46f9-a6c8-77d524cabb2b',  
+                    '283515b0-74fc-457c-b60b-69bd936f580e'
+                ];
+                
+                const results = [];
+                
+                for (const id of submissionIds) {
+                    try {
+                        // 브라우저의 fetch API로 직접 호출 (토큰 없이)
+                        const response = await fetch(`/api/admin/car-submissions/${id}`, {
+                            method: 'GET',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            }
+                        });
+                        
+                        const data = await response.text();
+                        results.push(`[${id}] Status: ${response.status}\nResponse: ${data}\n\n`);
+                        
+                        // JSON 파싱 시도
+                        try {
+                            const jsonData = JSON.parse(data);
+                            if (jsonData.success && jsonData.data && jsonData.data.imageUrls) {
+                                // 이미지 렌더링 테스트
+                                const imagesDiv = document.getElementById('rendered-images');
+                                const imageHtml = jsonData.data.imageUrls.map(url => 
+                                    `<div style="margin: 10px; display: inline-block;">
+                                        <img src="${url}" alt="API 이미지" style="max-width: 200px; border: 2px solid blue;" />
+                                        <p style="font-size: 12px;">${url}</p>
+                                     </div>`
+                                ).join('');
+                                
+                                if (imageHtml) {
+                                    imagesDiv.innerHTML += `<h3>신청 ${id}의 이미지들:</h3>` + imageHtml;
+                                }
+                            }
+                        } catch (e) {
+                            results.push(`[${id}] JSON 파싱 실패: ${e.message}\n\n`);
+                        }
+                        
+                    } catch (error) {
+                        results.push(`[${id}] 오류: ${error.message}\n\n`);
+                    }
+                }
+                
+                document.getElementById('api-result').textContent = results.join('');
+                
+            } catch (error) {
+                document.getElementById('api-result').textContent = '전체 오류: ' + error.message;
+            }
+        });
+        
+        // 페이지 로드 시 이미지 로딩 상태 체크
+        window.addEventListener('load', function() {
+            const images = document.querySelectorAll('img');
+            images.forEach((img, index) => {
+                img.addEventListener('load', function() {
+                    console.log(`이미지 ${index + 1} 로딩 성공: ${this.src}`);
+                });
+                img.addEventListener('error', function() {
+                    console.error(`이미지 ${index + 1} 로딩 실패: ${this.src}`);
+                    this.style.border = '2px solid red';
+                    this.alt = '이미지 로딩 실패';
+                });
+            });
+        });
+    </script>
+</body>
+</html>

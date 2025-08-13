@@ -84,4 +84,9 @@ public class JwtUtil {
         return generateRefreshToken(username, "ROLE_USER");
     }
 
+    // Getter 메서드 추가
+    public long getExpiration() {
+        return expiration;
+    }
+
 }

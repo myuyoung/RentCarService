@@ -3,6 +3,7 @@ package me.changwook.service.impl;
 import me.changwook.domain.Image;
 import me.changwook.domain.Member;
 import me.changwook.repository.ImageRepository;
+import me.changwook.repository.CarRegistrationSubmissionRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.changwook.repository.MemberRepository;
@@ -61,6 +62,7 @@ public class FileUploadService {
     private String urlPath;
 
     private final ImageRepository imageRepository;
+    private final CarRegistrationSubmissionRepository submissionRepository;
     
     /**
      * 【 비즈니스 계층 】이미지 파일 업로드 핵심 비즈니스 로직
@@ -83,22 +85,30 @@ public class FileUploadService {
      * @param uploadedBy 업로드한 사용자 식별자
      * @throws IOException 파일 I/O 오류 발생 시
      */
-    public void uploadImage(MultipartFile file, String uploadedBy, UUID memberId) throws IOException {
+    public void uploadImage(MultipartFile file, String uploadedBy, UUID memberId, UUID submissionId) throws IOException {
         
         // 비즈니스 규칙 검증
         validateFile(file);
 
         // 온프레미스 저장소 디렉터리 준비
+        String resolvedUploadDir = uploadDir.replace("${user.home}", System.getProperty("user.home"));
         String dateDir = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy/MM/dd"));
-        Path uploadPath = Paths.get(uploadDir, dateDir);
+        Path uploadPath = Paths.get(resolvedUploadDir, dateDir);
         if (!Files.exists(uploadPath)) {
             Files.createDirectories(uploadPath); // 날짜별 디렉터리 생성
         }
+        
+        log.info("=== 파일 업로드 경로 정보 ===");
+        log.info("원본 uploadDir: {}", uploadDir);
+        log.info("해결된 uploadDir: {}", resolvedUploadDir);
+        log.info("날짜 디렉터리: {}", dateDir);
+        log.info("최종 업로드 경로: {}", uploadPath);
 
         // 고유 파일명 생성 (중복 방지)
         String originalFileName = file.getOriginalFilename();
         String fileExtension = getFileExtension(originalFileName);
         String storedFileName = UUID.randomUUID().toString() + fileExtension;
+        String relativePath = (dateDir + "/" + storedFileName).trim();
 
         // 파일 시스템에 물리적 저장
         Path filePath = uploadPath.resolve(storedFileName);
@@ -106,24 +116,36 @@ public class FileUploadService {
 
         log.info("파일 업로드 완료: {} -> {}", originalFileName, filePath.toString());
 
-        // Image 엔티티 생성 (Member 정보 제외)
+        // Image 엔티티 생성 (소유자 정보 제외)
         Image image = Image.builder()
                 .originalFileName(originalFileName)
                 .storedFileName(storedFileName)
                 .filePath(filePath.toString())
+                .relativePath(relativePath)
                 .fileSize(file.getSize())
                 .contentType(file.getContentType())
                 .uploadedBy(uploadedBy)
                 .build();
-        
-        // Member를 조회하여 Image 리스트에 추가
-        Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new IllegalArgumentException("회원을 찾을 수 없습니다."));
-        
-        member.getImages().add(image);
 
-        // ✅ Member를 저장하면 CascadeType.ALL에 의해 Image도 함께 저장됩니다.
-        memberRepository.save(member);
+        if (submissionId != null) {
+            // 제출건에 이미지 연결 (객체 연관으로 연결)
+            var submission = submissionRepository.findById(submissionId)
+                    .orElseThrow(() -> new IllegalArgumentException("제출 건을 찾을 수 없습니다."));
+            image.setSubmission(submission);
+            imageRepository.save(image);
+        } else {
+            // Member를 조회하여 Image 리스트에 추가 (memberId가 없으면 이메일로 조회)
+            Member member;
+            if (memberId != null) {
+                member = memberRepository.findById(memberId)
+                        .orElseThrow(() -> new IllegalArgumentException("회원을 찾을 수 없습니다."));
+            } else {
+                member = memberRepository.findByEmail(uploadedBy)
+                        .orElseThrow(() -> new IllegalArgumentException("회원을 찾을 수 없습니다."));
+            }
+            image.setMember(member);
+            imageRepository.save(image);
+        }
     }
 
     /**
@@ -177,14 +199,43 @@ public class FileUploadService {
      * - 저장된 파일명을 웹에서 접근 가능한 URL로 변환
      * - WebConfig의 정적 리소스 설정과 연동
      * 
-     * URL 구조: /images/{storedFileName}
-     * 예시: /images/550e8400-e29b-41d4-a716-446655440000.jpg
+     * URL 구조: /images/{relativePath}
+     * 예시: /images/2025/08/13/550e8400-e29b-41d4-a716-446655440000.jpg
      * 
-     * @param storedFileName 저장된 파일명 (UUID + 확장자)
+     * @param pathSegment relativePath (날짜 구조 포함된 경로) 또는 단일 파일명
      * @return 웹에서 접근 가능한 상대 URL
      */
-    public String getImageUrl(String storedFileName) {
-        return urlPath + "/" + storedFileName;
+    public String getImageUrl(String pathSegment) {
+        if (pathSegment == null || pathSegment.isEmpty()) {
+            return null;
+        }
+        // pathSegment가 relativePath (e.g., yyyy/MM/dd/uuid.ext) 또는 단일 파일명
+        // 슬래시로 시작하지 않도록 정리하고 개행문자 제거
+        String cleanPath = pathSegment.trim().startsWith("/") ? pathSegment.trim().substring(1) : pathSegment.trim();
+        return urlPath + "/" + cleanPath;
+    }
+
+    /**
+     * 절대 파일 경로를 정적 서빙 URL로 변환합니다.
+     * - 예: absolute "/home/user/uploads/images/2024/01/15/uuid.jpg"
+     *   -> "/images/2024/01/15/uuid.jpg"
+     */
+    public String getImageUrlFromAbsolute(String absolutePath) {
+        if (absolutePath == null) return null;
+        String resolvedUploadDir = uploadDir.replace("${user.home}", System.getProperty("user.home"));
+        String normalizedUploadDir = resolvedUploadDir.endsWith("/") ? resolvedUploadDir : resolvedUploadDir + "/";
+        String rel = absolutePath.trim().startsWith(normalizedUploadDir)
+                ? absolutePath.trim().substring(normalizedUploadDir.length())
+                : absolutePath.trim();
+        rel = rel.replace('\\', '/').trim();
+        
+        log.debug("=== 이미지 URL 변환 ===");
+        log.debug("절대 경로: {}", absolutePath);
+        log.debug("정규화된 업로드 디렉터리: {}", normalizedUploadDir);
+        log.debug("상대 경로: {}", rel);
+        log.debug("최종 URL: {}", getImageUrl(rel));
+        
+        return getImageUrl(rel);
     }
     
     /**

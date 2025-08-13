@@ -3,7 +3,6 @@ package me.changwook.domain;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -16,12 +15,12 @@ public class Rent extends BaseEntity{
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(updatable = false,name = "rent_id", columnDefinition = "UUID")
+    @Column(updatable = false, name = "rent_id", columnDefinition = "BINARY(16)")
     private UUID id;
 
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="member_id")
+    @JoinColumn(name = "member_id", columnDefinition = "BINARY(16)")
     private Member member;
 
     private LocalDateTime rentDate;
