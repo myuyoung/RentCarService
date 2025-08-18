@@ -277,9 +277,9 @@
             s.rentCarNumber || '-',
             s.rentPrice ?? '-',
             `<span class="px-2 py-1 rounded text-xs font-semibold ${s.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' : s.status === 'APPROVED' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">${s.status}</span>`,
-            // 이미지 미리보기 추가
+            // API 기반 이미지 미리보기
             s.imageUrls && s.imageUrls.length > 0 ? 
-              `<div class="flex gap-1">${s.imageUrls.slice(0, 3).map(url => `<img src="${url}" alt="미리보기" class="w-12 h-8 object-cover rounded border cursor-pointer" onclick="window.open('${url}', '_blank')" />`).join('')}${s.imageUrls.length > 3 ? `<span class="text-xs text-gray-500">+${s.imageUrls.length - 3}</span>` : ''}</div>` 
+              `<div class="flex gap-1" data-submission-id="${s.id}">${this.generateImagePreviews(s.imageUrls, s.id)}</div>` 
               : '<span class="text-gray-400 text-xs">이미지 없음</span>',
             `<div class="space-x-2">
                <a href="/admin/car-submissions/${s.id}" class="text-blue-600 hover:text-blue-800 text-sm">상세</a>
@@ -314,11 +314,92 @@
               }
             });
           });
+          
+          // 테이블 렌더링 후 API 기반 이미지 로드
+          this.loadSubmissionImages(data.data.content);
         } else {
           container.innerHTML = '<div class="p-4 text-gray-500">신청 목록을 불러오지 못했습니다.</div>';
         }
       } catch (e) {
         console.error(e);
+      }
+    }
+
+    /**
+     * API 기반 이미지 미리보기 HTML 생성
+     * @param {Array} imageUrls - 이미지 URL 배열
+     * @param {string} submissionId - 신청 ID
+     * @returns {string} 이미지 미리보기 HTML
+     */
+    generateImagePreviews(imageUrls, submissionId) {
+      const previews = imageUrls.slice(0, 3).map((url, index) => {
+        // URL에서 이미지 ID 추출
+        const imageIdMatch = url.match(/\/api\/files\/view\/(\d+)/);
+        if (!imageIdMatch) {
+          return `<div class="w-12 h-8 bg-gray-200 rounded border flex items-center justify-center text-xs text-gray-500">?</div>`;
+        }
+        
+        const imageId = parseInt(imageIdMatch[1]);
+        const uniqueId = `admin-preview-${submissionId}-${imageId}-${index}`;
+        
+        return `
+          <img 
+            id="${uniqueId}" 
+            class="w-12 h-8 object-cover rounded border cursor-pointer hover:opacity-80 transition-opacity" 
+            alt="미리보기 로딩 중..." 
+            data-image-id="${imageId}"
+            onclick="openAdminImageModal(${imageId})"
+          />
+        `;
+      }).join('');
+      
+      const moreCount = imageUrls.length > 3 ? imageUrls.length - 3 : 0;
+      const moreIndicator = moreCount > 0 ? `<span class="text-xs text-gray-500 ml-1">+${moreCount}</span>` : '';
+      
+      return previews + moreIndicator;
+    }
+
+    /**
+     * 신청 목록의 이미지들을 API 기반으로 로드
+     * @param {Array} submissions - 신청 목록
+     */
+    async loadSubmissionImages(submissions) {
+      console.log('=== 관리자 페이지 이미지 스트리밍 시작 ===');
+      
+      const imageConfigs = [];
+      
+      submissions.forEach(submission => {
+        if (submission.imageUrls && submission.imageUrls.length > 0) {
+          submission.imageUrls.slice(0, 3).forEach((url, index) => {
+            const imageIdMatch = url.match(/\/api\/files\/view\/(\d+)/);
+            if (imageIdMatch) {
+              const imageId = parseInt(imageIdMatch[1]);
+              const uniqueId = `admin-preview-${submission.id}-${imageId}-${index}`;
+              const imgElement = document.getElementById(uniqueId);
+              
+              if (imgElement) {
+                imageConfigs.push({
+                  element: imgElement,
+                  imageId: imageId,
+                  options: {
+                    fallback: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDgiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCA0OCAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQ4IiBoZWlnaHQ9IjMyIiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik0yNCAyMEMyNS4xMDQ2IDIwIDI2IDE5LjEwNDYgMjYgMThDMjYgMTYuODk1NCAyNS4xMDQ2IDE2IDI0IDE2QzIyLjg5NTQgMTYgMjIgMTYuODk1NCAyMiAxOEMyMiAxOS4xMDQ2IDIyLjg5NTQgMjAgMjQgMjBaIiBmaWxsPSIjOUNBM0FGIi8+CjxwYXRoIGQ9Ik0yMCAyMkwyMiAyMEwyNCAyMkwyNiAyMEwyOCAyMkwyOCAyNkgyMFYyMloiIGZpbGw9IiM5Q0EzQUYiLz4KPC9zdmc+',
+                    onLoad: () => console.log(`관리자 미리보기 로드 성공: ID ${imageId}`),
+                    onError: (error) => console.warn(`관리자 미리보기 로드 실패: ID ${imageId}`, error)
+                  }
+                });
+              }
+            }
+          });
+        }
+      });
+      
+      if (imageConfigs.length > 0) {
+        try {
+          await imageStreaming.loadMultipleImages(imageConfigs);
+          console.log(`관리자 페이지: ${imageConfigs.length}개 미리보기 이미지 로드 완료`);
+        } catch (error) {
+          console.error('관리자 페이지 이미지 로드 중 오류:', error);
+        }
       }
     }
   }
@@ -327,5 +408,81 @@
     window.adminPage = new AdminPage();
   });
 })();
+
+/**
+ * 관리자 페이지 이미지 모달 열기 (전역 함수)
+ * @param {number} imageId - 이미지 ID
+ */
+function openAdminImageModal(imageId) {
+  console.log(`관리자 이미지 모달 열기: ID ${imageId}`);
+  
+  // 기존 모달 제거
+  const existingModal = document.getElementById('admin-image-modal');
+  if (existingModal) {
+    existingModal.remove();
+  }
+  
+  // 모달 HTML 생성
+  const modal = document.createElement('div');
+  modal.id = 'admin-image-modal';
+  modal.className = 'fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50';
+  modal.innerHTML = `
+    <div class="relative max-w-3xl max-h-full p-4">
+      <button 
+        onclick="closeAdminImageModal()" 
+        class="absolute top-2 right-2 text-white bg-black bg-opacity-50 rounded-full w-8 h-8 flex items-center justify-center hover:bg-opacity-75 z-10"
+      >
+        ✕
+      </button>
+      <img 
+        id="admin-modal-image" 
+        class="max-w-full max-h-full object-contain rounded" 
+        alt="확대된 이미지"
+      />
+      <div class="absolute bottom-2 left-2 bg-black bg-opacity-50 text-white px-2 py-1 rounded text-sm">
+        관리자 모드 - 이미지 ID: ${imageId}
+      </div>
+    </div>
+  `;
+  
+  document.body.appendChild(modal);
+  
+  // 모달 이미지 로드
+  const modalImg = document.getElementById('admin-modal-image');
+  imageStreaming.loadImage(modalImg, imageId, {
+    fallback: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDQwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI0MDAiIGhlaWdodD0iMzAwIiBmaWxsPSIjRjNGNEY2Ii8+Cjx0ZXh0IHg9IjIwMCIgeT0iMTUwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjOUNBM0FGIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNiI+7J207Jq47KeA66W8IOyVieuhnOyImO2VoCDsiJjsl4bsirXri4jri6QuPC90ZXh0Pgo8L3N2Zz4=',
+    onLoad: () => console.log(`관리자 모달 이미지 로드 성공: ID ${imageId}`),
+    onError: (error) => {
+      console.error(`관리자 모달 이미지 로드 실패: ID ${imageId}`, error);
+      notification.error('이미지를 불러올 수 없습니다.');
+    }
+  });
+  
+  // ESC 키로 모달 닫기
+  const handleEscKey = (e) => {
+    if (e.key === 'Escape') {
+      closeAdminImageModal();
+      document.removeEventListener('keydown', handleEscKey);
+    }
+  };
+  document.addEventListener('keydown', handleEscKey);
+  
+  // 모달 배경 클릭으로 닫기
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) {
+      closeAdminImageModal();
+    }
+  });
+}
+
+/**
+ * 관리자 이미지 모달 닫기 (전역 함수)
+ */
+function closeAdminImageModal() {
+  const modal = document.getElementById('admin-image-modal');
+  if (modal) {
+    modal.remove();
+  }
+}
 
 

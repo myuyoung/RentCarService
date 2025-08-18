@@ -3,22 +3,22 @@ package me.changwook.controller.api;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.changwook.DTO.ApiResponseDTO;
+import me.changwook.domain.Image;
+import me.changwook.repository.ImageRepository;
 import me.changwook.service.impl.FileUploadService;
 import me.changwook.util.ResponseFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.File;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
- * 이미지 서빙 테스트를 위한 임시 컨트롤러
- * 관리자 페이지 이미지 문제 해결 후 삭제 예정
+ * API 기반 파일 스트리밍 테스트를 위한 컨트롤러
+ * 개발/디버깅 목적으로 사용
  */
 @RestController
 @RequestMapping("/api/test")
@@ -28,21 +28,19 @@ public class ImageTestController {
     
     private final FileUploadService fileUploadService;
     private final ResponseFactory responseFactory;
+    private final ImageRepository imageRepository;
     
     @Value("${file.upload.dir}")
     private String uploadDir;
     
-    @Value("${file.upload.url-path}")
-    private String urlPath;
-    
-    @GetMapping("/image-config")
-    public ResponseEntity<ApiResponseDTO<Map<String, Object>>> testImageConfig() {
+    @GetMapping("/streaming-config")
+    public ResponseEntity<ApiResponseDTO<Map<String, Object>>> testStreamingConfig() {
         String resolvedUploadDir = uploadDir.replace("${user.home}", System.getProperty("user.home"));
         
         Map<String, Object> config = new HashMap<>();
+        config.put("streamingMode", "API 기반 파일 스트리밍");
         config.put("originalUploadDir", uploadDir);
         config.put("resolvedUploadDir", resolvedUploadDir);
-        config.put("urlPath", urlPath);
         config.put("userHome", System.getProperty("user.home"));
         
         // 디렉터리 존재 여부 확인
@@ -50,52 +48,61 @@ public class ImageTestController {
         config.put("uploadDirExists", uploadDirFile.exists());
         config.put("uploadDirIsDirectory", uploadDirFile.isDirectory());
         
-        // 2025/08/13 디렉터리 확인
-        File dateDir = new File(resolvedUploadDir, "2025/08/13");
-        config.put("dateDirExists", dateDir.exists());
-        config.put("dateDirPath", dateDir.getAbsolutePath());
+        // DB에서 이미지 목록 조회
+        List<Image> images = imageRepository.findAll();
+        config.put("totalImagesInDB", images.size());
         
-        if (dateDir.exists()) {
-            File[] files = dateDir.listFiles((dir, name) -> 
-                name.toLowerCase().endsWith(".jpg") || 
-                name.toLowerCase().endsWith(".png") || 
-                name.toLowerCase().endsWith(".gif") || 
-                name.toLowerCase().endsWith(".webp"));
-            config.put("imageFiles", files != null ? files.length : 0);
-            if (files != null && files.length > 0) {
-                config.put("firstImageFile", files[0].getName());
-                // 첫 번째 이미지의 URL 생성 테스트
-                String relativePath = "2025/08/13/" + files[0].getName();
-                String generatedUrl = fileUploadService.getImageUrl(relativePath);
-                config.put("generatedUrl", generatedUrl);
-                config.put("fullUrl", "http://localhost:7950" + generatedUrl);
-            }
+        if (!images.isEmpty()) {
+            Image firstImage = images.get(0);
+            config.put("firstImageId", firstImage.getId());
+            config.put("firstImageName", firstImage.getOriginalFileName());
+            config.put("firstImagePath", firstImage.getFilePath());
+            
+            // API 기반 스트리밍 URL 생성 테스트
+            String streamingUrl = fileUploadService.getImageStreamUrl(firstImage.getId());
+            config.put("generatedStreamingUrl", streamingUrl);
+            config.put("fullStreamingUrl", "http://localhost:7950" + streamingUrl);
+            
+            // 실제 파일 존재 여부 확인
+            File actualFile = new File(firstImage.getFilePath());
+            config.put("firstImageFileExists", actualFile.exists());
         }
         
-        log.info("=== 이미지 설정 테스트 결과 ===");
+        log.info("=== API 기반 스트리밍 설정 테스트 결과 ===");
         config.forEach((key, value) -> log.info("{}: {}", key, value));
         
-        return responseFactory.success("이미지 설정 테스트 완료", config);
+        return responseFactory.success("API 기반 스트리밍 설정 테스트 완료", config);
     }
     
-    @GetMapping("/image-url")
-    public ResponseEntity<ApiResponseDTO<Map<String, String>>> testImageUrl(@RequestParam String relativePath) {
-        Map<String, String> result = new HashMap<>();
+    @GetMapping("/streaming-url/{imageId}")
+    public ResponseEntity<ApiResponseDTO<Map<String, Object>>> testStreamingUrl(@PathVariable Long imageId) {
+        Map<String, Object> result = new HashMap<>();
         
-        String generatedUrl = fileUploadService.getImageUrl(relativePath);
-        result.put("inputRelativePath", relativePath);
-        result.put("generatedUrl", generatedUrl);
-        result.put("fullUrl", "http://localhost:7950" + generatedUrl);
+        // DB에서 이미지 조회
+        Image image = imageRepository.findById(imageId).orElse(null);
+        if (image == null) {
+            result.put("error", "이미지를 찾을 수 없습니다.");
+            return responseFactory.success("이미지 스트리밍 URL 테스트 완료", result);
+        }
+        
+        // API 기반 스트리밍 URL 생성
+        String streamingUrl = fileUploadService.getImageStreamUrl(imageId);
+        result.put("imageId", imageId);
+        result.put("originalFileName", image.getOriginalFileName());
+        result.put("contentType", image.getContentType());
+        result.put("uploadedBy", image.getUploadedBy());
+        result.put("generatedStreamingUrl", streamingUrl);
+        result.put("fullStreamingUrl", "http://localhost:7950" + streamingUrl);
         
         // 실제 파일 존재 여부 확인
-        String resolvedUploadDir = uploadDir.replace("${user.home}", System.getProperty("user.home"));
-        File actualFile = new File(resolvedUploadDir, relativePath);
-        result.put("fileExists", String.valueOf(actualFile.exists()));
+        File actualFile = new File(image.getFilePath());
+        result.put("fileExists", actualFile.exists());
         result.put("fileAbsolutePath", actualFile.getAbsolutePath());
+        result.put("fileSize", actualFile.exists() ? actualFile.length() : 0);
         
-        log.info("=== 이미지 URL 테스트 ===");
+        log.info("=== API 기반 스트리밍 URL 테스트 ===");
         result.forEach((key, value) -> log.info("{}: {}", key, value));
         
-        return responseFactory.success("이미지 URL 테스트 완료", result);
+        return responseFactory.success("API 기반 스트리밍 URL 테스트 완료", result);
     }
 }

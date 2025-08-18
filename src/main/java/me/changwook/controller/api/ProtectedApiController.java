@@ -23,4 +23,11 @@ public class ProtectedApiController {
         String message = "JWT 인증 성공! 유저: " + authentication.getName();
         return responseFactory.success("JWT 인증 성공", message);
     }
+    
+    // 토큰 유효성 검사용 테스트 엔드포인트
+    @GetMapping("/test")
+    public ResponseEntity<ApiResponseDTO<String>> tokenValidityTest(Authentication authentication) {
+        String message = "토큰 유효성 검사 성공! 유저: " + authentication.getName();
+        return responseFactory.success("토큰 유효", message);
+    }
 }

@@ -356,6 +356,229 @@ const utils = {
 };
 
 /**
+ * 【 통합 이미지 관리 】이미지 관리 클래스
+ * API 스트리밍과 정적 리소스 방식을 모두 지원
+ */
+class ImageStreamingManager {
+    constructor() {
+        this.imageCache = new Map(); // 이미지 URL 캐시
+        this.loadingImages = new Set(); // 로딩 중인 이미지 ID 추적
+        this.preferStaticUrls = true; // 기본적으로 정적 URL 우선 사용 (빠름, 캐싱)
+    }
+
+    /**
+     * 이미지 ID를 API 스트리밍 URL로 변환 (인증 필요)
+     * @param {number} imageId - 이미지 ID
+     * @returns {string} API 스트리밍 URL
+     */
+    getImageStreamUrl(imageId) {
+        if (!imageId) return null;
+        return `/api/files/view/${imageId}`;
+    }
+
+    /**
+     * 이미지 ID를 정적 리소스 URL로 변환 (공개 접근, 빠름)
+     * 실제로는 relativePath가 필요하므로 서버에서 제공받아야 함
+     * @param {string} relativePath - 이미지 상대 경로 (yyyy/MM/dd/filename.ext)
+     * @returns {string} 정적 리소스 URL
+     */
+    getStaticImageUrl(relativePath) {
+        if (!relativePath) return null;
+        return `/images/${relativePath}`;
+    }
+
+    /**
+     * 인증된 이미지 요청을 위한 헤더 생성
+     * @returns {Object} 요청 헤더
+     */
+    getAuthHeaders() {
+        const token = apiClient.getAuthToken();
+        return token ? { 'Authorization': `Bearer ${token}` } : {};
+    }
+
+    /**
+     * 이미지를 안전하게 로드하고 img 엘리먼트에 설정
+     * @param {HTMLImageElement} imgElement - 이미지 엘리먼트
+     * @param {number|string} imageIdOrUrl - 이미지 ID 또는 URL
+     * @param {Object} options - 옵션 (fallback, onLoad, onError, useStatic 등)
+     */
+    async loadImage(imgElement, imageIdOrUrl, options = {}) {
+        if (!imgElement || !imageIdOrUrl) return;
+
+        const {
+            fallback = '/images/placeholder.png',
+            onLoad = null,
+            onError = null,
+            showLoading = true,
+            useStatic = this.preferStaticUrls,  // 정적 리소스 우선 사용 여부
+            relativePath = null                 // 정적 URL 생성용 상대 경로
+        } = options;
+
+        // 로딩 상태 표시
+        if (showLoading) {
+            imgElement.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiBzdHJva2U9IiM5MzMiPjxnIGZpbGw9Im5vbmUiIGZpbGwtcnVsZT0iZXZlbm9kZCI+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMSAxKSIgc3Ryb2tlLXdpZHRoPSIyIj48Y2lyY2xlIHN0cm9rZS1vcGFjaXR5PSIuNSIgY3g9IjE4IiBjeT0iMTgiIHI9IjE4Ii8+PHBhdGggZD0ibTM5IDE4YzAtOS45NC04LjA2LTE4LTE4LTE4IiBzdHJva2Utb3BhY2l0eT0iMSI+PGFuaW1hdGVUcmFuc2Zvcm0gYXR0cmlidXRlTmFtZT0idHJhbnNmb3JtIiB0eXBlPSJyb3RhdGUiIGZyb209IjAgMTggMTgiIHRvPSIzNjAgMTggMTgiIGR1cj0iMXMiIHJlcGVhdENvdW50PSJpbmRlZmluaXRlIi8+PC9wYXRoPjwvZz48L2c+PC9zdmc+';
+            imgElement.alt = '로딩 중...';
+        }
+
+        // URL 타입 감지 (문자열이면 직접 URL, 숫자면 ID)
+        const isDirectUrl = typeof imageIdOrUrl === 'string' && imageIdOrUrl.startsWith('/');
+        const imageKey = imageIdOrUrl.toString();
+
+        try {
+            // 이미 로딩 중인 경우 중복 요청 방지
+            if (this.loadingImages.has(imageKey)) {
+                return;
+            }
+
+            this.loadingImages.add(imageKey);
+
+            // 캐시된 URL이 있는지 확인
+            if (this.imageCache.has(imageKey)) {
+                const cachedUrl = this.imageCache.get(imageKey);
+                imgElement.src = cachedUrl;
+                if (onLoad) onLoad();
+                return;
+            }
+
+            let imageUrl;
+
+            if (isDirectUrl) {
+                // 직접 URL이 제공된 경우
+                imageUrl = imageIdOrUrl;
+            } else if (useStatic && relativePath) {
+                // 정적 리소스 사용 (빠름, 인증 불필요)
+                imageUrl = this.getStaticImageUrl(relativePath);
+                imgElement.src = imageUrl;
+                imgElement.alt = `이미지 ${imageIdOrUrl}`;
+                if (onLoad) onLoad();
+                return;
+            } else {
+                // API 스트리밍 사용 (인증 필요)
+                imageUrl = this.getImageStreamUrl(imageIdOrUrl);
+                
+                // 인증된 fetch로 이미지 데이터 가져오기
+                const response = await fetch(imageUrl, {
+                    method: 'GET',
+                    headers: this.getAuthHeaders(),
+                    credentials: 'include'
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                // Blob으로 변환하고 Object URL 생성
+                const blob = await response.blob();
+                const objectUrl = URL.createObjectURL(blob);
+
+                // 캐시에 저장
+                this.imageCache.set(imageKey, objectUrl);
+
+                // 이미지 설정
+                imgElement.src = objectUrl;
+                imgElement.alt = `이미지 ${imageIdOrUrl}`;
+
+                if (onLoad) onLoad();
+                return;
+            }
+
+        } catch (error) {
+            console.error(`이미지 로드 실패 (${imageKey}):`, error);
+            
+            // 정적 URL 실패 시 API 스트리밍으로 폴백 시도
+            if (useStatic && !isDirectUrl && typeof imageIdOrUrl === 'number') {
+                console.warn('정적 리소스 실패, API 스트리밍으로 재시도합니다.');
+                return this.loadImage(imgElement, imageIdOrUrl, {
+                    ...options,
+                    useStatic: false,
+                    relativePath: null
+                });
+            }
+            
+            // 폴백 이미지 설정
+            imgElement.src = fallback;
+            imgElement.alt = '이미지를 불러올 수 없습니다';
+            
+            if (onError) onError(error);
+        } finally {
+            this.loadingImages.delete(imageKey);
+        }
+    }
+
+    /**
+     * 여러 이미지를 병렬로 로드
+     * @param {Array} imageConfigs - [{element: HTMLImageElement, imageId: number, options: Object}]
+     */
+    async loadMultipleImages(imageConfigs) {
+        const promises = imageConfigs.map(config => 
+            this.loadImage(config.element, config.imageId, config.options)
+        );
+        
+        try {
+            await Promise.all(promises);
+        } catch (error) {
+            console.error('다중 이미지 로드 중 오류:', error);
+        }
+    }
+
+    /**
+     * 이미지 캐시 정리
+     * @param {number} maxAge - 캐시 최대 보관 시간 (밀리초)
+     */
+    clearCache(maxAge = 30 * 60 * 1000) { // 기본 30분
+        // Object URL 해제하여 메모리 정리
+        for (const [imageId, objectUrl] of this.imageCache.entries()) {
+            URL.revokeObjectURL(objectUrl);
+        }
+        
+        this.imageCache.clear();
+        console.log('이미지 캐시가 정리되었습니다.');
+    }
+
+    /**
+     * 이미지 다운로드 (파일로 저장)
+     * @param {number} imageId - 이미지 ID
+     * @param {string} filename - 저장할 파일명 (선택사항)
+     */
+    async downloadImage(imageId, filename = null) {
+        try {
+            const streamUrl = this.getImageStreamUrl(imageId);
+            
+            const response = await fetch(streamUrl, {
+                method: 'GET',
+                headers: this.getAuthHeaders(),
+                credentials: 'include'
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+
+            const blob = await response.blob();
+            const url = URL.createObjectURL(blob);
+
+            // 다운로드 링크 생성 및 클릭
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename || `image_${imageId}`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+
+            // 메모리 정리
+            URL.revokeObjectURL(url);
+
+        } catch (error) {
+            console.error(`이미지 다운로드 실패 (ID: ${imageId}):`, error);
+            notification.error('이미지 다운로드에 실패했습니다.');
+        }
+    }
+}
+
+// 전역 이미지 스트리밍 관리자 인스턴스
+const imageStreaming = new ImageStreamingManager();
+
+/**
  * 모바일 메뉴 토글 기능
  */
 function initializeMobileMenu() {
@@ -417,3 +640,4 @@ window.apiClient = apiClient;
 window.notification = notification;
 window.loading = loading;
 window.utils = utils;
+window.imageStreaming = imageStreaming;

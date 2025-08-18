@@ -30,7 +30,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private static final String[] EXCLUDE_PATH = {
             "/", "/index.html", "/login", "/logout", "/register", "/auth/login", "/api/register/member",
-            "/v3/api-docs/", "/swagger-ui/", "/h2-console/", "/images/", "/css/", "/js/"
+            "/v3/api-docs/", "/swagger-ui/", "/h2-console/", "/css/", "/js/"
     };
 
     @Override

@@ -52,11 +52,15 @@ jwt:
   secret: ${Jwt_Secret:d9f82kd9fkdw92kfslaj2k39fkdslqwe}
   expire: 3600000
 
-# 커스텀 파일 업로드 설정 (서비스 주입 키)
+# 통합 파일 서빙 설정 (API + 정적 리소스)
 file:
   upload:
     dir: ${user.home}/uploads/images
-    url-path: /images
+  # API 기반 스트리밍: /api/files/view/{imageId} (인증 필요, MIME 타입 정규화)
+  # 정적 리소스 매핑: /images/** (빠른 접근, 브라우저 캐싱)
+  static-serving:
+    enabled: true           # 정적 리소스 서빙 활성화
+    cache-duration: 3600    # 캐시 지속시간 (초)
 
 ---
 

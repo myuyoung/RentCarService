@@ -28,10 +28,10 @@ import org.springframework.http.ResponseEntity;
  * }
  * ```
  */
-@RequiredArgsConstructor
+
 public abstract class BaseController {
 
-    @Autowired
+
     protected ResponseFactory responseFactory;
 
     // === 성공 응답 메서드들 ===

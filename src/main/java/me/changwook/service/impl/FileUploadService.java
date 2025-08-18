@@ -55,11 +55,9 @@ public class FileUploadService {
     private String uploadDir;
 
     /**
-     * 웹에서 접근 가능한 URL 경로
-     * application.yml: file.upload.url-path
+     * API 기반 파일 스트리밍 - 더 이상 url-path 설정 불필요
+     * 모든 파일 접근은 /api/files/view/{imageId} 형태로 처리
      */
-    @Value("${file.upload.url-path}")
-    private String urlPath;
 
     private final ImageRepository imageRepository;
     private final CarRegistrationSubmissionRepository submissionRepository;
@@ -104,18 +102,27 @@ public class FileUploadService {
         log.info("날짜 디렉터리: {}", dateDir);
         log.info("최종 업로드 경로: {}", uploadPath);
 
-        // 고유 파일명 생성 (중복 방지)
-        String originalFileName = file.getOriginalFilename();
-        String fileExtension = getFileExtension(originalFileName);
-        String storedFileName = UUID.randomUUID().toString() + fileExtension;
-        String relativePath = (dateDir + "/" + storedFileName).trim();
+        // 고유 파일명 생성
+String originalFileName = file.getOriginalFilename();
+String fileExtension = getFileExtension(originalFileName);
+String storedFileName = UUID.randomUUID().toString() + fileExtension;
+String relativePath = dateDir + "/" + storedFileName; // 공백 제거는 trim()보다는 Path API가 더 안전
 
-        // 파일 시스템에 물리적 저장
-        Path filePath = uploadPath.resolve(storedFileName);
-        Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+// [추가] relativePath 유효성 검증
+if (relativePath.isBlank()) {
+    log.error("Critical: Relative path for file {} could not be generated.", originalFileName);
+    throw new IOException("파일의 상대 경로를 생성할 수 없습니다.");
+}
+
+// 파일 시스템에 물리적 저장
+Path filePath = uploadPath.resolve(storedFileName);
+Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
 
         log.info("파일 업로드 완료: {} -> {}", originalFileName, filePath.toString());
 
+        // MIME 타입 정규화하여 저장
+        String normalizedContentType = normalizeImageContentType(file.getContentType());
+        
         // Image 엔티티 생성 (소유자 정보 제외)
         Image image = Image.builder()
                 .originalFileName(originalFileName)
@@ -123,7 +130,7 @@ public class FileUploadService {
                 .filePath(filePath.toString())
                 .relativePath(relativePath)
                 .fileSize(file.getSize())
-                .contentType(file.getContentType())
+                .contentType(normalizedContentType)  // 정규화된 MIME 타입 사용
                 .uploadedBy(uploadedBy)
                 .build();
 
@@ -193,49 +200,66 @@ public class FileUploadService {
     }
 
     /**
-     * 【 비즈니스 계층 】이미지 URL 생성 비즈니스 로직
+     * 【 API 기반 스트리밍 】이미지 ID 기반 URL 생성
      * 
-     * 담당 업무:
-     * - 저장된 파일명을 웹에서 접근 가능한 URL로 변환
-     * - WebConfig의 정적 리소스 설정과 연동
+     * 이미지 엔티티의 ID를 받아 API 기반 스트리밍 URL을 생성합니다.
+     * - 입력: 이미지 엔티티 ID (Long)
+     * - 출력: /api/files/view/{imageId} (API 스트리밍 URL)
      * 
-     * URL 구조: /images/{relativePath}
-     * 예시: /images/2025/08/13/550e8400-e29b-41d4-a716-446655440000.jpg
+     * 예시: /api/files/view/123
      * 
-     * @param pathSegment relativePath (날짜 구조 포함된 경로) 또는 단일 파일명
-     * @return 웹에서 접근 가능한 상대 URL
+     * @param imageId 이미지 엔티티의 ID
+     * @return API 기반 스트리밍 URL
      */
-    public String getImageUrl(String pathSegment) {
-        if (pathSegment == null || pathSegment.isEmpty()) {
+    public String getImageStreamUrl(Long imageId) {
+        if (imageId == null) {
             return null;
         }
-        // pathSegment가 relativePath (e.g., yyyy/MM/dd/uuid.ext) 또는 단일 파일명
-        // 슬래시로 시작하지 않도록 정리하고 개행문자 제거
-        String cleanPath = pathSegment.trim().startsWith("/") ? pathSegment.trim().substring(1) : pathSegment.trim();
-        return urlPath + "/" + cleanPath;
+        return "/api/files/view/" + imageId;
     }
 
     /**
-     * 절대 파일 경로를 정적 서빙 URL로 변환합니다.
-     * - 예: absolute "/home/user/uploads/images/2024/01/15/uuid.jpg"
-     *   -> "/images/2024/01/15/uuid.jpg"
+     * 【 정적 리소스 】상대 경로 기반 정적 URL 생성
+     * 
+     * 빠른 접근과 브라우저 캐싱을 위한 정적 리소스 URL을 생성합니다.
+     * 인증이 필요하지 않은 공개 이미지에 적합합니다.
+     * 
+     * @param relativePath 이미지의 상대 경로 (yyyy/MM/dd/filename.ext)
+     * @return 정적 리소스 URL (/images/yyyy/MM/dd/filename.ext)
      */
-    public String getImageUrlFromAbsolute(String absolutePath) {
-        if (absolutePath == null) return null;
-        String resolvedUploadDir = uploadDir.replace("${user.home}", System.getProperty("user.home"));
-        String normalizedUploadDir = resolvedUploadDir.endsWith("/") ? resolvedUploadDir : resolvedUploadDir + "/";
-        String rel = absolutePath.trim().startsWith(normalizedUploadDir)
-                ? absolutePath.trim().substring(normalizedUploadDir.length())
-                : absolutePath.trim();
-        rel = rel.replace('\\', '/').trim();
+    public String getStaticImageUrl(String relativePath) {
+        if (relativePath == null || relativePath.trim().isEmpty()) {
+            return null;
+        }
+        return "/images/" + relativePath;
+    }
+
+    /**
+     * 【 정적 리소스 】이미지 ID 기반 정적 URL 생성
+     * 
+     * 이미지 ID를 통해 데이터베이스에서 상대 경로를 조회하고
+     * 정적 리소스 URL을 생성합니다.
+     * 
+     * @param imageId 이미지 엔티티 ID
+     * @return 정적 리소스 URL 또는 null
+     */
+    public String getStaticImageUrlById(Long imageId) {
+        if (imageId == null) {
+            return null;
+        }
         
-        log.debug("=== 이미지 URL 변환 ===");
-        log.debug("절대 경로: {}", absolutePath);
-        log.debug("정규화된 업로드 디렉터리: {}", normalizedUploadDir);
-        log.debug("상대 경로: {}", rel);
-        log.debug("최종 URL: {}", getImageUrl(rel));
-        
-        return getImageUrl(rel);
+        try {
+            Image image = imageRepository.findById(imageId).orElse(null);
+            if (image == null) {
+                log.warn("이미지를 찾을 수 없습니다: {}", imageId);
+                return null;
+            }
+            
+            return getStaticImageUrl(image.getRelativePath());
+        } catch (Exception e) {
+            log.error("이미지 ID {}로 정적 URL 생성 실패", imageId, e);
+            return null;
+        }
     }
     
     /**
@@ -267,11 +291,12 @@ public class FileUploadService {
             throw new IllegalArgumentException("이미지 파일만 업로드 가능합니다.");
         }
 
-        // 허용된 이미지 형식 세부 검증
-        String[] allowedTypes = {"image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp"};
+        // 허용된 이미지 형식 세부 검증 및 MIME 타입 정규화
+        String normalizedContentType = normalizeImageContentType(contentType);
+        String[] allowedTypes = {"image/jpeg", "image/png", "image/gif", "image/webp"};
         boolean isAllowedType = false;
         for (String allowedType : allowedTypes) {
-            if (allowedType.equals(contentType)) {
+            if (allowedType.equals(normalizedContentType)) {
                 isAllowedType = true;
                 break;
             }
@@ -310,5 +335,42 @@ public class FileUploadService {
             return "";
         }
         return fileName.substring(fileName.lastIndexOf("."));
+    }
+
+    /**
+     * 【 비즈니스 계층 】MIME 타입 정규화 메서드
+     * 
+     * 담당 업무:
+     * - 잘못된 MIME 타입을 표준 형식으로 변환
+     * - 브라우저별 차이점 해결
+     * - 일관된 Content-Type 보장
+     * 
+     * 정규화 규칙:
+     * - "image/jpg" → "image/jpeg" (표준 형식)
+     * - 기타 잘못된 형식들도 표준화
+     * 
+     * @param contentType 원본 MIME 타입
+     * @return 정규화된 MIME 타입
+     */
+    private String normalizeImageContentType(String contentType) {
+        if (contentType == null) {
+            return "application/octet-stream";
+        }
+        
+        // MIME 타입 정규화 (대소문자 구분 없이)
+        String normalized = contentType.toLowerCase().trim();
+        
+        switch (normalized) {
+            case "image/jpg":       // 비표준 → 표준 형식으로 변환
+                return "image/jpeg";
+            case "image/jpeg":
+            case "image/png":
+            case "image/gif":
+            case "image/webp":
+                return normalized;
+            default:
+                log.warn("알 수 없는 이미지 MIME 타입이 감지되어 기본값으로 설정합니다: {} → image/jpeg", contentType);
+                return "image/jpeg"; // 기본값으로 JPEG 설정
+        }
     }
 }

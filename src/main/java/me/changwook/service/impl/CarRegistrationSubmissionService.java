@@ -23,7 +23,6 @@ public class CarRegistrationSubmissionService {
     // private final ImageRepository imageRepository; // 향후 이미지 연동 고도화 시 사용
     private final RentCarsRepository rentCarsRepository;
     private final MemberRepository memberRepository;
-    private final FileUploadService fileUploadService;
 
     @Transactional
     public CarRegistrationSubmission createSubmission(CarRegistrationSubmissionDTO dto) {
@@ -43,30 +42,17 @@ public class CarRegistrationSubmissionService {
         log.info("PENDING 상태 신청 개수: {}", submissions.getTotalElements());
         
         return submissions.map(sub -> {
-            log.info("신청 처리 중 - ID: {}, 이미지 개수: {}", sub.getId(), sub.getImages().size());
-            
-            var imageUrls = sub.getImages().stream()
-                    .map(img -> {
-                        log.info("목록-이미지 정보 - ID: {}, relativePath: {}, filePath: {}, storedFileName: {}", 
-                                 img.getId(), img.getRelativePath(), img.getFilePath(), img.getStoredFileName());
-                        
-                        String generatedUrl = null;
-                        if (img.getRelativePath() != null) {
-                            generatedUrl = fileUploadService.getImageUrl(img.getRelativePath());
-                            log.info("목록-relativePath로 생성된 URL: {}", generatedUrl);
-                        } else if (img.getFilePath() != null) {
-                            generatedUrl = fileUploadService.getImageUrlFromAbsolute(img.getFilePath());
-                            log.info("목록-filePath로 생성된 URL: {}", generatedUrl);
-                        } else if (img.getStoredFileName() != null) {
-                            generatedUrl = fileUploadService.getImageUrl(img.getStoredFileName());
-                            log.info("목록-storedFileName으로 생성된 URL: {}", generatedUrl);
-                        }
-                        
-                        log.info("목록-최종 생성된 URL: {}", generatedUrl);
-                        return generatedUrl;
-                    })
-                    .filter(Objects::nonNull)
-                    .toList();
+                    var imageUrls = sub.getImages().stream()
+                .map(img -> {
+                    // 이미지 ID 기반으로 FileViewController URL 생성
+                    if (img.getId() != null) {
+                        return "/api/files/view/" + img.getId();
+                    }
+                    log.warn("유효하지 않은 이미지 ID입니다. Image ID: {}", img.getId());
+                    return null; // 유효하지 않은 경우 null 반환
+                })
+                .filter(Objects::nonNull)
+                .toList();
                     
             log.info("목록-신청 ID {} - 필터링 후 이미지 URL 개수: {}", sub.getId(), imageUrls.size());
             
@@ -93,27 +79,16 @@ public class CarRegistrationSubmissionService {
         log.info("신청 ID: {}, 연결된 이미지 개수: {}", submissionId, sub.getImages().size());
         
         var imageUrls = sub.getImages().stream()
-                .map(img -> {
-                    log.info("이미지 정보 - ID: {}, relativePath: {}, filePath: {}, storedFileName: {}", 
-                             img.getId(), img.getRelativePath(), img.getFilePath(), img.getStoredFileName());
-                    
-                    String generatedUrl = null;
-                    if (img.getRelativePath() != null) {
-                        generatedUrl = fileUploadService.getImageUrl(img.getRelativePath());
-                        log.info("relativePath로 생성된 URL: {}", generatedUrl);
-                    } else if (img.getFilePath() != null) {
-                        generatedUrl = fileUploadService.getImageUrlFromAbsolute(img.getFilePath());
-                        log.info("filePath로 생성된 URL: {}", generatedUrl);
-                    } else if (img.getStoredFileName() != null) {
-                        generatedUrl = fileUploadService.getImageUrl(img.getStoredFileName());
-                        log.info("storedFileName으로 생성된 URL: {}", generatedUrl);
-                    }
-                    
-                    log.info("최종 생성된 URL: {}", generatedUrl);
-                    return generatedUrl;
-                })
-                .filter(Objects::nonNull)
-                .toList();
+        .map(img -> {
+            // 이미지 ID 기반으로 FileViewController URL 생성
+            if (img.getId() != null) {
+                return "/api/files/view/" + img.getId();
+            }
+            log.warn("유효하지 않은 이미지 ID입니다. Image ID: {}", img.getId());
+            return null;
+        })
+        .filter(Objects::nonNull)
+        .toList();
                 
         log.info("필터링 후 이미지 URL 목록: {}", imageUrls);
         log.info("=== 이미지 URL 생성 디버깅 종료 ===");
