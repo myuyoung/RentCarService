@@ -33,6 +33,7 @@ public class RentCarsRepositoryCustomImpl implements RentCarsRepositoryCustom {
     public Page<RentCars> findAllByOrderByRecommendDesc(Pageable pageable) {
         List<RentCars> content = jpaQueryFactory
         .selectFrom(rentCars)
+        .leftJoin(rentCars.category, category).fetchJoin()
         .orderBy(rentCars.recommend.desc())
         .offset(pageable.getOffset())
         .limit(pageable.getPageSize())

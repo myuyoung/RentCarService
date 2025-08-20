@@ -99,17 +99,7 @@ public class AdminController {
         return responseFactory.success("전체 예약 조회 성공", rentals);
     }
 
-    @GetMapping("/cars")
-    @Operation(summary = "전체 차량 조회", description = "모든 차량 정보를 페이징하여 조회합니다.")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ApiResponseDTO<Page<RentCarsDTO>>> getAllCars(Pageable pageable) {
-        log.info("관리자가 전체 차량 목록을 조회합니다. 페이지: {}, 크기: {}", 
-                 pageable.getPageNumber(), pageable.getPageSize());
-        
-        Page<RentCarsDTO> cars = rentCarService.getAllCars(pageable);
-        
-        return responseFactory.success("전체 차량 조회 성공", cars);
-    }
+
 
     // --- 차량 등록 신청 관리 ---
     @GetMapping("/car-submissions")
@@ -145,25 +135,7 @@ public class AdminController {
         return responseFactory.success("신청이 반려되었습니다.");
     }
 
-    @DeleteMapping("/cars/{carId}")
-    @Operation(summary = "차량 삭제", description = "차량을 삭제합니다.")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ApiResponseDTO<Void>> deleteCar(@PathVariable Long carId) {
-        log.info("관리자가 차량을 삭제합니다. 차량 ID: {}", carId);
-        
-        rentCarService.deleteRentCar(carId);
-        
-        return responseFactory.success("차량 삭제 성공");
-    }
 
-    @PostMapping("/cars")
-    @Operation(summary = "차량 추가", description = "차량을 신규로 등록합니다.")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ApiResponseDTO<Void>> createCar(@RequestBody RentCarsDTO dto) {
-        log.info("관리자가 차량을 등록합니다. 차량번호: {}, 이름: {}", dto.getRentCarNumber(), dto.getName());
-        rentCarService.registerCar(dto);
-        return responseFactory.success("차량 등록 성공");
-    }
 
     @GetMapping("/statistics")
     @Operation(summary = "시스템 통계", description = "전체 회원 수, 예약 수, 차량 수 등의 통계를 조회합니다.")

@@ -77,9 +77,8 @@ public class RentRepositoryTest {
         
         Rent testRent = createTestRent(testRentCars);
         rentRepository.save(testRent);
-        
-        // When
-        List<Rent> foundRents = rentRepository.findByRentCars_Name(testRentCars.getName());
+
+        List<Rent> foundRents = rentRepository.findByRentCarsNameWithFetchJoin("소나타");
         
         // Then
         log.info("TestRent.getRentCars().getRentCarNumber(): {}", testRent.getRentCars().getRentCarNumber());

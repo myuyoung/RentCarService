@@ -135,7 +135,7 @@ public class RentServiceTests {
 
         Assertions.assertThat(resultRentDTO).isNotNull();
 
-        Optional<Rent> savedRent = rentRepository.findByRentCars_Name("소나타").stream().filter(s -> s.getMember().getEmail().equals("guildong@email.com")).findFirst();
+        Optional<Rent> savedRent = rentRepository.findByRentCarsNameWithFetchJoin("소나타").stream().filter(s -> s.getMember().getEmail().equals("guildong@email.com")).findFirst();
 
         log.info("savedRent.getMember().getName():{}",savedRent.get().getMember().getName());
 

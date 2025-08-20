@@ -116,6 +116,13 @@ public class ResponseFactory {
     }
 
     /**
+     * 실패 응답 생성 (405 Method Not Allowed)
+     */
+    public <T> ResponseEntity<ApiResponseDTO<T>> methodNotAllowed(String message) {
+        return error(message, HttpStatus.METHOD_NOT_ALLOWED);
+    }
+
+    /**
      * 실패 응답 생성 (409 Conflict)
      */
     public <T> ResponseEntity<ApiResponseDTO<T>> conflict(String message) {
@@ -123,9 +130,23 @@ public class ResponseFactory {
     }
 
     /**
+     * 실패 응답 생성 (422 Unprocessable Entity)
+     */
+    public <T> ResponseEntity<ApiResponseDTO<T>> unprocessableEntity(String message) {
+        return error(message, HttpStatus.UNPROCESSABLE_ENTITY);
+    }
+
+    /**
      * 실패 응답 생성 (500 Internal Server Error)
      */
     public <T> ResponseEntity<ApiResponseDTO<T>> internalServerError(String message) {
         return error(message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    /**
+     * 실패 응답 생성 (503 Service Unavailable)
+     */
+    public <T> ResponseEntity<ApiResponseDTO<T>> serviceUnavailable(String message) {
+        return error(message, HttpStatus.SERVICE_UNAVAILABLE);
     }
 }

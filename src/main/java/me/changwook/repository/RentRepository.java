@@ -15,8 +15,6 @@ import java.util.UUID;
 @Repository
 public interface RentRepository extends JpaRepository<Rent, UUID>, RentRepositoryCustom {
 
-    List<Rent> findByRentCars_Name(String rentCarsName);
-
     void deleteByRentCars(RentCars rentCars);
 
     //특정 기간의 모든 Rent 정보를 Member와 RentCars 정보와 함께 조회
