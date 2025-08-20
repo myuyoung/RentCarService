@@ -8,6 +8,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+@Table(name = "car_registration_submission", indexes = {
+        @Index(name = "idx_submission_status", columnList = "status")
+})
 @Entity
 @Getter
 @Builder

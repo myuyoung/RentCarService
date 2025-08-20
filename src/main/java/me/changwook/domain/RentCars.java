@@ -5,6 +5,9 @@ import lombok.*;
 
 import java.time.LocalDate;
 
+@Table(name = "rent_cars", indexes = {
+        @Index(name = "idx_rent_car_number", columnList = "rentCarNumber", unique = true)
+})
 @Entity
 @Getter
 @Builder
