@@ -15,7 +15,7 @@ import java.util.Arrays;
 import java.util.Optional;
 
 @Configuration
-@Profile({"test","local"})
+@Profile({"test","local","default"})
 public class DataInitializer {
 
     @Bean

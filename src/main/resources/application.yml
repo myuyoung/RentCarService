@@ -92,6 +92,10 @@ spring:
   config:
     activate:
       on-profile: local
+  port: 7950
+  forward-headers-strategy: native
+  servlet:
+    context-path: /
   datasource:
     url: jdbc:mysql://localhost:3306/wookdb?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
     username: ${MYSQL_USERNAME:wook}
