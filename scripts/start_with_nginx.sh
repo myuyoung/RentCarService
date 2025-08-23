@@ -35,7 +35,7 @@ fi
 
 # 3. Spring Boot 애플리케이션 백그라운드 시작
 echo "▶️  Spring Boot 애플리케이션 시작 중..."
-nohup java -jar build/libs/Wook-1.0-SNAPSHOT.jar --spring.profiles.active=default > logs/spring-boot.log 2>&1 &
+nohup java -jar build/libs/Wook-1.0-SNAPSHOT.jar --spring.profiles.active=local > logs/spring-boot.log 2>&1 &
 SPRING_PID=$!
 
 # 4. Spring Boot 시작 대기 (최대 30초)
