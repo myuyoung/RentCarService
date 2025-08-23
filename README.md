@@ -44,12 +44,12 @@
 
 ### Auth
 ![JWT](https://img.shields.io/badge/JWT-000000?style=for-the-badge&logo=jsonwebtokens&logoColor=white)
-<img width="3370" height="2232" alt="entityManagerFactory(EntityManagerFactoryBuilder, PersistenceManagedTypes)" src="https://github.com/user-attachments/assets/67169a06-37f3-4efb-b8b3-437a5f632cb0" />
+
 
 ---
 
 ## ERD
-<img width="50%" alt="entityManagerFactory(EntityManagerFactoryBuilder, PersistenceManagedTypes)" src="https://github.com/user-attachments/assets/0d3bc8e9-4800-49f3-ab95-e0c7b93544dd" />
+<img width="100%" alt="entityManagerFactory(EntityManagerFactoryBuilder, PersistenceManagedTypes)" src="https://github.com/user-attachments/assets/0d3bc8e9-4800-49f3-ab95-e0c7b93544dd" />
 
 
 ## API 명세
