@@ -31,7 +31,7 @@ public class PageController {
         return "search";
     }
 
-    @GetMapping("/admin")
+    @GetMapping({"/admin","/admin/"})
     public String admin() {
         return "admin";
     }
