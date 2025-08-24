@@ -54,15 +54,22 @@
 
 ## API 명세
 
-### 주요 엔드포인트요약
+### 주요 엔드포인트 요약
 
-| HTTP Method | Path | Description|
-|-----|----|-----|
-|Post| /api/register/member| 회원 가입 요청|
-|Post| /api/login| 로그인 요청 및 토큰 발급|
-|Post| /api/MyPage/reservation| 렌터카 예약|
-|GET| /api/MyPage/reservation/list| 내 예약 목록 조회|
-|DELETE| /api/MyPage/reservation/list/cancel/{id}| 특정 예약 취소|
+| 기능 분류 | HTTP Method | Path | 주요 기능 (Description) |
+| :--- | :--- | :--- | :--- |
+| **인증** | `POST` | `/auth/login` | 이메일/비밀번호로 로그인하고 JWT 발급 |
+| | `POST` | `/auth/refresh-token` | Refresh Token으로 새로운 Access Token 발급 |
+| **회원** | `POST` | `/api/register/member` | 신규 사용자 회원 가입 |
+| **차량 정보** | `GET` | `/api/rentcars/search` | 다중 조건(차종, 연료, 가격 등)으로 차량 동적 검색 |
+| | `GET` | `/api/rentcars/rank` | 추천 점수 기반의 차량 랭킹 목록 조회 |
+| **사용자 기능** | `POST` | `/api/MyPage/reservation` | 차량 예약 |
+| | `GET` | `/api/MyPage/reservation/list` | 자신의 예약 내역 조회 |
+| | `DELETE`| `/api/MyPage/reservation/list/cancel/{id}` | 특정 예약 건 취소 |
+| | `POST` | `/api/MyPage/car-submission` | 자신의 차량을 서비스에 등록 신청 (이미지 포함) |
+| **관리자 기능**| `GET` | `/api/admin/car-submissions` | 처리 대기 중인 차량 등록 신청 목록 조회 |
+| | `POST` | `/api/admin/car-submissions/{id}/approve` | 특정 차량 등록 신청을 승인 |
+| | `POST` | `/api/admin/cars` | 시스템에 신규 렌터카 직접 추가 |
 
 <br>
 
