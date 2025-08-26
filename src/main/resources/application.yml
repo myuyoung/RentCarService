@@ -30,9 +30,6 @@ spring:
   messages:
     basename: messages_ko
     encoding: UTF-8
-  profiles:
-    group:
-      "prod": ["aws"]
   servlet:
     multipart:
       enabled: true
@@ -56,6 +53,9 @@ jwt:
 file:
   upload:
     dir: ${user.home}/uploads/images
+  resources:
+    handler: /media/**
+    locations: ${user.home}/chat_files/
   # API 기반 스트리밍: /api/files/view/{imageId} (인증 필요, MIME 타입 정규화)
   # 정적 리소스 매핑: /images/** (빠른 접근, 브라우저 캐싱)
   static-serving:

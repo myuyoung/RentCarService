@@ -39,5 +39,9 @@ admin:
 # 파일 업로드 기본 설정 (테스트 환경용)
 file:
   upload:
-    dir: ${user.home}/uploads/images
+    dir: ${java.io.tmpdir}/test-upload
     url-path: /images
+  upload-dir: ${java.io.tmpdir}/test-upload
+  resources:
+    handler: /media/**
+    locations: ${java.io.tmpdir}/test-chat-files/
