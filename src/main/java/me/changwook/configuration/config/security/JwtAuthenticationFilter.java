@@ -41,21 +41,36 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         logger.info("JWT Filter executing for URI: " + request.getRequestURI());
         String token = getJwtFromRequest(request);
         logger.info("Extracted token: " + (token != null ? "Present" : "Absent"));
+        
         if (StringUtils.hasText(token)) {
-            try{
-                Claims claims = jwtUtil.validateToken(token)? Jwts.parser().verifyWith(jwtUtil.getKey()).build().parseSignedClaims(token).getPayload() : null;
-                String username = (claims != null) ? claims.getSubject() : null;
-                if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                    UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-                    logger.info("JWT Authentication - Username: " + username + ", Authorities: " + userDetails.getAuthorities());
-                    UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails,null, userDetails.getAuthorities());
-                    SecurityContextHolder.getContext().setAuthentication(authentication);
-                    logger.info("Authentication set in SecurityContext for: " + username);
+            try {
+                // 토큰 유효성 검증을 먼저 수행
+                if (jwtUtil.validateToken(token)) {
+                    // 검증된 토큰에서 사용자 정보 추출
+                    String username = jwtUtil.getUsernameFromToken(token);
+                    
+                    if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                        UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                        logger.info("JWT Authentication - Username: " + username + ", Authorities: " + userDetails.getAuthorities());
+                        
+                        // 인증 토큰 생성 및 설정
+                        UsernamePasswordAuthenticationToken authentication = 
+                            new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                        authentication.setDetails(new org.springframework.security.web.authentication.WebAuthenticationDetailsSource().buildDetails(request));
+                        
+                        SecurityContextHolder.getContext().setAuthentication(authentication);
+                        logger.info("Authentication set in SecurityContext for: " + username);
+                    }
+                } else {
+                    logger.warn("Invalid JWT token received");
                 }
-            }catch(Exception e){
-                logger.error("Could not set user authentication in security context", e);
+            } catch (Exception e) {
+                logger.error("JWT authentication error: " + e.getMessage());
+                // 인증 실패 시 SecurityContext 초기화
+                SecurityContextHolder.clearContext();
             }
         }
+        
         filterChain.doFilter(request, response);
     }
 

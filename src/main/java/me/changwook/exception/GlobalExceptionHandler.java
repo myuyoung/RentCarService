@@ -14,7 +14,9 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.FieldError;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -142,6 +144,18 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * 정적 리소스를 찾을 수 없음 (favicon.ico 등)
+     */
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<ApiResponseDTO<Void>> handleNoResourceFoundException(NoResourceFoundException e) {
+        // favicon.ico 요청은 로그 출력하지 않음 (너무 빈번함)
+        if (!e.getMessage().contains("favicon.ico")) {
+            log.warn("정적 리소스를 찾을 수 없음: {}", e.getMessage());
+        }
+        return responseFactory.notFound("요청한 리소스를 찾을 수 없습니다.");
+    }
+
+    /**
      * 데이터베이스 무결성 제약 위반
      */
     @ExceptionHandler(DataIntegrityViolationException.class)
@@ -166,6 +180,15 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponseDTO<Void>> handleAccessDeniedException(AccessDeniedException e) {
         log.warn("접근 권한 없음: {}", e.getMessage());
         return responseFactory.forbidden("접근 권한이 없습니다.");
+    }
+
+    /**
+     * 인증 실패 (로그인 정보 틀림)
+     */
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<ApiResponseDTO<Void>> handleBadCredentialsException(BadCredentialsException e) {
+        log.warn("인증 실패: {}", e.getMessage());
+        return responseFactory.unauthorized("아이디 또는 비밀번호가 올바르지 않습니다.");
     }
 
     // =============================================================

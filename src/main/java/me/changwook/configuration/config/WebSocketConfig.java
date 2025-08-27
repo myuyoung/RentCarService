@@ -21,9 +21,10 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-
         // 클라이언트에서 웹소켓에 접속할 때 사용할 주소
-        // SockJS를 사용하므로 withSockJS() 추가
-        registry.addEndpoint("/ws-stomp").withSockJS();
+        // nginx 프록시를 통한 연결을 허용하기 위한 CORS 설정 추가
+        registry.addEndpoint("/ws-stomp")
+                .setAllowedOriginPatterns("*") // nginx 프록시 허용
+                .withSockJS();
     }
 }

@@ -53,6 +53,7 @@ jwt:
 file:
   upload:
     dir: ${user.home}/uploads/images
+  upload-dir: ${user.home}/chat_files  # 채팅 파일 업로드용
   resources:
     handler: /media/**
     locations: ${user.home}/chat_files/
@@ -123,3 +124,11 @@ jwt:
 messages:
   basename: messages_ko
   encoding: UTF-8
+
+file:
+  upload:
+    dir: ${user.home}/uploads/images
+  upload-dir: ${user.home}/chat_files  # 채팅 파일 업로드용
+  resources:
+    handler: /media/**
+    locations: ${user.home}/chat_files/

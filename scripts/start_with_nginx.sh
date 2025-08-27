@@ -66,7 +66,7 @@ if [ $? -eq 0 ]; then
     echo ""
     echo "📊 서비스 정보:"
     echo "   - Spring Boot: http://localhost:7950 (직접 접근)"
-    echo "   - nginx 프록시: http://localhost (권장)"
+    echo "   - nginx 프록시: http://localhost:8080 (권장)"
     echo "   - 로그 파일: $PROJECT_DIR/logs/spring-boot.log"
     echo ""
     echo "🛑 종료 방법:"

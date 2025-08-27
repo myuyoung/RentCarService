@@ -50,4 +50,9 @@ public class PageController {
     public String debugAdmin() {
         return "debug_admin";
     }
+
+    @GetMapping({"/chat", "/chat/"})
+    public String chat() {
+        return "chat";
+    }
 }
