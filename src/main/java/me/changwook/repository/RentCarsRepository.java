@@ -9,6 +9,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
@@ -16,10 +17,10 @@ import java.util.Optional;
 public interface RentCarsRepository extends JpaRepository<RentCars, Long>, RentCarsRepositoryCustom {
 
     @Query("select rc from RentCars rc")
-    List<RentCars> findAllByCarId();
+    List<RentCars> findAllRentCars();
 
-    @Query("select c from Category c")
-    Optional<List<RentCars>> findAllCategories();
+    @Query("select rc from RentCars rc where rc.category.id = :categoryId")
+    List<RentCars> findAllByCategoryId(@Param("categoryId") Long categoryId);
 
     Optional<RentCars> findByName(String name);
 

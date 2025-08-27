@@ -10,6 +10,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
+import me.changwook.service.impl.ChatService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Arrays;
@@ -25,6 +26,7 @@ public class DataInitializer {
     private final MemberRepository memberRepository;
     private final CarRegistrationSubmissionRepository submissionRepository;
     private final PasswordEncoder passwordEncoder;
+    private final ChatService chatService;
 
     @Bean
     public CommandLineRunner initData() {
@@ -135,6 +137,53 @@ public class DataInitializer {
                         .build();
                 submissionRepository.save(testSubmission2);
             }
+        }
+
+        // 채팅방 초기화
+        initializeChatRooms();
+    }
+
+    /**
+     * 기본 채팅방들을 생성합니다.
+     */
+    private void initializeChatRooms() {
+        try {
+            // Support 채팅방 생성
+            createChatRoomIfNotExists("support", "고객지원", "문의사항이나 도움이 필요하시면 언제든지 이용해주세요.");
+            
+            // General 채팅방 생성
+            createChatRoomIfNotExists("general", "자유 토론", "자유롭게 대화를 나누는 공간입니다.");
+            
+            // Notice 채팅방 생성
+            createChatRoomIfNotExists("notice", "공지사항", "중요한 공지사항을 전달하는 채널입니다.");
+            
+        } catch (Exception e) {
+            // 채팅방 초기화 실패는 전체 애플리케이션을 중단시키지 않음
+            System.err.println("채팅방 초기화 중 오류 발생: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 채팅방이 존재하지 않는 경우에만 생성합니다.
+     * 
+     * @param roomId 채팅방 ID
+     * @param roomName 채팅방 이름
+     * @param description 채팅방 설명
+     */
+    private void createChatRoomIfNotExists(String roomId, String roomName, String description) {
+        try {
+            // 이미 존재하는 채팅방인지 확인
+            if (chatService.getRoomById(roomId).isEmpty()) {
+                chatService.createRoom(roomId, roomName, description);
+                System.out.println("기본 채팅방 생성: " + roomId + " - " + roomName);
+            } else {
+                System.out.println("채팅방 이미 존재: " + roomId + " - " + roomName);
+            }
+        } catch (IllegalArgumentException e) {
+            // 이미 존재하는 경우는 정상 상황
+            System.out.println("채팅방 이미 존재: " + roomId + " - " + roomName);
+        } catch (Exception e) {
+            System.err.println("채팅방 " + roomId + " 생성 실패: " + e.getMessage());
         }
     }
 

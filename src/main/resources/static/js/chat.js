@@ -200,9 +200,10 @@ class ChatClient {
 
     /**
      * 채팅방에 입장하는 개선된 메서드
+     * 🎯 핵심 개선사항: 입장 시 기존 메시지 히스토리를 불러옵니다!
      * 이제 roomId와 username을 파라미터로 받아 더 유연하게 사용할 수 있습니다
      */
-    enterChatRoom(roomId = null, username = null) {
+    async enterChatRoom(roomId = null, username = null) {
         // 파라미터로 받지 않은 경우 입력 필드에서 가져오기
         const finalUsername = username || document.getElementById('username').value.trim();
         const finalRoomId = roomId || document.getElementById('customRoomId').value.trim();
@@ -225,7 +226,14 @@ class ChatClient {
         this.currentRoom = finalRoomId;
         this.currentUser = finalUsername;
         
-        // 채팅룸 구독
+        // 메시지 영역 초기화
+        document.getElementById('messageArea').innerHTML = '';
+        
+        // 🎯 핵심 기능 추가: 기존 메시지 히스토리 불러오기
+        // 이것이 메시지 지속성을 구현하는 핵심 코드입니다!
+        await this.loadMessageHistory(finalRoomId);
+        
+        // 채팅룸 구독 (실시간 메시지 수신)
         this.stompClient.subscribe(`/sub/chat/room/${finalRoomId}`, (message) => {
             const chatMessage = JSON.parse(message.body);
             this.displayMessage(chatMessage);
@@ -249,7 +257,101 @@ class ChatClient {
         // 메시지 입력 필드에 포커스
         document.getElementById('messageInput').focus();
         
-        console.log(`채팅방 입장: ${finalRoomId} (사용자: ${finalUsername})`);
+        console.log(`채팅방 입장 완료: ${finalRoomId} (사용자: ${finalUsername})`);
+    }
+    
+    /**
+     * 🎯 새로 추가된 핵심 메서드: 채팅방의 기존 메시지 히스토리를 불러옵니다
+     * 이 메서드가 메시지 지속성 문제를 해결하는 핵심 기능입니다!
+     */
+    async loadMessageHistory(roomId) {
+        try {
+            console.log(`채팅방 ${roomId}의 메시지 히스토리를 불러오는 중...`);
+            
+            // 새로운 API 엔드포인트 호출
+            const response = await this.apiClient.get(`/api/chat/rooms/${roomId}/messages?limit=100`);
+            
+            if (response.success && response.data) {
+                const messages = response.data;
+                console.log(`${messages.length}개의 기존 메시지를 불러왔습니다`);
+                
+                // 기존 메시지들을 시간순으로 표시
+                messages.forEach(message => {
+                    // 데이터베이스 메시지를 DTO 형태로 변환
+                    const messageDTO = this.convertEntityToDTO(message);
+                    this.displayMessage(messageDTO, true); // 기존 메시지임을 표시
+                });
+                
+                // 메시지 영역을 맨 아래로 스크롤
+                const messageArea = document.getElementById('messageArea');
+                messageArea.scrollTop = messageArea.scrollHeight;
+                
+                // 기존 메시지가 있는 경우 구분선 추가
+                if (messages.length > 0) {
+                    this.addMessageDivider();
+                }
+                
+            } else {
+                console.log('불러올 메시지가 없습니다');
+            }
+        } catch (error) {
+            console.error('메시지 히스토리 로드 실패:', error);
+            // 에러가 발생해도 채팅방 입장은 계속 진행
+            this.showNotification('이전 메시지를 불러오는데 실패했습니다', 'warning');
+        }
+    }
+    
+    /**
+     * 데이터베이스 엔티티를 DTO 형태로 변환하는 헬퍼 메서드
+     */
+    convertEntityToDTO(entity) {
+        return {
+            type: entity.messageType,
+            roomId: entity.roomId,
+            sender: entity.sender,
+            message: entity.messageContent,
+            fileUrl: entity.fileUrl,
+            thumbnailUrl: entity.thumbnailUrl,
+            timestamp: entity.createdAt // 생성 시간 추가
+        };
+    }
+    
+    /**
+     * 기존 메시지와 새 메시지를 구분하는 구분선을 추가합니다
+     */
+    addMessageDivider() {
+        const messageArea = document.getElementById('messageArea');
+        const dividerElement = document.createElement('div');
+        dividerElement.className = 'text-center py-4';
+        dividerElement.innerHTML = `
+            <div class="inline-block bg-blue-100 text-blue-800 text-xs px-3 py-1 rounded-full">
+                ── 실시간 메시지 ──
+            </div>
+        `;
+        messageArea.appendChild(dividerElement);
+    }
+    
+    /**
+     * 사용자에게 알림을 표시하는 헬퍼 메서드
+     */
+    showNotification(message, type = 'info') {
+        const notification = document.createElement('div');
+        const bgColor = type === 'success' ? 'bg-green-100 text-green-800' :
+                        type === 'warning' ? 'bg-yellow-100 text-yellow-800' :
+                        type === 'error' ? 'bg-red-100 text-red-800' :
+                        'bg-blue-100 text-blue-800';
+        
+        notification.className = `fixed top-4 right-4 ${bgColor} px-4 py-2 rounded-lg shadow-lg z-50`;
+        notification.textContent = message;
+        
+        document.body.appendChild(notification);
+        
+        // 3초 후 자동 제거
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 3000);
     }
 
     leaveChatRoom() {
@@ -357,7 +459,7 @@ class ChatClient {
         }
     }
 
-    displayMessage(message) {
+    displayMessage(message, isHistoricalMessage = false) {
         const messageArea = document.getElementById('messageArea');
         const messageElement = document.createElement('div');
         
@@ -371,12 +473,18 @@ class ChatClient {
 
         let messageContent = '';
         
+        // 타임스탬프 처리 개선 (기존 메시지는 DB 타임스탬프, 새 메시지는 현재 시간)
+        const messageTime = isHistoricalMessage && message.timestamp ? 
+            new Date(message.timestamp).toLocaleTimeString() : 
+            new Date().toLocaleTimeString();
+        
         switch (message.type) {
             case 'ENTER':
                 messageElement.className = 'text-center text-gray-500 text-sm mb-2';
                 messageElement.innerHTML = `
                     <div class="bg-gray-100 rounded-full px-3 py-1 inline-block">
                         ${message.message}
+                        ${isHistoricalMessage ? '<span class="text-xs text-gray-400 ml-2">(과거)</span>' : ''}
                     </div>
                 `;
                 break;
@@ -386,6 +494,7 @@ class ChatClient {
                 messageElement.innerHTML = `
                     <div class="bg-gray-100 rounded-full px-3 py-1 inline-block">
                         ${message.sender}님이 퇴장하셨습니다.
+                        ${isHistoricalMessage ? '<span class="text-xs text-gray-400 ml-2">(과거)</span>' : ''}
                     </div>
                 `;
                 break;
@@ -393,11 +502,12 @@ class ChatClient {
             case 'TALK':
                 messageElement.className = `flex mb-3 ${isMyMessage ? 'justify-end' : 'justify-start'}`;
                 messageContent = `
-                    <div class="${baseClass}">
+                    <div class="${baseClass} ${isHistoricalMessage ? 'opacity-80' : ''}">
                         ${!isMyMessage ? `<div class="font-semibold text-xs mb-1 text-gray-600">${message.sender}</div>` : ''}
                         <div>${this.escapeHtml(message.message)}</div>
                         <div class="text-xs mt-1 ${isMyMessage ? 'text-indigo-200' : 'text-gray-500'}">
-                            ${new Date().toLocaleTimeString()}
+                            ${messageTime}
+                            ${isHistoricalMessage ? ' (과거)' : ''}
                         </div>
                     </div>
                 `;
@@ -407,14 +517,15 @@ class ChatClient {
             case 'IMAGE':
                 messageElement.className = `flex mb-3 ${isMyMessage ? 'justify-end' : 'justify-start'}`;
                 messageContent = `
-                    <div class="${baseClass}">
+                    <div class="${baseClass} ${isHistoricalMessage ? 'opacity-80' : ''}">
                         ${!isMyMessage ? `<div class="font-semibold text-xs mb-1 text-gray-600">${message.sender}</div>` : ''}
                         <div class="mb-2">
                             <img src="${message.fileUrl}" alt="Image" class="max-w-full h-auto rounded-lg cursor-pointer"
                                  onclick="window.open('${message.fileUrl}', '_blank')">
                         </div>
                         <div class="text-xs ${isMyMessage ? 'text-indigo-200' : 'text-gray-500'}">
-                            ${new Date().toLocaleTimeString()}
+                            ${messageTime}
+                            ${isHistoricalMessage ? ' (과거)' : ''}
                         </div>
                     </div>
                 `;
@@ -424,7 +535,7 @@ class ChatClient {
             case 'VIDEO':
                 messageElement.className = `flex mb-3 ${isMyMessage ? 'justify-end' : 'justify-start'}`;
                 messageContent = `
-                    <div class="${baseClass}">
+                    <div class="${baseClass} ${isHistoricalMessage ? 'opacity-80' : ''}">
                         ${!isMyMessage ? `<div class="font-semibold text-xs mb-1 text-gray-600">${message.sender}</div>` : ''}
                         <div class="mb-2">
                             <video controls class="max-w-full h-auto rounded-lg" style="max-height: 300px;">
@@ -433,7 +544,8 @@ class ChatClient {
                             </video>
                         </div>
                         <div class="text-xs ${isMyMessage ? 'text-indigo-200' : 'text-gray-500'}">
-                            ${new Date().toLocaleTimeString()}
+                            ${messageTime}
+                            ${isHistoricalMessage ? ' (과거)' : ''}
                         </div>
                     </div>
                 `;
@@ -442,7 +554,11 @@ class ChatClient {
         }
         
         messageArea.appendChild(messageElement);
-        messageArea.scrollTop = messageArea.scrollHeight;
+        
+        // 새 메시지인 경우에만 자동 스크롤 (기존 메시지 로드 시에는 스크롤하지 않음)
+        if (!isHistoricalMessage) {
+            messageArea.scrollTop = messageArea.scrollHeight;
+        }
     }
 
     escapeHtml(text) {

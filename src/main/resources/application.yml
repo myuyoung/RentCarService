@@ -13,6 +13,12 @@ spring:
           ssl:
             trust: smtp.naver.com
             protocols: TLSv1.2
+
+# Actuator Health Check 설정
+management:
+  health:
+    mail:
+      enabled: false  # Mail Health Indicator 비활성화
   jpa:
     open-in-view: false
     hibernate:
@@ -103,6 +109,8 @@ spring:
     password: ${MYSQL_PASSWORD:wookpw}
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
+    hibernate:
+      ddl-auto: update  # 테이블 자동 생성/업데이트 활성화
     properties:
       hibernate:
         default_batch_fetch_size: 1000

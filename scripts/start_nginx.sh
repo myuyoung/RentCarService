@@ -8,6 +8,9 @@ NGINX_CONFIG="$PROJECT_DIR/nginx.conf"
 
 echo "🚀 Wook 프로젝트용 nginx 시작 중..."
 
+# logs 디렉토리 생성
+mkdir -p "$PROJECT_DIR/logs"
+
 # nginx 설정 파일 테스트
 echo "📝 nginx 설정 파일 검증 중..."
 nginx -t -c "$NGINX_CONFIG"

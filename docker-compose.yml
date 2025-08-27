@@ -1,0 +1,40 @@
+version: '3.2'
+services:
+  pinpoint-hbase:
+    image: pinpointdocker/hbase:2.4.17
+    container_name: pinpoint-hbase
+    ports:
+      - "8081:8080"
+      - "9091:9090"
+      - "16001:16000"
+      - "16011:16010"
+      - "16021:16020"
+      - "16031:16030"
+    networks:
+      - pinpoint-network
+
+  pinpoint-collector:
+    image: pinpointdocker/pinpoint-collector:2.5.2
+    container_name: pinpoint-collector
+    depends_on:
+      - pinpoint-hbase
+    ports:
+      - "9991:9991" # gRPC
+      - "9992:9992" # gRPC
+      - "9993:9993" # gRPC
+    networks:
+      - pinpoint-network
+
+  pinpoint-web:
+    image: pinpointdocker/pinpoint-web:2.5.2
+    container_name: pinpoint-web
+    depends_on:
+      - pinpoint-hbase
+    ports:
+      - "8079:8080"
+    networks:
+      - pinpoint-network
+
+networks:
+  pinpoint-network:
+    driver: bridge
