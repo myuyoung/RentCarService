@@ -1,4 +1,6 @@
 spring:
+  application:
+    name: WookApp  # Pinpoint APM에서 사용할 애플리케이션 이름
   mail:
     host: smtp.naver.com
     port: 587
@@ -14,8 +16,15 @@ spring:
             trust: smtp.naver.com
             protocols: TLSv1.2
 
-# Actuator Health Check 설정
+# Actuator Health Check 설정 (Pinpoint APM 호환성 향상)
 management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus,pinpoint  # Pinpoint 엔드포인트 노출
+  endpoint:
+    health:
+      show-details: always
   health:
     mail:
       enabled: false  # Mail Health Indicator 비활성화

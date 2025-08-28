@@ -19,6 +19,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import jakarta.annotation.PostConstruct;
 import java.util.*;
 
 /**
@@ -39,9 +40,13 @@ public class ChatController {
     // 새로 추가된 ChatService - 메시지 지속성의 핵심
     private final ChatService chatService;
     
-    // 기본 채팅방들을 데이터베이스에 자동으로 생성하는 초기화 블록
-    // 이제 메모리가 아닌 데이터베이스에서 채팅방을 관리합니다
-    {
+    // 🔧 중복 메시지 방지를 위한 최근 메시지 추적
+    private final Map<String, String> recentMessages = new HashMap<>();
+    private final Map<String, Long> userLastActivity = new HashMap<>();
+    
+    // 초기화 블록을 @PostConstruct로 변경하여 의존성 주입 완료 후 실행
+    @PostConstruct
+    private void initializeDefaultRoomsAfterInjection() {
         initializeDefaultRooms();
     }
     
@@ -123,35 +128,80 @@ public class ChatController {
     }
 
     /**
-     * 메시지 처리 메서드 (메시지 지속성 기능 추가)
-     * 이제 WebSocket 전송과 동시에 데이터베이스에도 저장됩니다!
+     * 🔧 개선된 메시지 처리 메서드 (중복 방지 로직 추가)
+     * WebSocket 전송과 동시에 데이터베이스에도 저장되며, 중복 메시지를 방지합니다!
      */
     @MessageMapping("/chat/message")
     public void message(ChatMessageDTO message) {
         try {
-            // 시스템 메시지 내용 설정
+            // 🔧 중복 메시지 체크 (입장/퇴장 메시지)
+            String userKey = message.getSender() + "_" + message.getRoomId();
+            long currentTime = System.currentTimeMillis();
+            Long lastActivity = userLastActivity.get(userKey);
+            
+            // 시스템 메시지 내용 설정 및 참가자 수 관리
             if (ChatMessageDTO.MessageType.ENTER.equals(message.getType())) {
+                // 🔧 1초 이내 중복 입장 방지
+                if (lastActivity != null && (currentTime - lastActivity) < 1000) {
+                    log.warn("중복 입장 메시지 감지, 무시: 사용자 = {}, 방 = {}", message.getSender(), message.getRoomId());
+                    return;
+                }
+                
                 message.setMessage(message.getSender() + "님이 입장하셨습니다.");
-                // 데이터베이스에서 참가자 수 관리
                 chatService.enterRoom(message.getRoomId(), message.getSender());
+                userLastActivity.put(userKey, currentTime);
+                
+                log.info("사용자 입장 처리 완료: 방 ID = {}, 사용자 = {}", 
+                        message.getRoomId(), message.getSender());
+                        
             } else if (ChatMessageDTO.MessageType.LEAVE.equals(message.getType())) {
+                // 🔧 1초 이내 중복 퇴장 방지
+                if (lastActivity != null && (currentTime - lastActivity) < 1000) {
+                    log.warn("중복 퇴장 메시지 감지, 무시: 사용자 = {}, 방 = {}", message.getSender(), message.getRoomId());
+                    return;
+                }
+                
                 message.setMessage(message.getSender() + "님이 퇴장하셨습니다.");
-                // 데이터베이스에서 참가자 수 관리
                 chatService.leaveRoom(message.getRoomId(), message.getSender());
+                userLastActivity.put(userKey, currentTime);
+                
+                
+                log.info("사용자 퇴장 처리 완료: 방 ID = {}, 사용자 = {}", 
+                        message.getRoomId(), message.getSender());
+                        
+            } else {
+                // 🔧 일반 메시지 중복 체크
+                String messageKey = message.getRoomId() + "_" + message.getSender() + "_" + message.getMessage();
+                String lastMessage = recentMessages.get(userKey);
+                
+                if (messageKey.equals(lastMessage)) {
+                    log.warn("중복 메시지 감지, 무시: 사용자 = {}, 방 = {}, 내용 = {}", 
+                            message.getSender(), message.getRoomId(), message.getMessage());
+                    return;
+                }
+                
+                // 일반 메시지(TALK, IMAGE, VIDEO)는 데이터베이스에 저장
+                ChatMessage savedMessage = chatService.saveMessage(message);
+                recentMessages.put(userKey, messageKey);
+                
+                log.info("일반 메시지 저장 및 전송 완료: 방 ID = {}, 발신자 = {}, 타입 = {}, DB ID = {}", 
+                        message.getRoomId(), message.getSender(), message.getType(), savedMessage.getMessageId());
             }
             
-            // 핵심 기능: 메시지를 데이터베이스에 영구 저장
-            // 이것이 메시지 지속성을 가능하게 하는 핵심 코드입니다
-            ChatMessage savedMessage = chatService.saveMessage(message);
-            
-            log.info("메시지 저장 및 전송 완료: 방 ID = {}, 발신자 = {}, 타입 = {}, DB ID = {}", 
-                    message.getRoomId(), message.getSender(), message.getType(), savedMessage.getMessageId());
-            
-            // 실시간 전송 (기존 기능 유지)
+            // 모든 메시지를 실시간 전송 (입장/퇴장 포함)
             messagingTemplate.convertAndSend("/sub/chat/room/" + message.getRoomId(), message);
+            
         } catch (Exception e) {
             log.error("메시지 처리 중 오류 발생: 방 ID = {}, 발신자 = {}", 
                     message.getRoomId(), message.getSender(), e);
+        } finally {
+            // 🔧 메모리 관리: 오래된 기록 정리 (1000개 초과 시)
+            if (recentMessages.size() > 1000) {
+                recentMessages.clear();
+            }
+            if (userLastActivity.size() > 1000) {
+                userLastActivity.clear();
+            }
         }
     }
 
@@ -165,14 +215,32 @@ public class ChatController {
             @RequestParam("roomId") String roomId,
             @RequestParam("sender") String sender,
             @RequestParam("messageType") String messageType) {
+        
+        log.info("파일 업로드 요청: 방ID={}, 발신자={}, 파일명={}, 크기={}, 타입={}", 
+                roomId, sender, file.getOriginalFilename(), file.getSize(), messageType);
+        
         try {
+            // 입력값 검증
+            if (file.isEmpty()) {
+                log.warn("빈 파일 업로드 시도: 방ID={}", roomId);
+                return responseFactory.badRequest("파일이 선택되지 않았습니다.");
+            }
+            
+            // 파일 크기 검증 (10MB 제한)
+            if (file.getSize() > 10 * 1024 * 1024) {
+                log.warn("파일 크기 초과: {}MB, 방ID={}", file.getSize() / (1024 * 1024), roomId);
+                return responseFactory.badRequest("파일 크기가 10MB를 초과합니다.");
+            }
+            
             // 채팅방 존재 여부 확인 (데이터베이스에서)
             if (chatService.getRoomById(roomId).isEmpty()) {
+                log.warn("존재하지 않는 채팅방에 파일 업로드 시도: 방ID={}", roomId);
                 return responseFactory.badRequest("존재하지 않는 채팅방입니다.");
             }
             
             // 파일 저장
             String fileUrl = localFileStorageService.saveFile(file);
+            log.info("파일 저장 성공: URL={}", fileUrl);
 
             ChatMessageDTO message = new ChatMessageDTO();
             message.setType(ChatMessageDTO.MessageType.valueOf(messageType));
@@ -191,8 +259,16 @@ public class ChatController {
             
             return responseFactory.success("파일 업로드가 완료되었습니다.", fileUrl);
 
+        } catch (IllegalArgumentException e) {
+            log.error("파일 업로드 - 잘못된 요청: 방ID={}, 오류={}", roomId, e.getMessage());
+            return responseFactory.badRequest("잘못된 요청: " + e.getMessage());
+        } catch (RuntimeException e) {
+            log.error("파일 업로드 - 파일 저장 실패: 방ID={}, 파일명={}, 오류={}", 
+                    roomId, file.getOriginalFilename(), e.getMessage(), e);
+            return responseFactory.internalServerError("파일 저장에 실패했습니다: " + e.getMessage());
         } catch (Exception e) {
-            log.error("파일 업로드 오류: 방 ID = {}, 파일명 = {}", roomId, file.getOriginalFilename(), e);
+            log.error("파일 업로드 - 예상치 못한 오류: 방ID={}, 파일명={}", 
+                    roomId, file.getOriginalFilename(), e);
             return responseFactory.internalServerError("파일 업로드 중 오류가 발생했습니다.");
         }
     }

@@ -4,9 +4,9 @@ plugins {
     id 'io.spring.dependency-management' version '1.1.4'
 }
 
-// Pinpoint 설정
+// Pinpoint 설정 (최신 버전으로 업데이트)
 ext {
-    pinpointVersion = '2.5.2' // 사용할 Pinpoint 버전
+    pinpointVersion = '2.5.3' // 사용할 Pinpoint 버전 (최신)
 }
 
 group = 'me.changwook'
@@ -116,7 +116,7 @@ tasks.named('test') {
     useJUnitPlatform()
 }
 
-// --- Pinpoint 설정 (개발 중 임시 비활성화) ---
+// --- Pinpoint APM 설정 (활성화) ---
 
 // 1. Pinpoint 에이전트 .tar.gz 파일을 다운로드하는 태스크
 task downloadPinpointAgentTar(type: Exec) {
@@ -150,18 +150,19 @@ task downloadPinpointAgent(type: Copy) {
     into agentDir
 }
 
-// bootRun 태스크에 Pinpoint 에이전트 설정 추가
+// bootRun 태스크에 Pinpoint 에이전트 설정 추가 (임시 비활성화)
 bootRun {
-    dependsOn downloadPinpointAgent
+//     임시로 Agent 없이 실행
+     dependsOn downloadPinpointAgent
 
-    def agentPath = "${buildDir}/pinpoint-agent/pinpoint-bootstrap-${pinpointVersion}.jar"
-    def agentId = "wook-agent" // Pinpoint Web UI에서 식별할 에이전트 ID
-    def applicationName = "Wook-Application" // Pinpoint Web UI에 표시될 애플리케이션 이름
+     def agentPath = "${buildDir}/pinpoint-agent/pinpoint-agent-${pinpointVersion}/pinpoint-bootstrap.jar"
+     def agentId = "WookApp-Agent-001"
+     def applicationName = "WookApp"
 
-    jvmArgs = [
-            "-javaagent:${agentPath}",
-            "-Dpinpoint.agentId=${agentId}",
-            "-Dpinpoint.applicationName=${applicationName}"
-    ]
+     jvmArgs = [
+             "-javaagent:${agentPath}",
+             "-Dpinpoint.agentId=${agentId}",
+             "-Dpinpoint.applicationName=${applicationName}"
+     ]
 }
 

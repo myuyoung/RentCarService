@@ -152,6 +152,4 @@ public class AdminController {
         
         return responseFactory.success("시스템 통계 조회 성공", statistics);
     }
-
-
 }

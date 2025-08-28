@@ -20,8 +20,11 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class WebConfig implements WebMvcConfigurer {
 
-    @Value("${file.upload.dir}")
+    @Value("${file.upload-dir}")
     private String uploadDir;
+    
+    @Value("${file.upload-dir}")
+    private String chatUploadDir;
 
     @Value("${file.static-serving.enabled:true}")
     private boolean staticServingEnabled;
@@ -44,14 +47,13 @@ public class WebConfig implements WebMvcConfigurer {
 
         // 사용자 홈 디렉터리 경로 처리
         String resolvedUploadDir = uploadDir.replace("${user.home}", System.getProperty("user.home"));
-        File uploadDirectory = new File(resolvedUploadDir);
+        String resolvedChatUploadDir = chatUploadDir.replace("${user.home}", System.getProperty("user.home"));
         
-        if (!uploadDirectory.exists()) {
-            boolean created = uploadDirectory.mkdirs();
-            log.info("업로드 디렉터리 생성: {} (성공: {})", resolvedUploadDir, created);
-        }
+        // 업로드 디렉터리 생성
+        createDirectoryIfNotExists(resolvedUploadDir, "일반 업로드");
+        createDirectoryIfNotExists(resolvedChatUploadDir, "채팅 파일 업로드");
 
-        // 정적 리소스 핸들러 등록
+        // 일반 이미지용 정적 리소스 핸들러 등록
         String resourcePath = "file:" + resolvedUploadDir + File.separator;
         
         registry.addResourceHandler("/images/**")
@@ -59,12 +61,33 @@ public class WebConfig implements WebMvcConfigurer {
                 .setCacheControl(CacheControl.maxAge(cacheDurationSeconds, TimeUnit.SECONDS))
                 .resourceChain(true);
 
+        // 채팅 파일용 정적 리소스 핸들러 등록
+        String chatResourcePath = "file:" + resolvedChatUploadDir + File.separator;
+        
+        registry.addResourceHandler("/media/**")
+                .addResourceLocations(chatResourcePath)
+                .setCacheControl(CacheControl.maxAge(cacheDurationSeconds, TimeUnit.SECONDS))
+                .resourceChain(true);
+
         log.info("=== 정적 리소스 매핑 설정 ===");
-        log.info("URL 패턴: /images/**");
-        log.info("파일 위치: {}", resourcePath);
+        log.info("일반 이미지 - URL 패턴: /images/**, 파일 위치: {}", resourcePath);
+        log.info("채팅 파일 - URL 패턴: /media/**, 파일 위치: {}", chatResourcePath);
         log.info("캐시 지속시간: {}초", cacheDurationSeconds);
-        log.info("원본 uploadDir: {}", uploadDir);
-        log.info("해결된 uploadDir: {}", resolvedUploadDir);
+    }
+    
+    private void createDirectoryIfNotExists(String dirPath, String description) {
+        File directory = new File(dirPath);
+        
+        if (!directory.exists()) {
+            boolean created = directory.mkdirs();
+            log.info("{} 디렉터리 생성: {} (성공: {})", description, dirPath, created);
+            
+            if (!created) {
+                log.error("{} 디렉터리 생성 실패: {}", description, dirPath);
+            }
+        } else {
+            log.info("{} 디렉터리 이미 존재: {}", description, dirPath);
+        }
     }
 }
 

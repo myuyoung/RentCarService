@@ -1,4 +1,4 @@
-// Dream Drive - 실시간 채팅 클라이언트 (중복 메시지 문제 해결 버전)
+// Dream Drive - 실시간 채팅 클라이언트
 
 class ChatClient {
     constructor() {
@@ -7,27 +7,27 @@ class ChatClient {
         this.currentUser = null;
         this.connected = false;
         this.apiClient = new ApiClient();
-        this.chatRooms = [];
+        this.chatRooms = []; // 채팅방 목록을 저장할 배열
         
-        // 🔧 중복 방지를 위한 새로운 속성들
-        this.subscription = null; // 현재 구독 객체 추적
-        this.userStatus = new Map(); // 사용자별 입장/퇴장 상태 추적
-        this.lastSentMessage = null; // 마지막 전송 메시지 추적
-        this.isProcessingMessage = false; // 메시지 처리 중인지 확인
-        this.messageHistory = new Set(); // 메시지 중복 체크용
-        
+        // 초기화
         this.init();
     }
 
     init() {
+        // 로그인 상태 확인
         this.checkAuthStatus();
+        
+        // WebSocket 연결
         this.connect();
+        
+        // 채팅방 목록 로드 (사용자가 경험한 에러를 해결하는 핵심 기능)
         this.loadChatRooms();
     }
 
     checkAuthStatus() {
         const token = this.apiClient.getAuthToken();
         if (token) {
+            // 토큰에서 사용자 정보 추출 (간단한 디코딩)
             try {
                 const payload = JSON.parse(atob(token.split('.')[1]));
                 this.currentUser = payload.sub || 'User';
@@ -44,6 +44,10 @@ class ChatClient {
         }
     }
 
+    /**
+     * 서버에서 채팅방 목록을 불러오는 핵심 메서드
+     * 이 메서드가 "모집방 리스트를 찾을 수 없습니다" 에러를 해결합니다
+     */
     async loadChatRooms() {
         try {
             console.log('채팅방 목록을 로드하는 중...');
@@ -63,6 +67,9 @@ class ChatClient {
         }
     }
     
+    /**
+     * 채팅방 목록을 화면에 렌더링합니다
+     */
     renderChatRoomsList() {
         const container = document.getElementById('chatRoomsList');
         if (!container) return;
@@ -96,6 +103,9 @@ class ChatClient {
         container.innerHTML = roomsHTML;
     }
     
+    /**
+     * 채팅방 목록 로드 실패 시 에러 메시지를 표시합니다
+     */
     showChatRoomsError(message) {
         const container = document.getElementById('chatRoomsList');
         if (!container) return;
@@ -112,6 +122,9 @@ class ChatClient {
         `;
     }
     
+    /**
+     * 특정 채팅방에 입장하는 메서드
+     */
     enterSpecificRoom(roomId) {
         const username = document.getElementById('username').value.trim();
         
@@ -121,11 +134,13 @@ class ChatClient {
             return;
         }
         
+        // roomId를 설정하고 기존 입장 로직 사용
         document.getElementById('customRoomId').value = roomId;
         this.enterChatRoom(roomId, username);
     }
 
     connect() {
+        // nginx 프록시 환경을 고려한 WebSocket 연결 설정
         const protocol = window.location.protocol === 'https:' ? 'https:' : 'http:';
         const host = window.location.host;
         const wsUrl = `${protocol}//${host}/ws-stomp`;
@@ -135,10 +150,12 @@ class ChatClient {
         const socket = new SockJS(wsUrl);
         this.stompClient = Stomp.over(socket);
         
+        // 디버그 모드 활성화
         this.stompClient.debug = (str) => {
             console.log('STOMP Debug:', str);
         };
         
+        // 연결 설정
         this.stompClient.connect({}, 
             (frame) => {
                 console.log('WebSocket Connected: ' + frame);
@@ -150,6 +167,7 @@ class ChatClient {
                 this.connected = false;
                 this.updateConnectionStatus('서버 연결 실패 - 재연결 시도 중...', 'error');
                 
+                // 5초 후 재연결 시도
                 setTimeout(() => {
                     console.log('WebSocket 재연결 시도...');
                     this.connect();
@@ -172,6 +190,7 @@ class ChatClient {
             </div>
         `;
         
+        // 상태에 따른 스타일 변경
         statusDiv.className = status === 'success' ? 
             'mb-4 p-3 rounded-md bg-green-100 text-green-800' :
             status === 'error' ?
@@ -180,9 +199,12 @@ class ChatClient {
     }
 
     /**
-     * 🔧 완전히 개선된 채팅방 입장 메서드 - 중복 메시지 문제 해결!
+     * 채팅방에 입장하는 개선된 메서드
+     * 🎯 핵심 개선사항: 입장 시 기존 메시지 히스토리를 불러옵니다!
+     * 이제 roomId와 username을 파라미터로 받아 더 유연하게 사용할 수 있습니다
      */
     async enterChatRoom(roomId = null, username = null) {
+        // 파라미터로 받지 않은 경우 입력 필드에서 가져오기
         const finalUsername = username || document.getElementById('username').value.trim();
         const finalRoomId = roomId || document.getElementById('customRoomId').value.trim();
         
@@ -201,136 +223,84 @@ class ChatClient {
             return;
         }
 
-        // 🔧 1단계: 기존 구독 완전히 해제 (중복 방지의 핵심!)
-        if (this.subscription) {
+        // 이전 구독이 있다면 해제 (중복 구독 방지)
+        if (this.currentRoom && this.stompClient) {
             try {
-                console.log('🔧 기존 구독 해제 중...');
-                this.subscription.unsubscribe();
-                this.subscription = null;
+                this.stompClient.unsubscribe(`/sub/chat/room/${this.currentRoom}`);
             } catch (e) {
                 console.log('기존 구독 해제 중 오류:', e);
             }
         }
 
-        // 🔧 2단계: 사용자 상태 초기화
-        this.userStatus.clear();
-        this.messageHistory.clear();
-        this.isProcessingMessage = false;
-
         this.currentRoom = finalRoomId;
         this.currentUser = finalUsername;
         
-        // 🔧 3단계: 메시지 영역 관리 (같은 방 재입장 체크)
+        // 🚨 중요: 같은 방에 재입장하는 경우가 아닐 때만 메시지 영역 초기화
         const messageArea = document.getElementById('messageArea');
         const currentRoomDisplay = document.getElementById('currentRoom');
         const isReenteringSameRoom = currentRoomDisplay.textContent === finalRoomId && messageArea.children.length > 0;
         
         if (!isReenteringSameRoom) {
+            // 다른 방에 입장하거나 첫 입장인 경우에만 초기화
             messageArea.innerHTML = '';
+            // 🎯 핵심 기능 추가: 기존 메시지 히스토리 불러오기
             await this.loadMessageHistory(finalRoomId);
         }
         
-        // 🔧 4단계: 새로운 구독 생성 (중복 방지)
-        console.log('🔧 새로운 구독 생성 중...');
-        this.subscription = this.stompClient.subscribe(`/sub/chat/room/${finalRoomId}`, (message) => {
-            try {
-                const chatMessage = JSON.parse(message.body);
-                this.handleReceivedMessage(chatMessage);
-            } catch (e) {
-                console.error('메시지 파싱 오류:', e);
-            }
+        // 채팅룸 구독 (실시간 메시지 수신)
+        this.stompClient.subscribe(`/sub/chat/room/${finalRoomId}`, (message) => {
+            const chatMessage = JSON.parse(message.body);
+            this.displayMessage(chatMessage);
         });
 
-        // 🔧 5단계: 중복 체크 후 입장 메시지 전송
-        const userKey = `${finalUsername}_${finalRoomId}`;
-        if (!this.userStatus.get(userKey)) {
-            this.userStatus.set(userKey, true); // 입장 상태 기록
-            
-            const enterMessage = {
-                type: 'ENTER',
-                roomId: finalRoomId,
-                sender: finalUsername,
-                message: '',
-                timestamp: Date.now() // 중복 체크용 타임스탬프
-            };
-            
-            this.stompClient.send('/pub/chat/message', {}, JSON.stringify(enterMessage));
-            console.log('🔧 입장 메시지 전송 완료');
-        }
+        // 입장 메시지 전송
+        const enterMessage = {
+            type: 'ENTER',
+            roomId: finalRoomId,
+            sender: finalUsername,
+            message: ''
+        };
+        
+        this.stompClient.send('/pub/chat/message', {}, JSON.stringify(enterMessage));
         
         // UI 업데이트
         document.getElementById('joinSection').classList.add('hidden');
         document.getElementById('chatSection').classList.remove('hidden');
         document.getElementById('currentRoom').textContent = finalRoomId;
         
+        // 메시지 입력 필드에 포커스
         document.getElementById('messageInput').focus();
         
-        console.log(`🔧 채팅방 입장 완료: ${finalRoomId} (사용자: ${finalUsername})`);
-    }
-
-    /**
-     * 🔧 새로운 메시지 수신 처리 메서드 (중복 방지 로직 포함)
-     */
-    handleReceivedMessage(chatMessage) {
-        // 🔧 메시지 중복 체크
-        const messageId = this.generateMessageId(chatMessage);
-        if (this.messageHistory.has(messageId)) {
-            console.log('🔧 중복 메시지 감지, 무시:', messageId);
-            return;
-        }
-        
-        // 🔧 처리 중 플래그로 동시 처리 방지
-        if (this.isProcessingMessage) {
-            setTimeout(() => this.handleReceivedMessage(chatMessage), 100);
-            return;
-        }
-        
-        this.isProcessingMessage = true;
-        
-        try {
-            this.messageHistory.add(messageId);
-            this.displayMessage(chatMessage);
-            
-            // 🔧 메시지 히스토리 크기 제한 (메모리 절약)
-            if (this.messageHistory.size > 1000) {
-                const oldestMessage = this.messageHistory.values().next().value;
-                this.messageHistory.delete(oldestMessage);
-            }
-        } finally {
-            this.isProcessingMessage = false;
-        }
-    }
-
-    /**
-     * 🔧 메시지 고유 ID 생성 (중복 체크용)
-     */
-    generateMessageId(message) {
-        const content = message.message || message.fileUrl || '';
-        return `${message.type}_${message.sender}_${message.roomId}_${content}_${message.timestamp || Date.now()}`;
+        console.log(`채팅방 입장 완료: ${finalRoomId} (사용자: ${finalUsername})`);
     }
     
+    /**
+     * 🎯 새로 추가된 핵심 메서드: 채팅방의 기존 메시지 히스토리를 불러옵니다
+     * 이 메서드가 메시지 지속성 문제를 해결하는 핵심 기능입니다!
+     */
     async loadMessageHistory(roomId) {
         try {
             console.log(`채팅방 ${roomId}의 메시지 히스토리를 불러오는 중...`);
             
+            // 새로운 API 엔드포인트 호출
             const response = await this.apiClient.get(`/api/chat/rooms/${roomId}/messages?limit=100`);
             
             if (response.success && response.data) {
                 const messages = response.data;
                 console.log(`${messages.length}개의 기존 메시지를 불러왔습니다`);
                 
+                // 기존 메시지들을 시간순으로 표시
                 messages.forEach(message => {
+                    // 데이터베이스 메시지를 DTO 형태로 변환
                     const messageDTO = this.convertEntityToDTO(message);
-                    this.displayMessage(messageDTO, true);
-                    
-                    // 🔧 기존 메시지들도 중복 체크용 히스토리에 추가
-                    const messageId = this.generateMessageId(messageDTO);
-                    this.messageHistory.add(messageId);
+                    this.displayMessage(messageDTO, true); // 기존 메시지임을 표시
                 });
                 
+                // 메시지 영역을 맨 아래로 스크롤
                 const messageArea = document.getElementById('messageArea');
                 messageArea.scrollTop = messageArea.scrollHeight;
                 
+                // 기존 메시지가 있는 경우 구분선 추가
                 if (messages.length > 0) {
                     this.addMessageDivider();
                 }
@@ -340,10 +310,14 @@ class ChatClient {
             }
         } catch (error) {
             console.error('메시지 히스토리 로드 실패:', error);
+            // 에러가 발생해도 채팅방 입장은 계속 진행
             this.showNotification('이전 메시지를 불러오는데 실패했습니다', 'warning');
         }
     }
     
+    /**
+     * 데이터베이스 엔티티를 DTO 형태로 변환하는 헬퍼 메서드
+     */
     convertEntityToDTO(entity) {
         return {
             type: entity.messageType,
@@ -352,10 +326,13 @@ class ChatClient {
             message: entity.messageContent,
             fileUrl: entity.fileUrl,
             thumbnailUrl: entity.thumbnailUrl,
-            timestamp: entity.createdAt
+            timestamp: entity.createdAt // 생성 시간 추가
         };
     }
     
+    /**
+     * 기존 메시지와 새 메시지를 구분하는 구분선을 추가합니다
+     */
     addMessageDivider() {
         const messageArea = document.getElementById('messageArea');
         const dividerElement = document.createElement('div');
@@ -368,6 +345,9 @@ class ChatClient {
         messageArea.appendChild(dividerElement);
     }
     
+    /**
+     * 사용자에게 알림을 표시하는 헬퍼 메서드
+     */
     showNotification(message, type = 'info') {
         const notification = document.createElement('div');
         const bgColor = type === 'success' ? 'bg-green-100 text-green-800' :
@@ -380,6 +360,7 @@ class ChatClient {
         
         document.body.appendChild(notification);
         
+        // 3초 후 자동 제거
         setTimeout(() => {
             if (notification.parentNode) {
                 notification.parentNode.removeChild(notification);
@@ -387,46 +368,27 @@ class ChatClient {
         }, 3000);
     }
 
-    /**
-     * 🔧 개선된 채팅방 퇴장 메서드
-     */
     leaveChatRoom() {
         if (this.currentRoom && this.currentUser) {
-            // 🔧 중복 체크 후 퇴장 메시지 전송
-            const userKey = `${this.currentUser}_${this.currentRoom}`;
-            if (this.userStatus.get(userKey)) {
-                this.userStatus.set(userKey, false); // 퇴장 상태 기록
-                
-                const leaveMessage = {
-                    type: 'LEAVE',
-                    roomId: this.currentRoom,
-                    sender: this.currentUser,
-                    message: '',
-                    timestamp: Date.now()
-                };
-                
-                this.stompClient.send('/pub/chat/message', {}, JSON.stringify(leaveMessage));
-                console.log('🔧 퇴장 메시지 전송 완료');
-            }
+            // 퇴장 메시지 전송
+            const leaveMessage = {
+                type: 'LEAVE',
+                roomId: this.currentRoom,
+                sender: this.currentUser,
+                message: ''
+            };
+            
+            this.stompClient.send('/pub/chat/message', {}, JSON.stringify(leaveMessage));
         }
         
-        // 🔧 구독 해제
-        if (this.subscription) {
-            this.subscription.unsubscribe();
-            this.subscription = null;
-        }
-        
-        // UI 복원
+        // UI 복원 (메시지 영역은 초기화하지 않음 - 메시지 지속성 유지)
         document.getElementById('joinSection').classList.remove('hidden');
         document.getElementById('chatSection').classList.add('hidden');
+        // document.getElementById('messageArea').innerHTML = ''; // 이 줄을 제거하여 메시지 지속성 유지
         
         this.currentRoom = null;
-        this.userStatus.clear();
     }
 
-    /**
-     * 🔧 개선된 메시지 전송 메서드 (중복 방지)
-     */
     sendMessage() {
         const messageInput = document.getElementById('messageInput');
         const messageText = messageInput.value.trim();
@@ -440,26 +402,15 @@ class ChatClient {
             return;
         }
 
-        // 🔧 중복 전송 방지
-        const messageWithTime = `${messageText}_${Date.now()}`;
-        if (this.lastSentMessage === messageWithTime) {
-            console.log('🔧 중복 메시지 전송 방지');
-            return;
-        }
-        this.lastSentMessage = messageWithTime;
-
         const message = {
             type: 'TALK',
             roomId: this.currentRoom,
             sender: this.currentUser,
-            message: messageText,
-            timestamp: Date.now()
+            message: messageText
         };
         
         this.stompClient.send('/pub/chat/message', {}, JSON.stringify(message));
         messageInput.value = '';
-        
-        console.log('🔧 메시지 전송 완료:', messageText);
     }
 
     async uploadFile() {
@@ -475,11 +426,13 @@ class ChatClient {
             return;
         }
 
+        // 파일 크기 체크 (10MB)
         if (file.size > 10 * 1024 * 1024) {
             alert('파일 크기는 10MB 이하여야 합니다.');
             return;
         }
 
+        // 파일 타입 체크
         const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'video/mp4', 'video/webm'];
         if (!allowedTypes.includes(file.type)) {
             alert('이미지 또는 비디오 파일만 업로드할 수 있습니다.');
@@ -495,9 +448,11 @@ class ChatClient {
             formData.append('roomId', this.currentRoom);
             formData.append('sender', this.currentUser);
             
+            // 파일 타입에 따른 메시지 타입 결정
             const messageType = file.type.startsWith('image/') ? 'IMAGE' : 'VIDEO';
             formData.append('messageType', messageType);
 
+            // 파일 업로드는 인증 없이 진행 (FormData는 자동으로 Content-Type 설정됨)
             const response = await fetch('/api/chat/upload-file', {
                 method: 'POST',
                 body: formData
@@ -511,13 +466,13 @@ class ChatClient {
             const result = await response.json();
             if (result.success) {
                 console.log('파일 업로드 성공:', result.data);
-                this.showNotification('파일이 성공적으로 업로드되었습니다!', 'success');
+                alert('파일이 성공적으로 업로드되었습니다!');
             } else {
                 throw new Error(result.message || '파일 업로드에 실패했습니다.');
             }
         } catch (error) {
             console.error('파일 업로드 오류:', error);
-            this.showNotification('파일 업로드에 실패했습니다: ' + error.message, 'error');
+            alert('파일 업로드에 실패했습니다: ' + error.message);
         } finally {
             progressDiv.classList.add('hidden');
             fileInput.value = '';
@@ -528,6 +483,7 @@ class ChatClient {
         const messageArea = document.getElementById('messageArea');
         const messageElement = document.createElement('div');
         
+        // 메시지 타입에 따른 스타일링
         const isMyMessage = message.sender === this.currentUser;
         const baseClass = `max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
             isMyMessage ? 
@@ -537,6 +493,7 @@ class ChatClient {
 
         let messageContent = '';
         
+        // 타임스탬프 처리 개선 (기존 메시지는 DB 타임스탬프, 새 메시지는 현재 시간)
         const messageTime = isHistoricalMessage && message.timestamp ? 
             new Date(message.timestamp).toLocaleTimeString() : 
             new Date().toLocaleTimeString();
@@ -545,8 +502,8 @@ class ChatClient {
             case 'ENTER':
                 messageElement.className = 'text-center text-gray-500 text-sm mb-2';
                 messageElement.innerHTML = `
-                    <div class="bg-green-100 text-green-800 rounded-full px-3 py-1 inline-block">
-                        ${message.sender}님이 입장하셨습니다.
+                    <div class="bg-gray-100 rounded-full px-3 py-1 inline-block">
+                        ${message.message}
                         ${isHistoricalMessage ? '<span class="text-xs text-gray-400 ml-2">(과거)</span>' : ''}
                     </div>
                 `;
@@ -555,7 +512,7 @@ class ChatClient {
             case 'LEAVE':
                 messageElement.className = 'text-center text-gray-500 text-sm mb-2';
                 messageElement.innerHTML = `
-                    <div class="bg-red-100 text-red-800 rounded-full px-3 py-1 inline-block">
+                    <div class="bg-gray-100 rounded-full px-3 py-1 inline-block">
                         ${message.sender}님이 퇴장하셨습니다.
                         ${isHistoricalMessage ? '<span class="text-xs text-gray-400 ml-2">(과거)</span>' : ''}
                     </div>
@@ -618,6 +575,7 @@ class ChatClient {
         
         messageArea.appendChild(messageElement);
         
+        // 새 메시지인 경우에만 자동 스크롤 (기존 메시지 로드 시에는 스크롤하지 않음)
         if (!isHistoricalMessage) {
             messageArea.scrollTop = messageArea.scrollHeight;
         }
@@ -630,34 +588,29 @@ class ChatClient {
     }
 
     disconnect() {
-        // 🔧 완전한 정리
-        if (this.subscription) {
-            this.subscription.unsubscribe();
-            this.subscription = null;
-        }
-        
         if (this.stompClient) {
             this.stompClient.disconnect();
         }
-        
         this.connected = false;
-        this.userStatus.clear();
-        this.messageHistory.clear();
-        console.log('🔧 연결 해제 완료');
+        console.log('Disconnected');
     }
 }
 
 // 전역 함수들
 let chatClient;
 
+// 페이지 로드 시 채팅 클라이언트 초기화
 document.addEventListener('DOMContentLoaded', function() {
     chatClient = new ChatClient();
 });
 
+// HTML에서 호출되는 함수들
+// 기존 방식: 사용자가 직접 입력한 값으로 입장
 function enterChatRoom() {
     chatClient.enterChatRoom();
 }
 
+// 새로운 방식: 사용자 정의 방 ID로 입장 (수동 입장)
 function enterCustomRoom() {
     const username = document.getElementById('username').value.trim();
     const roomId = document.getElementById('customRoomId').value.trim();
@@ -696,6 +649,7 @@ function logout() {
     }
 }
 
+// 페이지 언로드 시 연결 해제
 window.addEventListener('beforeunload', function() {
     if (chatClient) {
         chatClient.leaveChatRoom();

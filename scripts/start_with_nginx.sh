@@ -105,8 +105,8 @@ log_success "JAR 파일 확인: $JAR_FILE"
 
 # 4. Pinpoint 에이전트 다운로드 (선택사항)
 log_info "Pinpoint APM 에이전트 설정 확인..."
-PINPOINT_VERSION="2.5.2"
-PINPOINT_AGENT_PATH="build/pinpoint-agent/pinpoint-bootstrap-${PINPOINT_VERSION}.jar"
+PINPOINT_VERSION="2.5.3"
+PINPOINT_AGENT_PATH="build/pinpoint-agent/pinpoint-agent-${PINPOINT_VERSION}/pinpoint-bootstrap.jar"
 USE_PINPOINT=false
 
 if ./gradlew downloadPinpointAgent --info; then
