@@ -6,6 +6,16 @@ APP_NAME="rentcarservice"
 JAR_FILE_PATH="$DEPLOY_SOURCE_DIR/build/libs/*.jar"
 LOG_FILE="$APP_TARGET_DIR/deploy.log"
 
+PINPOINT_AGENT_DIR="/home/ec2-user/pinpoint-agent" # Pinpoint Agent가 설치된 경로
+AGENT_ID="rentcar-app-01"
+APPLICATION_NAME="RENTCAR-SERVICE"
+COLLECTOR_IP="127.0.0.1"
+
+JAVA_OPTS="-javaagent:$PINPOINT_AGENT_DIR/pinpoint-bootstrap.jar"
+JAVA_OPTS="$JAVA_OPTS -Dpinpoint.agentId=$AGENT_ID"
+JAVA_OPTS="$JAVA_OPTS -Dpinpoint.applicationName=$APPLICATION_NAME"
+JAVA_OPTS="$JAVA_OPTS -Dpinpoint.collector.ip=$COLLECTOR_IP"
+
 mkdir -p $APP_TARGET_DIR
 touch $LOG_FILE
 chown ec2-user:ec2-user $APP_TARGET_DIR
@@ -36,7 +46,7 @@ echo "Starting application as ec2-user..." >> $LOG_FILE
 #export Jwt_Secret="qwertyuiopasdfghjklzxcvbnmqwerty"
 #export Admin_Email="parkcw5784@gmail.com"
 
-su - ec2-user -c "nohup java -jar $APP_TARGET_DIR/$APP_NAME.jar > /dev/null 2>&1 &"
+su - ec2-user -c "nohup java $JAVA_OPTS -jar $APP_TARGET_DIR/$APP_NAME.jar > /dev/null 2>&1 &"
 
 echo "Checking if application has started..." >> $LOG_FILE
 sleep 15
