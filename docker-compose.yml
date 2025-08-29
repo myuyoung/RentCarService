@@ -1,40 +1,48 @@
-version: '3.2'
+# docker-compose.yml
+version: '3.3'
 services:
-  pinpoint-hbase:
-    image: pinpointdocker/hbase:2.4.17
+  # HBase (Zookeeper 포함)
+  hbase:
+    image: pinpointdocker/pinpoint-hbase:2.5.3
     container_name: pinpoint-hbase
     ports:
-      - "8081:8080"
-      - "9091:9090"
-      - "16001:16000"
-      - "16011:16010"
-      - "16021:16020"
-      - "16031:16030"
+      - "2181:2181" # Zookeeper
+      - "60000:60000"
+      - "60010:60010"
+      - "60020:60020"
+      - "60030:60030"
+      - "16010:16010" # HBase Master UI
     networks:
-      - pinpoint-network
+      - pinpoint_network
 
-  pinpoint-collector:
-    image: pinpointdocker/pinpoint-collector:2.5.2
+  # Pinpoint Collector
+  collector:
+    image: pinpointdocker/pinpoint-collector:2.5.3
     container_name: pinpoint-collector
-    depends_on:
-      - pinpoint-hbase
     ports:
-      - "9991:9991" # gRPC
-      - "9992:9992" # gRPC
-      - "9993:9993" # gRPC
+      - "9991:9991"
+      - "9992:9992"
+      - "9993:9993"
+    depends_on:
+      - hbase
     networks:
-      - pinpoint-network
+      - pinpoint_network
+    environment:
+      - "HBASE_HOST=hbase"
 
-  pinpoint-web:
-    image: pinpointdocker/pinpoint-web:2.5.2
+  # Pinpoint Web UI
+  web:
+    image: pinpointdocker/pinpoint-web:2.5.3
     container_name: pinpoint-web
-    depends_on:
-      - pinpoint-hbase
     ports:
-      - "8079:8080"
+      - "8080:8080" # Pinpoint Web UI 포트
+    depends_on:
+      - hbase
     networks:
-      - pinpoint-network
+      - pinpoint_network
+    environment:
+      - "HBASE_HOST=hbase"
 
 networks:
-  pinpoint-network:
+  pinpoint_network:
     driver: bridge

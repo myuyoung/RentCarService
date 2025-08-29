@@ -150,9 +150,7 @@ task downloadPinpointAgent(type: Copy) {
     into agentDir
 }
 
-// bootRun 태스크에 Pinpoint 에이전트 설정 추가 (임시 비활성화)
 bootRun {
-//     임시로 Agent 없이 실행
      dependsOn downloadPinpointAgent
 
      def agentPath = "${buildDir}/pinpoint-agent/pinpoint-agent-${pinpointVersion}/pinpoint-bootstrap.jar"

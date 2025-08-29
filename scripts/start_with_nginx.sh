@@ -103,23 +103,6 @@ if [ ! -f "$JAR_FILE" ]; then
 fi
 log_success "JAR 파일 확인: $JAR_FILE"
 
-# 4. Pinpoint 에이전트 다운로드 (선택사항)
-log_info "Pinpoint APM 에이전트 설정 확인..."
-PINPOINT_VERSION="2.5.3"
-PINPOINT_AGENT_PATH="build/pinpoint-agent/pinpoint-agent-${PINPOINT_VERSION}/pinpoint-bootstrap.jar"
-USE_PINPOINT=false
-
-if ./gradlew downloadPinpointAgent --info; then
-    if [ -f "$PINPOINT_AGENT_PATH" ]; then
-        USE_PINPOINT=true
-        log_success "Pinpoint 에이전트 준비 완료"
-    else
-        log_warning "Pinpoint 에이전트 파일을 찾을 수 없습니다. Pinpoint 없이 계속 진행합니다."
-    fi
-else
-    log_warning "Pinpoint 에이전트 다운로드 실패. Pinpoint 없이 계속 진행합니다."
-fi
-
 # 5. 기존 Spring Boot 프로세스 종료
 log_info "포트 7950 확인 중..."
 
