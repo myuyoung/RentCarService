@@ -1,48 +1,44 @@
 # docker-compose.yml
-version: '3.3'
-services:
-  # HBase (Zookeeper 포함)
-  hbase:
-    image: pinpointdocker/pinpoint-hbase:2.5.3
-    container_name: pinpoint-hbase
-    ports:
-      - "2181:2181" # Zookeeper
-      - "60000:60000"
-      - "60010:60010"
-      - "60020:60020"
-      - "60030:60030"
-      - "16010:16010" # HBase Master UI
-    networks:
-      - pinpoint_network
 
-  # Pinpoint Collector
+services:
+  hbase:
+    image: "pinpointdocker/pinpoint-hbase:3.0.3"
+    platform: linux/amd64  # <-- 이 줄을 추가해주세요!
+    container_name: "pinpoint-hbase"
+    ports:
+      - "2181:2181"
+      - "16000:16000"
+      - "16010:16010"
+      - "16020:16020"
+      - "16030:16030"
+    networks:
+      - pinpoint-network
+
   collector:
-    image: pinpointdocker/pinpoint-collector:2.5.3
-    container_name: pinpoint-collector
+    image: "pinpointdocker/pinpoint-collector:3.0.3"
+    platform: linux/amd64  # <-- 이 줄을 추가해주세요!
+    container_name: "pinpoint-collector"
+    depends_on:
+      - hbase
     ports:
       - "9991:9991"
       - "9992:9992"
       - "9993:9993"
-    depends_on:
-      - hbase
     networks:
-      - pinpoint_network
-    environment:
-      - "HBASE_HOST=hbase"
+      - pinpoint-network
 
-  # Pinpoint Web UI
   web:
-    image: pinpointdocker/pinpoint-web:2.5.3
-    container_name: pinpoint-web
-    ports:
-      - "8080:8080" # Pinpoint Web UI 포트
+    image: "pinpointdocker/pinpoint-web:3.0.3"
+    platform: linux/amd64  # <-- 이 줄을 추가해주세요!
+    container_name: "pinpoint-web"
     depends_on:
       - hbase
+      - collector
+    ports:
+      - "8080:8080"
     networks:
-      - pinpoint_network
-    environment:
-      - "HBASE_HOST=hbase"
+      - pinpoint-network
 
 networks:
-  pinpoint_network:
+  pinpoint-network:
     driver: bridge

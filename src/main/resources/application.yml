@@ -1,6 +1,6 @@
 spring:
   application:
-    name: WookApp  # Pinpoint APM에서 사용할 애플리케이션 이름
+    name: WookApp
   mail:
     host: smtp.naver.com
     port: 587
@@ -16,12 +16,12 @@ spring:
             trust: smtp.naver.com
             protocols: TLSv1.2
 
-# Actuator Health Check 설정 (Pinpoint APM 호환성 향상)
+# Actuator Health Check 설정
 management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics,prometheus,pinpoint  # Pinpoint 엔드포인트 노출
+        include: health,info,metrics,prometheus
   endpoint:
     health:
       show-details: always
@@ -42,7 +42,7 @@ management:
       settings:
         web-allow-others: false
       enabled: true
-  messages:
+  messages:  # (v) 중복: local 프로파일에도 동일 설정 존재
     basename: messages_ko
     encoding: UTF-8
   servlet:
@@ -65,7 +65,7 @@ jwt:
   expire: 3600000
 
 # 통합 파일 서빙 설정 (API + 정적 리소스)
-file:
+file:  # (v) 중복: local 프로파일에도 동일한 file 설정 존재
   upload:
     dir: ${user.home}/uploads/images
   upload-dir: ${user.home}/chat_files  # 채팅 파일 업로드용
@@ -98,7 +98,7 @@ logging:
   level:
     sql: debug
 
-jwt:
+jwt:  # (v) 중복: 기본 프로파일과 local 프로파일에 동일 설정
   secret: ${d9f82kd9fkdw92kfslaj2k39fkdslqwe}
   expire: 3600000
 
@@ -134,15 +134,15 @@ logging:
     org.springframework.web: DEBUG
     me.changwook: DEBUG
 
-jwt:
+jwt:  # (v) 중복: test 프로파일과 기본 설정에 동일 설정
   secret: ${Jwt_Secret:d9f82kd9fkdw92kfslaj2k39fkdslqwe}
   expire: 3600000
 
-messages:
+messages:  # (v) 중복: 기본 프로파일과 local 프로파일에 동일 설정
   basename: messages_ko
   encoding: UTF-8
 
-file:
+file:  # (v) 중복: 기본 프로파일과 동일 설정 반복
   upload:
     dir: ${user.home}/uploads/images
   upload-dir: ${user.home}/chat_files  # 채팅 파일 업로드용

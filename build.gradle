@@ -4,10 +4,6 @@ plugins {
     id 'io.spring.dependency-management' version '1.1.4'
 }
 
-// Pinpoint 설정 (최신 버전으로 업데이트)
-ext {
-    pinpointVersion = '2.5.3' // 사용할 Pinpoint 버전 (최신)
-}
 
 group = 'me.changwook'
 version = '1.0-SNAPSHOT'
@@ -116,51 +112,14 @@ tasks.named('test') {
     useJUnitPlatform()
 }
 
-// --- Pinpoint APM 설정 (활성화) ---
-
-// 1. Pinpoint 에이전트 .tar.gz 파일을 다운로드하는 태스크
-task downloadPinpointAgentTar(type: Exec) {
-    def agentTar = "pinpoint-agent-${pinpointVersion}.tar.gz"
-    def agentUrl = "https://github.com/pinpoint-apm/pinpoint/releases/download/v${pinpointVersion}/${agentTar}"
-    def downloadDir = "${buildDir}/pinpoint-download"
-    def tarFile = file("${downloadDir}/${agentTar}")
-
-    doFirst {
-        mkdir(downloadDir)
-    }
-
-    outputs.file(tarFile)
-    onlyIf { !tarFile.exists() }
-
-    commandLine 'curl', '-L', '-o', tarFile.absolutePath, agentUrl
-}
-
-// 2. 다운로드된 .tar.gz 파일의 압축을 해제하는 태스크
-task downloadPinpointAgent(type: Copy) {
-    dependsOn downloadPinpointAgentTar
-
-    def agentTar = "pinpoint-agent-${pinpointVersion}.tar.gz"
-    def downloadDir = "${buildDir}/pinpoint-download"
-    def tarFile = file("${downloadDir}/${agentTar}")
-    def agentDir = "${buildDir}/pinpoint-agent"
-
-    outputs.dir(agentDir)
-
-    from(tarTree(tarFile))
-    into agentDir
-}
-
 bootRun {
-     dependsOn downloadPinpointAgent
+    jvmArgs = [
+            "-javaagent:${project.projectDir}/agent/pinpoint-bootstrap-3.0.3.jar",
 
-     def agentPath = "${buildDir}/pinpoint-agent/pinpoint-agent-${pinpointVersion}/pinpoint-bootstrap.jar"
-     def agentId = "WookApp-Agent-001"
-     def applicationName = "WookApp"
 
-     jvmArgs = [
-             "-javaagent:${agentPath}",
-             "-Dpinpoint.agentId=${agentId}",
-             "-Dpinpoint.applicationName=${applicationName}"
-     ]
+            "-Dpinpoint.applicationName=RentCar-Service",
+
+
+            "-Dpinpoint.agentId=my-app-01"
+    ]
 }
-

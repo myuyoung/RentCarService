@@ -131,29 +131,15 @@ log_info "logs 디렉토리 준비 완료"
 # 7. Spring Boot 애플리케이션 시작
 log_info "Spring Boot 애플리케이션 시작 중..."
 
-if [ "$USE_PINPOINT" = true ]; then
-    AGENT_ID="wook-agent-$(hostname)-$$"
-    APPLICATION_NAME="Wook-Application"
-    
-    log_info "Pinpoint APM 활성화"
-    log_info "  - Agent ID: ${AGENT_ID}"
-    log_info "  - Application Name: ${APPLICATION_NAME}"
-    
-    nohup java \
-        -javaagent:"${PINPOINT_AGENT_PATH}" \
-        -Dpinpoint.agentId="${AGENT_ID}" \
-        -Dpinpoint.applicationName="${APPLICATION_NAME}" \
-        -jar "$JAR_FILE" \
-        --spring.profiles.active=local \
-        > logs/spring-boot.log 2>&1 &
-else
-    log_info "Pinpoint APM 없이 시작"
-    
-    nohup java \
-        -jar "$JAR_FILE" \
-        --spring.profiles.active=local \
-        > logs/spring-boot.log 2>&1 &
-fi
+log_info "Spring Boot 애플리케이션 시작"
+
+nohup java \
+    -javaagent:agent/pinpoint-bootstrap-3.0.3.jar \
+    -Dpinpoint.applicationName=RentCar-Service \
+    -Dpinpoint.agentId=my-app-01 \
+    -jar "$JAR_FILE" \
+    --spring.profiles.active=local \
+    > logs/spring-boot.log 2>&1 &
 
 SPRING_PID=$!
 log_info "Spring Boot 프로세스 시작됨 (PID: $SPRING_PID)"
@@ -235,7 +221,7 @@ elif sudo nginx -c "$NGINX_CONFIG"; then
     log_success "nginx가 sudo 권한으로 시작되었습니다!"
 else
     log_error "nginx 시작에 실패했습니다."
-    log_info "포트 8080이 이미 사용 중인지 확인: lsof -i :8080"
+    log_info "포트 8081이 이미 사용 중인지 확인: lsof -i :8081"
     kill -9 $SPRING_PID 2>/dev/null || true
     exit 1
 fi
@@ -249,17 +235,10 @@ echo ""
 echo "📊 서비스 정보:"
 echo "   - Spring Boot PID: $SPRING_PID"
 echo "   - Spring Boot URL: http://localhost:7950 (직접 접근)"
-echo "   - nginx 프록시: http://localhost:8080 (권장)"
+echo "   - nginx 프록시: http://localhost:8081 (권장)"
 echo "   - 로그 파일: $PROJECT_DIR/logs/spring-boot.log"
 echo ""
 
-if [ "$USE_PINPOINT" = true ]; then
-    echo "🔍 Pinpoint APM 정보:"
-    echo "   - Agent ID: ${AGENT_ID}"
-    echo "   - Application Name: ${APPLICATION_NAME}"
-    echo "   - Pinpoint Web UI: http://localhost:8079 (별도 설치 필요)"
-    echo ""
-fi
 
 echo "🛑 종료 방법:"
 echo "   bash scripts/stop_all.sh"
