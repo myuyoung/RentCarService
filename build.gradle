@@ -114,12 +114,8 @@ tasks.named('test') {
 
 bootRun {
     jvmArgs = [
-            "-javaagent:${project.projectDir}/agent/pinpoint-bootstrap-3.0.3.jar",
-
-
+            "-javaagent:${project.projectDir}/agent/pinpoint-agent-3.0.3/pinpoint-bootstrap-3.0.3.jar",
             "-Dpinpoint.applicationName=RentCar-Service",
-
-
             "-Dpinpoint.agentId=my-app-01"
     ]
 }

@@ -42,6 +42,7 @@ fi
 echo "🔍 포트 사용 상태 확인..."
 PORT_80_USED=$(lsof -ti:80)
 PORT_7950_USED=$(lsof -ti:7950)
+PORT_8081_USED=$(lsof -ti:8081)
 
 if [ ! -z "$PORT_80_USED" ]; then
     echo "⚠️  포트 80이 여전히 사용 중입니다 (PID: $PORT_80_USED)"
@@ -51,7 +52,11 @@ if [ ! -z "$PORT_7950_USED" ]; then
     echo "⚠️  포트 7950이 여전히 사용 중입니다 (PID: $PORT_7950_USED)"
 fi
 
-if [ -z "$PORT_80_USED" ] && [ -z "$PORT_7950_USED" ]; then
+if [ ! -z "$PORT_8081_USED" ]; then
+    echo "⚠️  포트 8081이 여전히 사용 중입니다 (PID: $PORT_8081_USED)"
+fi
+
+if [ -z "$PORT_80_USED" ] && [ -z "$PORT_7950_USED" ] && [ -z "$PORT_8081_USED" ]; then
     echo "✅ 모든 서비스가 정상적으로 종료되었습니다."
 else
     echo "🔧 필요시 수동으로 프로세스를 종료해주세요:"

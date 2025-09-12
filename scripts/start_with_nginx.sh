@@ -103,10 +103,10 @@ if [ ! -f "$JAR_FILE" ]; then
 fi
 log_success "JAR 파일 확인: $JAR_FILE"
 
-# 5. 기존 Spring Boot 프로세스 종료
-log_info "포트 7950 확인 중..."
+# 5. 기존 프로세스 종료
+log_info "포트 사용 상태 확인 중..."
 
-# Mac과 Linux 모두 호환되는 방식으로 포트 확인
+# Spring Boot 포트 7950 확인
 if lsof -i :7950 &>/dev/null; then
     SPRING_PID=$(lsof -ti:7950)
     log_warning "포트 7950을 사용 중인 프로세스를 종료합니다 (PID: $SPRING_PID)"
@@ -119,9 +119,27 @@ if lsof -i :7950 &>/dev/null; then
         kill -9 $SPRING_PID 2>/dev/null || true
         sleep 2
     fi
-    log_success "기존 프로세스 종료 완료"
+    log_success "포트 7950 프로세스 종료 완료"
 else
     log_info "포트 7950이 사용 가능합니다."
+fi
+
+# nginx 포트 8081 확인
+if lsof -i :8081 &>/dev/null; then
+    NGINX_PID=$(lsof -ti:8081)
+    log_warning "포트 8081을 사용 중인 프로세스를 종료합니다 (PID: $NGINX_PID)"
+    kill -15 $NGINX_PID 2>/dev/null || true
+    sleep 3
+    
+    # 강제 종료가 필요한 경우
+    if kill -0 $NGINX_PID 2>/dev/null; then
+        log_warning "프로세스를 강제 종료합니다..."
+        kill -9 $NGINX_PID 2>/dev/null || true
+        sleep 2
+    fi
+    log_success "포트 8081 프로세스 종료 완료"
+else
+    log_info "포트 8081이 사용 가능합니다."
 fi
 
 # 6. logs 디렉토리 생성
@@ -133,13 +151,50 @@ log_info "Spring Boot 애플리케이션 시작 중..."
 
 log_info "Spring Boot 애플리케이션 시작"
 
+#nohup java \
+#    -javaagent:agent/pinpoint-agent-3.0.3/pinpoint-bootstrap-3.0.3.jar \
+#    -Dpinpoint.applicationName=RentCarService \
+#    -Dpinpoint.agentId=rentcar-local-01 \
+#    -Dpinpoint.collector.ip=localhost \
+#    -jar "$JAR_FILE" \
+#    --spring.profiles.active=local \
+#    > logs/spring-boot.log 2>&1 &
+export PINPOINT_AGENT_PATH="$PROJECT_DIR/agent/pinpoint-agent-3.0.3/pinpoint-bootstrap-3.0.3.jar"
+log_info "Pinpoint Agent 경로: $PINPOINT_AGENT_PATH"
+
+# Pinpoint Agent 설정 확인
+if [ ! -f "$PINPOINT_AGENT_PATH" ]; then
+    log_error "Pinpoint Agent JAR 파일을 찾을 수 없습니다: $PINPOINT_AGENT_PATH"
+    log_info "Pinpoint Agent 없이 Spring Boot만 시작합니다."
+    PINPOINT_ENABLED=false
+else
+    log_success "Pinpoint Agent 파일 확인: $PINPOINT_AGENT_PATH"
+    PINPOINT_ENABLED=true
+fi
+
+# JAVA_TOOL_OPTIONS를 사용하여 JVM에 직접 Agent 옵션 주입
+if [ "$PINPOINT_ENABLED" = true ]; then
+    export JAVA_TOOL_OPTIONS="-javaagent:$PINPOINT_AGENT_PATH -Dpinpoint.applicationName=RentCar-Service -Dpinpoint.agentId=my-app-01 -Dpinpoint.profiler.profiles.active=local"
+    log_info "Pinpoint Agent와 함께 시작합니다."
+else
+    unset JAVA_TOOL_OPTIONS
+    log_info "Pinpoint Agent 없이 시작합니다."
+fi
+log_info "JAVA_TOOL_OPTIONS 설정 완료"
+
+log_info "Spring Boot 애플리케이션 시작"
+
 nohup java \
-    -javaagent:agent/pinpoint-bootstrap-3.0.3.jar \
-    -Dpinpoint.applicationName=RentCar-Service \
-    -Dpinpoint.agentId=my-app-01 \
     -jar "$JAR_FILE" \
     --spring.profiles.active=local \
     > logs/spring-boot.log 2>&1 &
+
+# 사용했던 환경 변수 정리 (다른 프로세스에 영향 방지)
+if [ "$PINPOINT_ENABLED" = true ]; then
+    unset JAVA_TOOL_OPTIONS
+fi
+unset PINPOINT_AGENT_PATH
+unset PINPOINT_ENABLED
 
 SPRING_PID=$!
 log_info "Spring Boot 프로세스 시작됨 (PID: $SPRING_PID)"
