@@ -1,0 +1,54 @@
+services:
+  # MySQL 데이터베이스 서비스
+  mysql:
+    image: mysql:8.0
+    container_name: rent-car-mysql
+    command: --default-authentication-plugin=caching_sha2_password --log-error-verbosity=2
+    environment:
+      MYSQL_ROOT_PASSWORD: root123
+      MYSQL_DATABASE: wookdb
+      MYSQL_USER: wook
+      MYSQL_PASSWORD: wookpw
+    ports:
+      - "3306:3306"
+    volumes:
+      # 데이터 영속성을 위한 볼륨 마운트
+      - mysql_data:/var/lib/mysql
+      # 초기 SQL 스크립트가 있다면 (선택사항)
+      # - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - pinpoint_network
+    restart: unless-stopped
+
+  # 내 애플리케이션 서비스 정의
+  rent-car-service:
+    # 1. 위에서 만든 Dockerfile을 사용하여 이미지를 빌드합니다.
+    build: .
+    container_name: rent-car-service
+    ports:
+      # 2. 내 애플리케이션의 포트(7950)를 외부(Mac)와 연결합니다.
+      - "7950:7950"
+    environment:
+      # MySQL 연결 정보를 환경변수로 설정
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/wookdb?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC
+      - SPRING_DATASOURCE_USERNAME=wook
+      - SPRING_DATASOURCE_PASSWORD=wookpw
+      - SPRING_PROFILES_ACTIVE=local
+      - SPRING_DATASOURCE_DRIVER_CLASS_NAME=com.mysql.cj.jdbc.Driver
+    depends_on:
+      # MySQL이 먼저 시작된 후 애플리케이션 시작
+      - mysql
+    networks:
+      # 3. pinpoint-docker가 생성한 네트워크에 연결합니다.
+      - pinpoint_network
+    restart: unless-stopped
+
+volumes:
+  # MySQL 데이터를 영구 저장하기 위한 볼륨
+  mysql_data:
+
+networks:
+  # 4. 'pinpoint-docker_default'라는 이름의 외부 네트워크를 사용하겠다고 선언합니다.
+  pinpoint_network:
+    external: true
+    name: pinpoint-docker_pinpoint
