@@ -14,5 +14,7 @@ ENTRYPOINT ["java", \
             "-javaagent:/pinpoint-agent/pinpoint-bootstrap-3.0.3.jar", \
             "-Dpinpoint.agentId=rentcar-app-01", \
             "-Dpinpoint.applicationName=RentCarService", \
-            "-Dprofiler.transport.grpc.collector.ip=pinpoint-collector", \
+            "-Dpinpoint.profiler.profiles.active=release", \
+            "-Dprofiler.transport.grpc.collector.ip=host.docker.internal", \
+            "-Dprofiler.transport.grpc.collector.port=9991", \
             "-jar", "/app.jar"]
