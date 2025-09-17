@@ -62,7 +62,8 @@ server:
   port: 7950
 jwt:
   secret: ${Jwt_Secret:d9f82kd9fkdw92kfslaj2k39fkdslqwe}
-  expire: 3600000
+  expire: 3600000 #1시간
+  refresh-expire: 36000000 #10시간
 
 # 통합 파일 서빙 설정 (API + 정적 리소스)
 file:  # (v) 중복: local 프로파일에도 동일한 file 설정 존재
@@ -77,30 +78,6 @@ file:  # (v) 중복: local 프로파일에도 동일한 file 설정 존재
   static-serving:
     enabled: true           # 정적 리소스 서빙 활성화
     cache-duration: 3600    # 캐시 지속시간 (초)
-
----
-
-spring:
-  config:
-    activate:
-      on-profile: test
-  datasource:
-    url: jdbc:h2:mem:wookdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
-    username: sa
-    password:
-    driver-class-name: org.h2.Driver
-  jpa:
-    properties:
-      hibernate:
-        format_sql: true
-
-logging:
-  level:
-    sql: debug
-
-jwt:  # (v) 중복: 기본 프로파일과 local 프로파일에 동일 설정
-  secret: ${d9f82kd9fkdw92kfslaj2k39fkdslqwe}
-  expire: 3600000
 
 ---
 
@@ -135,7 +112,8 @@ logging:
 
 jwt:  # (v) 중복: test 프로파일과 기본 설정에 동일 설정
   secret: ${Jwt_Secret:d9f82kd9fkdw92kfslaj2k39fkdslqwe}
-  expire: 3600000
+  expire: 10000 #10초
+  refresh-expire: 60000 #10분
 
 messages:  # (v) 중복: 기본 프로파일과 local 프로파일에 동일 설정
   basename: messages_ko

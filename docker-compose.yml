@@ -1,58 +1,3 @@
-#services:
-#  # MySQL 데이터베이스 서비스
-#  mysql:
-#    image: mysql:8.0
-#    container_name: rent-car-mysql
-#    command: --default-authentication-plugin=caching_sha2_password --log-error-verbosity=2
-#    environment:
-#      MYSQL_ROOT_PASSWORD: root123
-#      MYSQL_DATABASE: wookdb
-#      MYSQL_USER: wook
-#      MYSQL_PASSWORD: wookpw
-#    ports:
-#      - "3306:3306"
-#    volumes:
-#      # 데이터 영속성을 위한 볼륨 마운트
-#      - mysql_data:/var/lib/mysql
-#      # 초기 SQL 스크립트가 있다면 (선택사항)
-#      # - ./init.sql:/docker-entrypoint-initdb.d/init.sql
-#    networks:
-#      - pinpoint_network
-#    restart: unless-stopped
-#
-#  # 내 애플리케이션 서비스 정의
-#  rent-car-service:
-#    # 1. 위에서 만든 Dockerfile을 사용하여 이미지를 빌드합니다.
-#    build: .
-#    container_name: rent-car-service
-#    ports:
-#      # 2. 내 애플리케이션의 포트(7950)를 외부(Mac)와 연결합니다.
-#      - "7950:7950"
-#    environment:
-#      # MySQL 연결 정보를 환경변수로 설정
-#      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/wookdb?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC
-#      - SPRING_DATASOURCE_USERNAME=wook
-#      - SPRING_DATASOURCE_PASSWORD=wookpw
-#      - SPRING_PROFILES_ACTIVE=local
-#      - SPRING_DATASOURCE_DRIVER_CLASS_NAME=com.mysql.cj.jdbc.Driver
-#    depends_on:
-#      # MySQL이 먼저 시작된 후 애플리케이션 시작
-#      - mysql
-#    networks:
-#      # 3. pinpoint-docker가 생성한 네트워크에 연결합니다.
-#      - pinpoint_network
-#    restart: unless-stopped
-#
-#volumes:
-#  # MySQL 데이터를 영구 저장하기 위한 볼륨
-#  mysql_data:
-#
-#networks:
-#  # 4. 'pinpoint-docker_default'라는 이름의 외부 네트워크를 사용하겠다고 선언합니다.
-#  pinpoint_network:
-#    external: true
-#    name: pinpoint-docker_pinpoint
-
 services:
   rent-car-service:
     build: .
@@ -83,8 +28,55 @@ services:
       # application.yml의 username/password와 일치하도록 환경 변수를 추가합니다.
       MYSQL_USER: "wook"
       MYSQL_PASSWORD: "wookpw"
+    volumes:
+      # MySQL 데이터 영속성을 위한 볼륨 마운트 (선택사항)
+      - mysql_data:/var/lib/mysql
     networks:
       - pinpoint_network
+
+  # nginx 서비스 추가
+  rent-car-nginx:
+    image: nginx:latest
+    container_name: rent-car-nginx
+    ports:
+      - "80:80"    # 기본 HTTP 포트
+      - "8081:80"  # 기존 설정과의 호환성을 위한 추가 포트
+    volumes:
+      # Docker용 nginx 설정 파일을 컨테이너로 마운트
+      - ./nginx-docker.conf:/etc/nginx/nginx.conf:ro
+      # 로그 디렉토리 마운트 (선택사항)
+      - ./logs/nginx:/var/log/nginx
+    depends_on:
+      - rent-car-service
+    networks:
+      - pinpoint_network
+    # nginx 헬스체크 설정
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/nginx-health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # phpMyAdmin 서비스 추가 (웹 기반 MySQL 관리도구)
+  rent-car-phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: rent-car-phpmyadmin
+    ports:
+      - "8080:80"  # http://localhost:8080으로 접속
+    environment:
+      - PMA_HOST=rent-car-mysql
+      - PMA_PORT=3306
+      - PMA_USER=root
+      - PMA_PASSWORD=password
+      - MYSQL_ROOT_PASSWORD=password
+    depends_on:
+      - rent-car-mysql
+    networks:
+      - pinpoint_network
+
+volumes:
+  # MySQL 데이터 영속성을 위한 볼륨 정의
+  mysql_data:
 
 networks:
   pinpoint_network:

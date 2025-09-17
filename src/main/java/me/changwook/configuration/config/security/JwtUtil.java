@@ -1,12 +1,18 @@
 package me.changwook.configuration.config.security;
 
 
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.security.Keys;
 import javax.crypto.SecretKey;
+
+import io.jsonwebtoken.security.SignatureException;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.actuate.logging.LoggersEndpoint;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
@@ -14,16 +20,22 @@ import java.util.Date;
 @Component
 @Getter
 @Setter
+@Slf4j
 public class JwtUtil {
 
     private final SecretKey key;
     private final long expiration;
     private final long refreshInterval;
+    private final LoggersEndpoint loggersEndpoint;
 
-    public JwtUtil(@Value("${jwt.secret}") String secretKey, @Value ("${jwt.expire}") long expiration) {
+    public JwtUtil(
+            @Value("${jwt.secret}") String secretKey,
+            @Value ("${jwt.expire}") long expiration,
+            @Value("${jwt.refresh-expire}") long refreshInterval, LoggersEndpoint loggersEndpoint) {
         this.key = Keys.hmacShaKeyFor(secretKey.getBytes());
         this.expiration = expiration;
-        this.refreshInterval = expiration/2;
+        this.refreshInterval = refreshInterval;
+        this.loggersEndpoint = loggersEndpoint;
     }
 
     public String generateAccessToken(String username, String role) {
@@ -54,7 +66,14 @@ public class JwtUtil {
         try{
             Jwts.parser().verifyWith(key).build().parseSignedClaims(token);
             return true;
-        } catch (Exception e) {
+        }catch (ExpiredJwtException e){
+            throw e;
+        }catch (SignatureException | MalformedJwtException e){
+            log.warn("서명 오류나 형식이 잘못된 토큰입니다.");
+            return false;
+        }
+        catch (Exception e) {
+            log.error("JWT 토큰 검증에서 에러가 발생했습니다 {}",e.getMessage());
             return false;
         }
     }
