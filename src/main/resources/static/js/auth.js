@@ -78,33 +78,6 @@ class AuthManager {
         return true;
     }
 
-    setupTokenRefresh() {
-        // 5분마다 토큰 유효성 체크
-        setInterval(() => {
-            this.checkTokenValidity();
-        }, 5 * 60 * 1000);
-    }
-
-    async checkTokenValidity() {
-        if (!this.isAuthenticated()) return;
-
-        try {
-            // 보호된 엔드포인트로 토큰 유효성 확인
-            const response = await apiClient.get('/api/protected/test');
-            
-            if (!response.success && response.message?.includes('토큰')) {
-                // 토큰이 만료된 경우 자동 로그아웃
-                this.logout();
-                notification.warning('세션이 만료되었습니다. 다시 로그인해주세요.');
-                setTimeout(() => {
-                    window.location.href = '/login';
-                }, 2000);
-            }
-        } catch (error) {
-            console.error('토큰 유효성 검사 오류:', error);
-        }
-    }
-
     dispatchAuthEvent(type, data = null) {
         const event = new CustomEvent(`auth:${type}`, {
             detail: data

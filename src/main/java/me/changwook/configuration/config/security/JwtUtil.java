@@ -26,16 +26,14 @@ public class JwtUtil {
     private final SecretKey key;
     private final long expiration;
     private final long refreshInterval;
-    private final LoggersEndpoint loggersEndpoint;
 
     public JwtUtil(
             @Value("${jwt.secret}") String secretKey,
             @Value ("${jwt.expire}") long expiration,
-            @Value("${jwt.refresh-expire}") long refreshInterval, LoggersEndpoint loggersEndpoint) {
+            @Value("${jwt.refresh-expire}") long refreshInterval) {
         this.key = Keys.hmacShaKeyFor(secretKey.getBytes());
         this.expiration = expiration;
         this.refreshInterval = refreshInterval;
-        this.loggersEndpoint = loggersEndpoint;
     }
 
     public String generateAccessToken(String username, String role) {

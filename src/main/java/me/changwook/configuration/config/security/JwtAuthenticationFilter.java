@@ -1,8 +1,6 @@
 package me.changwook.configuration.config.security;
 
-import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.Jwts;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -45,37 +43,42 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     @NonNull HttpServletResponse response,
                                     @NonNull FilterChain filterChain) throws ServletException, IOException {
 
-        String token = getJwtFromRequest(request);
+        String accessToken = getJwtFromRequest(request);
 
-        if (StringUtils.hasText(token)) {
+        if (StringUtils.hasText(accessToken)) {
             try {
                 // 토큰 유효성 검증을 먼저 수행
-                if (jwtUtil.validateToken(token)) {
+                if (jwtUtil.validateToken(accessToken)) {
                     // 검증된 토큰에서 사용자 정보 추출
-                    setAuthentication(token, request);
+                    setAuthentication(accessToken, request);
                 }
             } catch (ExpiredJwtException e){
                 logger.info("액세스 토큰이 만료되었습니다. 리프레시 토큰으로 재발급 시도합니다.");
-                String refrehToken = getJwtFromRequest(request);
+                String refreshToken = getRefreshTokenFromCookie(request);
 
-                if (refrehToken != null && jwtUtil.validateToken(refrehToken)) {
+                try {
+                    if (refreshToken != null && jwtUtil.validateToken(refreshToken) && isRefreshTokenValidInDB(refreshToken)) {
 
-                    String username = jwtUtil.getUsernameFromToken(refrehToken);
-                    String role = jwtUtil.getRoleFromToken(refrehToken);
+                        String username = jwtUtil.getUsernameFromToken(refreshToken);
 
-                    String newAccessToken = jwtUtil.generateAccessToken(username,role);
+                        String role = jwtUtil.getRoleFromToken(refreshToken);
 
-                    setAuthentication(newAccessToken, request);
+                        String newAccessToken = jwtUtil.generateAccessToken(username,role);
 
-                    response.setHeader("X-New-Access-Token", newAccessToken);
-                }else{
-                    logger.warn("리프레시 토큰이 검증되지 않았거나 만료되었습니다.");
+                        setAuthentication(newAccessToken, request);
+
+                        response.setHeader("X-New-Access-Token", newAccessToken);
+                    }else{
+                        logger.warn("유효하지 않은 리프레시 토큰입니다.");
+                        SecurityContextHolder.clearContext();
+                    }
+                }catch (Exception ex) {
+                    logger.error("리프레시 토큰 처리 중 오류 발생" + ex.getMessage());
+                    // 인증 실패 시 SecurityContext 초기화
                     SecurityContextHolder.clearContext();
                 }
-            }
-            catch (Exception e) {
-                logger.error("JWT authentication error: " + e.getMessage());
-                // 인증 실패 시 SecurityContext 초기화
+            }catch (Exception e){
+                logger.error("JWT 인증 오류 " + e.getMessage());
                 SecurityContextHolder.clearContext();
             }
         }
@@ -113,6 +116,26 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         SecurityContextHolder.getContext().setAuthentication(authentication);
     }
 
+    private String getAccessTokenFromRequest(HttpServletRequest request) {
+        String bearerToken = request.getHeader("Authorization");
+        if(StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")){
+            return bearerToken.substring(7);
+        }
+        return null;
+    }
+
+    private String getRefreshTokenFromCookie(HttpServletRequest request) {
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if (cookie.getName().equals("refresh_token")) {
+                    return cookie.getValue();
+                }
+            }
+        }
+        return null;
+    }
+
     private String getJwtFromRequest(HttpServletRequest request) {
         // 1) Authorization 헤더 우선
         String bearerToken = request.getHeader("Authorization");
@@ -130,5 +153,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
         }
         return null;
+    }
+
+    private boolean isRefreshTokenValidInDB(String token){
+        String username = jwtUtil.getUsernameFromToken(token);
+        return refreshTokenRepository.findByUsername(username).map(refreshToken -> refreshToken.getToken().equals(token)).orElse(false);
+
     }
 }
