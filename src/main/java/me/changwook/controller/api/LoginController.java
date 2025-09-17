@@ -76,6 +76,8 @@ public class LoginController {
         return responseFactory.success("로그인이 성공했습니다.", authResponse);
     }
 
+    //    AJAX방식으로 클라이언트 단계에서 토큰을 재발급하는 로직(서버계층으로 바꿈)
+    @Deprecated
     @PostMapping("/refresh-token")
     @Transactional
     public ResponseEntity<ApiResponseDTO<AuthResponseDTO>> refreshToken(HttpServletRequest request, HttpServletResponse response) {
