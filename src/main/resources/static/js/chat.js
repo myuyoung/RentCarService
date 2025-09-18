@@ -6,7 +6,8 @@ class ChatClient {
         this.currentRoom = null;
         this.currentUser = null;
         this.connected = false;
-        this.apiClient = new ApiClient();
+        // 🔧 전역 apiClient 사용으로 토큰 동기화
+        this.apiClient = window.apiClient || apiClient;
         this.chatRooms = [];
         
         // 🔧 중복 방지를 위한 새로운 속성들
@@ -23,6 +24,19 @@ class ChatClient {
         this.checkAuthStatus();
         this.connect();
         this.loadChatRooms();
+        this.setupTokenRefreshListener();
+    }
+
+    setupTokenRefreshListener() {
+        // 전역 토큰 갱신 이벤트 리스너
+        window.addEventListener('tokenRefreshed', (event) => {
+            console.log('📋 채팅에서 토큰 갱신 감지:', event.detail.token);
+            
+            // 내부 apiClient도 새 토큰으로 업데이트
+            if (this.apiClient !== window.apiClient) {
+                this.apiClient.saveAuthToken(event.detail.token);
+            }
+        });
     }
 
     checkAuthStatus() {

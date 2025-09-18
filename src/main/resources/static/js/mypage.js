@@ -255,17 +255,54 @@ class MyPage {
         try {
             loading.show();
             
+            console.log('예약 내역 로드 시도 중...');
+            
+            // 토큰 상태 확인
+            const token = apiClient.getAuthToken();
+            console.log('토큰 상태:', token ? '토큰 존재' : '토큰 없음');
+            
             const response = await apiClient.get('/api/MyPage/reservation/list');
+            
+            console.log('예약 내역 응답:', response);
             
             if (response.success && response.data) {
                 this.renderReservations(response.data);
-            } else {
+                console.log(`예약 내역 로드 성공: ${response.data.length}건`);
+            } else if (response.success && (!response.data || response.data.length === 0)) {
                 container.innerHTML = '<p class="text-gray-500 text-center py-8">예약 내역이 없습니다.</p>';
+                console.log('예약 내역 없음');
+            } else {
+                console.error('예약 내역 로드 실패:', response.message);
+                container.innerHTML = `<p class="text-red-500 text-center py-8">예약 내역을 불러오는데 실패했습니다.<br><small>${response.message || ''}</small></p>`;
+                notification.error('예약 내역 로드 실패: ' + (response.message || '알 수 없는 오류'));
             }
             
         } catch (error) {
             console.error('예약 내역 로드 오류:', error);
-            container.innerHTML = '<p class="text-red-500 text-center py-8">예약 내역을 불러오는데 실패했습니다.</p>';
+            
+            let errorMessage = '예약 내역을 불러오는데 실패했습니다.';
+            
+            // 상세 오류 메시지
+            if (error.message) {
+                errorMessage += `<br><small>오류: ${error.message}</small>`;
+            }
+            
+            // 인증 오류 감지
+            if (error.message && error.message.includes('인증')) {
+                errorMessage += '<br><small>로그인을 다시 해주세요.</small>';
+                setTimeout(() => {
+                    window.location.href = '/login';
+                }, 3000);
+            }
+            
+            container.innerHTML = `<div class="text-red-500 text-center py-8">
+                <p>${errorMessage}</p>
+                <button onclick="myPage.loadReservations()" class="mt-4 bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">
+                    다시 시도
+                </button>
+            </div>`;
+            
+            notification.error('예약 내역 로드 중 오류가 발생했습니다.');
         } finally {
             loading.hide();
         }

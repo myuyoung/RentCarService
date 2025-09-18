@@ -80,7 +80,6 @@ file:  # (v) 중복: local 프로파일에도 동일한 file 설정 존재
     cache-duration: 3600    # 캐시 지속시간 (초)
 
 ---
-
 spring:
   config:
     activate:
@@ -113,7 +112,7 @@ logging:
 jwt:  # (v) 중복: test 프로파일과 기본 설정에 동일 설정
   secret: ${Jwt_Secret:d9f82kd9fkdw92kfslaj2k39fkdslqwe}
   expire: 10000 #10초
-  refresh-expire: 60000 #10분
+  refresh-expire: 86400000 #1일
 
 messages:  # (v) 중복: 기본 프로파일과 local 프로파일에 동일 설정
   basename: messages_ko
@@ -126,3 +125,51 @@ file:  # (v) 중복: 기본 프로파일과 동일 설정 반복
   resources:
     handler: /media/**
     locations: ${user.home}/chat_files/
+
+---
+spring:
+  config:
+    activate:
+      on-profile: local-test
+  port: 7950
+  forward-headers-strategy: native
+  servlet:
+    context-path: /
+  datasource:
+    url: jdbc:mysql://localhost:3306/wookdb?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+    username: ${MYSQL_USERNAME:wook}
+    password: ${MYSQL_PASSWORD:wookpw}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update  # 테이블 자동 생성/업데이트 활성화
+    properties:
+      hibernate:
+        default_batch_fetch_size: 1000
+        format_sql: true
+    database-platform: org.hibernate.dialect.MySQLDialect
+logging:
+  level:
+    org.hibernate.SQL: debug
+    org.hibernate.type.descriptor.sql.BasicBinder: trace
+    org.springframework.security: DEBUG
+    org.springframework.web: DEBUG
+    me.changwook: DEBUG
+
+jwt:  # (v) 중복: test 프로파일과 기본 설정에 동일 설정
+  secret: ${Jwt_Secret:d9f82kd9fkdw92kfslaj2k39fkdslqwe}
+  expire: 10000 #10초
+  refresh-expire: 86_400_000 #1일
+
+messages:  # (v) 중복: 기본 프로파일과 local 프로파일에 동일 설정
+  basename: messages_ko
+  encoding: UTF-8
+
+file:  # (v) 중복: 기본 프로파일과 동일 설정 반복
+  upload:
+    dir: ${user.home}/uploads/images
+  upload-dir: ${user.home}/chat_files  # 채팅 파일 업로드용
+  resources:
+    handler: /media/**
+    locations: ${user.home}/chat_files/
+

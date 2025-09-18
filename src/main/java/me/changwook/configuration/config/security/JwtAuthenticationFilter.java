@@ -43,38 +43,33 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     @NonNull HttpServletResponse response,
                                     @NonNull FilterChain filterChain) throws ServletException, IOException {
 
-        String accessToken = getJwtFromRequest(request);
+        String accessToken = getAccessTokenFromRequest(request);
 
         if (StringUtils.hasText(accessToken)) {
             try {
-                // 토큰 유효성 검증을 먼저 수행
-                if (jwtUtil.validateToken(accessToken)) {
-                    // 검증된 토큰에서 사용자 정보 추출
-                    setAuthentication(accessToken, request);
-                }
-            } catch (ExpiredJwtException e){
+                // 토큰 유효성 검증 - ExpiredJwtException 발생 가능
+                jwtUtil.validateToken(accessToken);
+                // 검증 성공 시 인증 설정
+                setAuthentication(accessToken, request);
+            } catch (ExpiredJwtException e) {
                 logger.info("액세스 토큰이 만료되었습니다. 리프레시 토큰으로 재발급 시도합니다.");
                 String refreshToken = getRefreshTokenFromCookie(request);
+                if (refreshToken != null && isRefreshTokenValidInDB(refreshToken)) {
+                    // DB에서 리프레시 토큰 확인
+                    String username = jwtUtil.getUsernameFromToken(refreshToken);
 
-                try {
-                    if (refreshToken != null && jwtUtil.validateToken(refreshToken) && isRefreshTokenValidInDB(refreshToken)) {
+                    String role = jwtUtil.getRoleFromToken(refreshToken);
 
-                        String username = jwtUtil.getUsernameFromToken(refreshToken);
+                    String newAccessToken = jwtUtil.generateAccessToken(username, role);
 
-                        String role = jwtUtil.getRoleFromToken(refreshToken);
+                    setAuthentication(newAccessToken, request);
 
-                        String newAccessToken = jwtUtil.generateAccessToken(username,role);
+                    response.setHeader("X-New-Access-Token", newAccessToken);
 
-                        setAuthentication(newAccessToken, request);
+                    logger.info("액세스 토큰이 성공적으로 갱신되었습니다. 사용자: " + username);
+                } else {
+                    logger.warn("DB에서 유효하지 않은 리프레시 토큰입니다.");
 
-                        response.setHeader("X-New-Access-Token", newAccessToken);
-                    }else{
-                        logger.warn("유효하지 않은 리프레시 토큰입니다.");
-                        SecurityContextHolder.clearContext();
-                    }
-                }catch (Exception ex) {
-                    logger.error("리프레시 토큰 처리 중 오류 발생" + ex.getMessage());
-                    // 인증 실패 시 SecurityContext 초기화
                     SecurityContextHolder.clearContext();
                 }
             }catch (Exception e){
@@ -82,7 +77,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 SecurityContextHolder.clearContext();
             }
         }
-        
         filterChain.doFilter(request, response);
     }
 
@@ -107,13 +101,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     //인증 처리 로직 메서드
     private void setAuthentication(String token, HttpServletRequest request) {
         String username = jwtUtil.getUsernameFromToken(token);
+        String role = jwtUtil.getRoleFromToken(token);
         UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+
+        logger.info("JWT 인증 설정: 사용자={}, JWT Role={}, UserDetails Authorities={}",
+                    username, role, userDetails.getAuthorities());
 
         UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
 
         authentication.setDetails(detailsSource.buildDetails(request));
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        logger.info("인증 컨텍스트 설정 완료: {}", SecurityContextHolder.getContext().getAuthentication().getAuthorities());
     }
 
     private String getAccessTokenFromRequest(HttpServletRequest request) {
@@ -128,26 +128,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         Cookie[] cookies = request.getCookies();
         if (cookies != null) {
             for (Cookie cookie : cookies) {
-                if (cookie.getName().equals("refresh_token")) {
-                    return cookie.getValue();
-                }
-            }
-        }
-        return null;
-    }
-
-    private String getJwtFromRequest(HttpServletRequest request) {
-        // 1) Authorization 헤더 우선
-        String bearerToken = request.getHeader("Authorization");
-        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
-            return bearerToken.substring(7);
-        }
-
-        // 2) 헤더가 없다면 accessToken 쿠키에서 조회 (페이지 네비게이션 시 자동 첨부)
-        Cookie[] cookies = request.getCookies();
-        if (cookies != null) {
-            for (Cookie cookie : cookies) {
-                if ("accessToken".equals(cookie.getName()) && StringUtils.hasText(cookie.getValue())) {
+                if (cookie.getName().equals("refreshToken")) {
                     return cookie.getValue();
                 }
             }

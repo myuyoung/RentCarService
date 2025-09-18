@@ -17,6 +17,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
+
 import me.changwook.domain.Role;
 
 @Service
@@ -47,11 +49,20 @@ public class LoginService {
         String refreshToken = jwtUtil.generateRefreshToken(username, role);
 
         // 리프레시 토큰 저장
-        refreshTokenRepository.save(RefreshToken.builder()
-                .username(username)
-                .token(refreshToken)
-                .expiryDate(jwtUtil.getExpirationDateFromToken(refreshToken).getTime())
-                .build());
+        Optional<RefreshToken> existingToken = refreshTokenRepository.findByUsername(username);
+        if (existingToken.isPresent()) {
+            // 기존 토큰이 있으면 새 토큰으로 업데이트
+            RefreshToken token = existingToken.get();
+            token.setToken(refreshToken);
+            token.setExpiryDate(jwtUtil.getExpirationDateFromToken(refreshToken).getTime());
+            refreshTokenRepository.save(token);
+        } else {
+            refreshTokenRepository.save(RefreshToken.builder()
+                    .username(username)
+                    .token(refreshToken)
+                    .expiryDate(jwtUtil.getExpirationDateFromToken(refreshToken).getTime())
+                    .build());
+        }
 
         // 권한에 따른 리다이렉트 URL 결정
         String redirectUrl = determineRedirectUrl(member.getRole());
@@ -69,8 +80,8 @@ public class LoginService {
         response.put("authResponse", authResponse);
         response.put("refresh-token", refreshToken);
 
-        log.info("사용자 로그인 성공: {} (권한: {}, 리다이렉트: {})", 
-                member.getEmail(), member.getRole(), redirectUrl);
+        log.info("사용자 로그인 성공: {} (권한: {}, Authority: {}, 리다이렉트: {})",
+                member.getEmail(), member.getRole(), role, redirectUrl);
         
         return response;
     }

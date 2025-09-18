@@ -14,6 +14,30 @@ class AuthManager {
         this.setupTokenRefresh();
     }
 
+    setupTokenRefresh() {
+        // 주기적으로 토큰 상태 확인 (5분마다)
+        setInterval(async () => {
+            const token = apiClient.getAuthToken();
+            if (token && this.isTokenNearExpiry(token)) {
+                console.log('토큰 만료 임박, 자동 갱신 시도');
+                await apiClient.refreshToken();
+            }
+        }, 5 * 60 * 1000); // 5분
+    }
+
+    // 토큰이 만료에 임박했는지 확인 (5분 전)
+    isTokenNearExpiry(token) {
+        try {
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            const now = Date.now() / 1000;
+            const expiryTime = payload.exp;
+            return (expiryTime - now) < 300; // 5분 이내 만료
+        } catch (e) {
+            console.error('토큰 파싱 오류:', e);
+            return true; // 오류 시 갱신 시도
+        }
+    }
+
     loadCurrentUser() {
         const token = apiClient.getAuthToken();
         const userInfo = localStorage.getItem('userInfo');

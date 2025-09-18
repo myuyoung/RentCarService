@@ -110,6 +110,18 @@ class ApiClient {
 
         try {
             const response = await fetch(this.baseURL + url, config);
+
+            // 서버에서 새 액세스 토큰을 헤더로 보낸 경우 처리
+            const newAccessToken = response.headers.get('X-New-Access-Token');
+            if (newAccessToken) {
+                console.log('✅ 서버에서 새 액세스 토큰 수신, 업데이트 중...');
+                this.saveAuthToken(newAccessToken);
+                // 갱신된 토큰을 다른 클라이언트들에게 브로드캐스트
+                window.dispatchEvent(new CustomEvent('tokenRefreshed', {
+                    detail: { token: newAccessToken }
+                }));
+            }
+
             const result = await response.json();
 
             // 토큰 만료 시 refresh token으로 갱신 시도
@@ -137,20 +149,32 @@ class ApiClient {
     // 토큰 갱신
     async refreshToken() {
         try {
+            console.log('🔄 토큰 갱신 시도 중...');
+            
             const response = await fetch('/auth/refresh-token', {
                 method: 'POST',
                 credentials: 'include'
             });
             const result = await response.json();
 
+            console.log('🔄 토큰 갱신 응답:', result);
+
             if (result.success) {
+                console.log('✅ 토큰 갱신 성공');
                 this.saveAuthToken(result.data.token);
+                
+                // 갱신된 토큰을 다른 클라이언트들에게 브로드캐스트
+                window.dispatchEvent(new CustomEvent('tokenRefreshed', {
+                    detail: { token: result.data.token }
+                }));
+            } else {
+                console.error('❌ 토큰 갱신 실패:', result.message);
             }
 
             return result;
         } catch (error) {
-            console.error('토큰 갱신 실패:', error);
-            return { success: false };
+            console.error('❌ 토큰 갱신 중 예외 발생:', error);
+            return { success: false, message: error.message };
         }
     }
 
@@ -641,3 +665,70 @@ window.notification = notification;
 window.loading = loading;
 window.utils = utils;
 window.imageStreaming = imageStreaming;
+
+// 디버깅을 위한 전역 헬퍼 함수들
+window.debugAuth = {
+    // 현재 토큰 상태 확인
+    checkToken: () => {
+        const token = apiClient.getAuthToken();
+        if (!token) {
+            console.log('❌ 토큰이 없습니다.');
+            return null;
+        }
+        
+        try {
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            const now = Date.now() / 1000;
+            const expiryTime = payload.exp;
+            const remainingTime = expiryTime - now;
+            
+            console.log('🔍 토큰 정보:');
+            console.log('  - 사용자:', payload.sub);
+            console.log('  - 역할:', payload.role);
+            console.log('  - 만료시간:', new Date(expiryTime * 1000).toLocaleString());
+            console.log('  - 남은시간:', Math.floor(remainingTime / 60) + '분 ' + Math.floor(remainingTime % 60) + '초');
+            
+            if (remainingTime < 300) {
+                console.log('⚠️  토큰이 5분 이내에 만료됩니다!');
+            }
+            
+            return { payload, remainingTime };
+        } catch (e) {
+            console.error('❌ 토큰 파싱 오류:', e);
+            return null;
+        }
+    },
+    
+    // 수동 토큰 갱신
+    refreshToken: async () => {
+        console.log('🔄 수동 토큰 갱신 시도...');
+        const result = await apiClient.refreshToken();
+        console.log('결과:', result);
+        return result;
+    },
+    
+    // 예약 내역 테스트
+    testReservations: async () => {
+        console.log('📋 예약 내역 API 테스트...');
+        try {
+            const response = await apiClient.get('/api/MyPage/reservation/list');
+            console.log('응답:', response);
+            return response;
+        } catch (error) {
+            console.error('오류:', error);
+            return null;
+        }
+    },
+    
+    // 로그 레벨 설정
+    enableVerboseLogging: () => {
+        window.DEBUG_MODE = true;
+        console.log('🔊 상세 로깅이 활성화되었습니다.');
+    }
+};
+
+console.log('🛠️  디버깅 도구가 준비되었습니다. window.debugAuth 객체를 사용하세요.');
+console.log('  - debugAuth.checkToken(): 현재 토큰 상태 확인');
+console.log('  - debugAuth.refreshToken(): 수동 토큰 갱신');
+console.log('  - debugAuth.testReservations(): 예약 내역 API 테스트');
+console.log('  - debugAuth.enableVerboseLogging(): 상세 로깅 활성화');
