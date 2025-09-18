@@ -130,7 +130,7 @@ file:  # (v) 중복: 기본 프로파일과 동일 설정 반복
 spring:
   config:
     activate:
-      on-profile: local-test
+      on-profile: local2
   port: 7950
   forward-headers-strategy: native
   servlet:

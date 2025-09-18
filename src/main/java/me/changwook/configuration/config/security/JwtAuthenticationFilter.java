@@ -104,8 +104,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String role = jwtUtil.getRoleFromToken(token);
         UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
-        logger.info("JWT 인증 설정: 사용자={}, JWT Role={}, UserDetails Authorities={}",
-                    username, role, userDetails.getAuthorities());
+        logger.info("JWT 인증 설정: 사용자={}, JWT Role={}, UserDetails Authorities={}" +
+                    username + role+ userDetails.getAuthorities());
 
         UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
 
@@ -113,7 +113,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        logger.info("인증 컨텍스트 설정 완료: {}", SecurityContextHolder.getContext().getAuthentication().getAuthorities());
+        logger.info("인증 컨텍스트 설정 완료: {}"+ SecurityContextHolder.getContext().getAuthentication().getAuthorities());
     }
 
     private String getAccessTokenFromRequest(HttpServletRequest request) {
