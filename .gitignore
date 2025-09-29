@@ -59,7 +59,5 @@ uploads/
 ./ngrinder-agent/
 ./ngrinder-controller/
 ./ngrinder-monitor/
-./ngrinder-controller-3.5.9-p1.war/
-./ngrinder-agent-3.5.9-p1-localhost.tar/
-./ngrinder-monitor-3.5.9-p1.tar/
-
+*.tar
+*.war
