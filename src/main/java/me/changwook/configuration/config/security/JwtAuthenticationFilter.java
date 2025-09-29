@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.Cookie;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import me.changwook.repository.RefreshTokenRepository;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -23,6 +24,7 @@ import java.util.Arrays;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final UserDetailsService userDetailsService;
@@ -52,7 +54,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 // 검증 성공 시 인증 설정
                 setAuthentication(accessToken, request);
             } catch (ExpiredJwtException e) {
-                logger.info("액세스 토큰이 만료되었습니다. 리프레시 토큰으로 재발급 시도합니다.");
+                log.info("액세스 토큰이 만료되었습니다. 리프레시 토큰으로 재발급 시도합니다.");
                 String refreshToken = getRefreshTokenFromCookie(request);
                 if (refreshToken != null && isRefreshTokenValidInDB(refreshToken)) {
                     // DB에서 리프레시 토큰 확인
@@ -66,14 +68,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                     response.setHeader("X-New-Access-Token", newAccessToken);
 
-                    logger.info("액세스 토큰이 성공적으로 갱신되었습니다. 사용자: " + username);
+                    log.info("액세스 토큰이 성공적으로 갱신되었습니다. 사용자: {}", username);
                 } else {
-                    logger.warn("DB에서 유효하지 않은 리프레시 토큰입니다.");
+                    log.warn("DB에서 유효하지 않은 리프레시 토큰입니다.");
 
                     SecurityContextHolder.clearContext();
                 }
             }catch (Exception e){
-                logger.error("JWT 인증 오류 " + e.getMessage());
+                log.error("JWT 인증 오류 {}", e.getMessage());
                 SecurityContextHolder.clearContext();
             }
         }
@@ -93,7 +95,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return uri.equals(path);
         });
 
-        logger.info("JWT Filter shouldNotFilter for URI " + uri + ": " + shouldSkip);
+        log.info("JWT Filter shouldNotFilter for URI {}: {}", uri, shouldSkip);
 
         return shouldSkip;
     }
@@ -104,8 +106,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String role = jwtUtil.getRoleFromToken(token);
         UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
-        logger.info("JWT 인증 설정: 사용자={}, JWT Role={}, UserDetails Authorities={}" +
-                    username + role+ userDetails.getAuthorities());
+        log.info("JWT 인증 설정: 사용자={}, JWT Role={}, UserDetails Authorities={}", username, role, userDetails.getAuthorities());
 
         UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
 
@@ -113,13 +114,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        logger.info("인증 컨텍스트 설정 완료: {}"+ SecurityContextHolder.getContext().getAuthentication().getAuthorities());
+        log.info("인증 컨텍스트 설정 완료: {}", SecurityContextHolder.getContext().getAuthentication().getAuthorities());
     }
 
     private String getAccessTokenFromRequest(HttpServletRequest request) {
-        String bearerToken = request.getHeader("Authorization");
-        if(StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")){
-            return bearerToken.substring(7);
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if (cookie.getName().equals("accessToken")) {
+                    return cookie.getValue();
+                }
+            }
         }
         return null;
     }

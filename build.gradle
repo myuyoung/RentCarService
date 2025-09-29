@@ -66,6 +66,7 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'
 
+
     // QueryDSL 의존성 (버전 5.1.0으로 통일, classifier 'jakarta' 사용)
     implementation 'com.querydsl:querydsl-jpa:5.1.0:jakarta'
     implementation 'com.querydsl:querydsl-core:5.1.0'
@@ -112,11 +113,20 @@ tasks.named('test') {
     useJUnitPlatform()
 }
 
-bootRun {
-    jvmArgs = [
-            "-javaagent:${project.projectDir}/agent/pinpoint-agent-3.0.3/pinpoint-bootstrap-3.0.3.jar",
-            "-Dpinpoint.applicationName=RentCar-Service",
-            "-Dpinpoint.agentId=my-app-01",
-            "-Dspring.profiles.active=local"
-    ]
+tasks.register('createNGrinderScriptsDir') {
+    doLast {
+        def scriptsDir = file('src/test/resources/ngrinder-scripts')
+        if (!scriptsDir.exists()) {
+            scriptsDir.mkdirs()
+            println "nGrinder 스크립트 디렉토리 생성: ${scriptsDir.absolutePath}"
+        }
+    }
 }
+//bootRun {
+//    jvmArgs = [
+//            "-javaagent:${project.projectDir}/agent/pinpoint-agent-3.0.3/pinpoint-bootstrap-3.0.3.jar",
+//            "-Dpinpoint.applicationName=RentCar-Service",
+//            "-Dpinpoint.agentId=my-app-01",
+//            "-Dspring.profiles.active=local"
+//    ]
+//}

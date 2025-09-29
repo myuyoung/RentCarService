@@ -332,11 +332,12 @@ class ChatClient {
             if (response.success && response.data) {
                 const messages = response.data;
                 console.log(`${messages.length}개의 기존 메시지를 불러왔습니다`);
-                
-                messages.forEach(message => {
+
+                // 🔧 메시지를 역순으로 정렬하여 오래된 메시지가 위에, 최신 메시지가 아래에 오도록 함
+                messages.reverse().forEach(message => {
                     const messageDTO = this.convertEntityToDTO(message);
                     this.displayMessage(messageDTO, true);
-                    
+
                     // 🔧 기존 메시지들도 중복 체크용 히스토리에 추가
                     const messageId = this.generateMessageId(messageDTO);
                     this.messageHistory.add(messageId);
@@ -405,12 +406,12 @@ class ChatClient {
      * 🔧 개선된 채팅방 퇴장 메서드
      */
     leaveChatRoom() {
-        if (this.currentRoom && this.currentUser) {
+        if (this.currentRoom && this.currentUser && this.connected) {
             // 🔧 중복 체크 후 퇴장 메시지 전송
             const userKey = `${this.currentUser}_${this.currentRoom}`;
             if (this.userStatus.get(userKey)) {
                 this.userStatus.set(userKey, false); // 퇴장 상태 기록
-                
+
                 const leaveMessage = {
                     type: 'LEAVE',
                     roomId: this.currentRoom,
@@ -418,23 +419,25 @@ class ChatClient {
                     message: '',
                     timestamp: Date.now()
                 };
-                
+
                 this.stompClient.send('/pub/chat/message', {}, JSON.stringify(leaveMessage));
                 console.log('🔧 퇴장 메시지 전송 완료');
             }
         }
-        
+
         // 🔧 구독 해제
         if (this.subscription) {
             this.subscription.unsubscribe();
             this.subscription = null;
         }
-        
+
         // UI 복원
         document.getElementById('joinSection').classList.remove('hidden');
         document.getElementById('chatSection').classList.add('hidden');
-        
+
+        // 🔧 연결 상태 초기화 (중복 퇴장 방지)
         this.currentRoom = null;
+        this.currentUser = null;
         this.userStatus.clear();
     }
 
@@ -711,8 +714,9 @@ function logout() {
 }
 
 window.addEventListener('beforeunload', function() {
-    if (chatClient) {
-        chatClient.leaveChatRoom();
+    if (chatClient && chatClient.currentRoom) {
+        // 🔧 페이지 종료 시에는 disconnect()만 호출하여 중복 방지
+        // leaveChatRoom()에서 이미 퇴장 메시지를 보내므로 disconnect()는 단순 정리용
         chatClient.disconnect();
     }
 });

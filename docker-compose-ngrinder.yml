@@ -1,0 +1,57 @@
+# docker-compose-ngrinder.yml
+services:
+  ngrinder-controller:
+    image: ngrinder/controller:3.5.9-p1
+    platform: linux/amd64
+    container_name: ngrinder-controller
+    # 1. 포트 매핑 추가: 호스트와 컨테이너의 포트를 연결합니다.
+    #    - 80: 웹 UI 포트
+    #    - 12000-12009: 에이전트 통신 및 데이터 전송 포트 범위
+    ports:
+      - "80:80"
+      - "16001:16001"
+      - "12000-12009:12000-12009"
+    volumes:
+      - ./ngrinder-controller:/opt/ngrinder-controller
+    environment:
+      - JAVA_OPTS=-Xms1g -Xmx2g -XX:MaxPermSize=512m
+    # 2. host.docker.internal 설정 유지: 컨테이너에서 호스트(Mac)의 애플리케이션에 접근하기 위해 필요합니다.
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    healthcheck:
+      # healthcheck는 컨테이너 내부에서 실행되므로 localhost를 사용해도 괜찮습니다.
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:80/login"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    # 3. ngrinder-net 이라는 커스텀 네트워크에 연결합니다.
+    networks:
+      - ngrinder-net
+
+  ngrinder-agent:
+    image: ngrinder/agent:3.5.9-p1
+    platform: linux/amd64
+    container_name: ngrinder-agent-1
+    depends_on:
+      ngrinder-controller:
+        condition: service_healthy
+    # Controller의 주소를 command 인자로 직접 전달합니다.
+    command: [ "ngrinder-controller:80" ] # <--- 이 줄을 추가합니다.
+    environment:
+      # CONTROLLER_ADDR은 command가 우선하므로 그대로 두거나 제거해도 괜찮습니다.
+      - CONTROLLER_ADDR=ngrinder-controller
+      - JAVA_OPTS=-Xms512m -Xmx1g -XX:MaxPermSize=256m
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - ngrinder-net
+
+# 7. ngrinder-net 이라는 브릿지 네트워크를 생성합니다.
+networks:
+  ngrinder-net:
+    driver: bridge
+
+# 볼륨 정의는 그대로 유지합니다.
+volumes:
+  ngrinder-controller:
