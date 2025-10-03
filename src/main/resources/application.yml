@@ -1,6 +1,13 @@
 spring:
+  config:
+    activate:
+      on-profile: prod
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://3306:3306/rentcarservice?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul
   application:
     name: WookApp
+  #JavaMailSender에 삽입할 smtp 네이버 정보
   mail:
     host: smtp.naver.com
     port: 587
@@ -21,7 +28,7 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics,prometheus
+        include: "health","info","metrics","prometheus"
   endpoint:
     health:
       show-details: always
@@ -31,11 +38,11 @@ management:
   jpa:
     open-in-view: false
     hibernate:
-      ddl-auto: update
+      ddl-auto: auto
     properties:
       hibernate:
         format_sql: false
-        default_batch_fetch_size: 1000
+        default_batch_fetch_size: 100
     database-platform: org.hibernate.dialect.H2Dialect
   h2:
     console:
@@ -90,8 +97,8 @@ spring:
     context-path: /
   datasource:
     url: jdbc:mysql://rent-car-mysql:3306/wookdb?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
-    username: ${MYSQL_USERNAME:wook}
-    password: ${MYSQL_PASSWORD:wookpw}
+    username: ${MYSQL_USERNAME}
+    password: ${MYSQL_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
