@@ -7,98 +7,90 @@ on:
     branches: ["main"]
 
 env:
-  # 변수 설정
   AWS_REGION: ap-northeast-2
-  S3_BUCKET_NAME: rentcar-service-deploy-bucket-myuyoung # Phase 1에서 만든 S3 버킷 이름
-  CODE_DEPLOY_APP_NAME: RentCarService-App # Phase 2에서 만든 CodeDeploy 애플리케이션 이름
-  CODE_DEPLOY_GROUP_NAME: RentCarService-Deployment-Group # Phase 2에서 만든 배포 그룹 이름
+  ECR_REPOSITORY: rent-car-service
+  ECS_CLUSTER: rentcar-cluster-2
+  ECS_SERVICE: rent-car-service
+  ECS_TASK_DEFINITION: rent-car-service-task-definition
+  CONTAINER_NAME: rent-car-service
 
+permissions:
+  contents: read
+
+# 실행될 작업(Job)들을 정의
 jobs:
-  build:
-    runs-on: ubuntu-latest
+  build-and-deploy:
+    name: Build and Deploy
+    runs-on: ubuntu-latest # 작업이 실행될 가상 환경
+    environment: production # GitHub 환경(Environments)을 사용하는 경우 명시
+
     steps:
+      # 1. 소스 코드 체크아웃
       - name: Checkout source code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
 
-      - name: Set up JDK 21
-        uses: actions/setup-java@v4
+      # 2. JDK 17 설치
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
         with:
-          java-version: '21'
-          distribution: 'corretto'
+          java-version: '17'
+          distribution: 'temurin'
 
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3
-
+      # 3. gradlew 실행 권한 부여
       - name: Grant execute permission for gradlew
-        run: chmod +x ./gradlew
+        run: chmod +x gradlew
 
+      # 4. Gradle 빌드 (CI)
       - name: Build with Gradle
-        run: ./gradlew build
+        uses: gradle/gradle-build-action@v2
+        with:
+          arguments: build
+
+      # ======================== CD (배포) 단계 ========================
+
+      # 5. AWS 자격 증명 구성
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      # 6. Amazon ECR 로그인
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      # 7. Docker 이미지 빌드, 태그 지정, ECR에 푸시
+      - name: Build, tag, and push image to Amazon ECR
+        id: build-image
         env:
-          Spring_Mail_UserName: ${{ secrets.Spring_Mail_UserName }}
-          Spring_Mail_Password: ${{ secrets.Spring_Mail_Password }}
-          Jwt_Secret: ${{ secrets.Jwt_Secret }}
-          Admin_Email: ${{ secrets.Admin_Email }}
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
-
-      # 배포 패키지 디렉터리 생성
-      - name: Make Directory for deploy package
-        run: mkdir -p deploy
-
-      # 빌드된 JAR, appspec.yml, scripts를 deploy 디렉터리로 복사
-      - name: Copy deployment files
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }} # Git Commit 해시를 이미지 태그로 사용하여 버전을 관리합니다.
         run: |
-          cp build/libs/*.jar deploy/
-          cp appspec.yml deploy/
-          cp -r scripts deploy/
+          docker build --platform linux/amd64 -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
 
-      # deploy 디렉터리를 zip으로 압축
-      - name: Make zip file
+      # 8. 기존 ECS 작업 정의 파일 다운로드
+      - name: Download task definition
         run: |
-          cd deploy
-          zip -r -qq ../rentcar-deploy.zip .
-          cd ..
+          aws ecs describe-task-definition --task-definition ${{ env.ECS_TASK_DEFINITION }} --query taskDefinition > task-definition.json
 
-      # 생성된 zip 파일을 아티팩트로 업로드
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
+      # 9. 새 이미지 주소로 작업 정의 파일 업데이트
+      - name: Fill in the new image ID in the Amazon ECS task definition
+        id: task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
-          name: deploy-package
-          path: ./rentcar-deploy.zip
+          task-definition: task-definition.json
+          container-name: ${{ env.CONTAINER_NAME }}
+          image: ${{ steps.build-image.outputs.image }}
 
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      # build job에서 업로드한 아티팩트 다운로드
-      - name: Download artifact
-        uses: actions/download-artifact@v4
+      # 10. 업데이트된 작업 정의를 ECS에 배포
+      - name: Deploy Amazon ECS task definition
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
         with:
-          name: deploy-package
-
-      # AWS 자격 증명 설정
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
-      - name: Load secrets from AWS Secrets Manager
-        uses: aws-actions/aws-secretsmanager-get-secrets@v1
-        with:
-          secret-ids: |
-            my-app/secrets
-          parse-json-secrets: true
-
-      # S3에 배포 패키지 업로드
-      - name: Upload to S3
-        run: aws s3 cp ./rentcar-deploy.zip s3://${{ env.S3_BUCKET_NAME }}/
-
-      # AWS CodeDeploy를 통해 배포 실행
-      - name: Deploy to EC2
-        run: aws deploy create-deployment --application-name ${{ env.CODE_DEPLOY_APP_NAME }} --deployment-group-name ${{ env.CODE_DEPLOY_GROUP_NAME }} --s3-location bucket=${{ env.S3_BUCKET_NAME }},bundleType=zip,key=rentcar-deploy.zip
+          task-definition: ${{ steps.task-def.outputs.task-definition }}
+          service: ${{ env.ECS_SERVICE }}
+          cluster: ${{ env.ECS_CLUSTER }}
+          wait-for-service-stability: true # 배포가 안정화될 때까지 10분간 기다립니다.
