@@ -2,7 +2,6 @@ package me.changwook;
 
 import lombok.extern.slf4j.Slf4j;
 import me.changwook.service.NotificationService;
-import me.changwook.util.AbstractIntegrationTest;
 
 
 @Slf4j
