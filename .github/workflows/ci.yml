@@ -43,6 +43,18 @@ jobs:
       # 4. Gradle 빌드 (CI)
       - name: Build with Gradle
         uses: gradle/gradle-build-action@v2
+        env:
+          # 테스트 실행 시 필요한 환경 변수들을 임시 값으로 주입합니다.
+          # 이 값들은 실제 배포에는 사용되지 않고 오직 'test' 단계에서만 사용됩니다.
+          DB_HOST: localhost
+          DB_PORT: 3306
+          DB_NAME: testdb
+          DB_USERNAME: sa
+          DB_PASSWORD: password
+          Jwt_Secret: TestSecretKeyForGitHubActions12345678901234567890
+          Spring_Mail_UserName: test@example.com
+          Spring_Mail_Password: testpassword
+          Admin_Email: admin@example.com
         with:
           arguments: build
 
