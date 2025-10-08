@@ -2,7 +2,6 @@ package me.changwook;
 
 import me.changwook.mapper.*;
 import me.changwook.service.NotificationService;
-import me.changwook.util.AbstractIntegrationTest;
 import org.mockito.Mockito;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
