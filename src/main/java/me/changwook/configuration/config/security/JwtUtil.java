@@ -28,9 +28,9 @@ public class JwtUtil {
     private final long refreshInterval;
 
     public JwtUtil(
-            @Value("${jwt.secret}") String secretKey,
-            @Value("${jwt.expire}") long expiration,
-            @Value("${jwt.refresh-expire}") long refreshInterval) {
+            @Value("${jwt.secret}")String secretKey,
+            @Value("${jwt.expire}")long expiration,
+            @Value("${jwt.refresh-expire}")long refreshInterval) {
         this.key = Keys.hmacShaKeyFor(secretKey.getBytes());
         this.expiration = expiration;
         this.refreshInterval = refreshInterval;
