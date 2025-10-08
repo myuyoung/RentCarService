@@ -24,7 +24,7 @@ spring:
 
 # --- JWT 관련 임시 값 ---
 jwt:
-  secret: 'TestSecretKeyForGitHubActionsMustBeLongEnoughToPassValidation12345'
+  secret: "d9f82kd9fkdw92kfslaj2k39fkdslqwe"
   expire: 3600000
   refresh-expire: 86400000
 
