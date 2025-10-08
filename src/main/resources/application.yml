@@ -24,7 +24,7 @@ spring:
           ssl:
             trust: smtp.naver.com
             protocols: TLSv1.2
-# Actuator Health Check 설정
+# Actuator Health Check 설정 ㅎ
 management:
   endpoints:
     web:
