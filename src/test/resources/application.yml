@@ -1,18 +1,26 @@
+# src/test/resources/application.yml
+
+# --- Spring Boot 테스트를 위한 전용 설정 ---
 spring:
+  # 테스트 환경에서는 H2 인메모리 DB를 사용하도록 설정
   datasource:
-    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;MODE=MySQL
     username: sa
     password:
     driver-class-name: org.h2.Driver
   jpa:
     hibernate:
-      ddl-auto: create-drop # 테스트가 끝날 때마다 DB를 초기화
+      ddl-auto: create-drop # 각 테스트 클래스가 끝날 때마다 DB 스키마를 초기화합니다.
+    # H2가 MySQL 문법을 이해하도록 설정합니다.
     database-platform: org.hibernate.dialect.H2Dialect
     properties:
       hibernate:
         format_sql: true
 
+# --- 테스트 환경에서 필요한 임시(dummy) 값 설정 ---
+# 이 값들은 실제 운영과 상관없이 오직 테스트 코드를 통과시키기 위한 용도입니다.
 jwt:
+  # JWT 라이브러리는 secret 키가 특정 길이 이상이어야 하므로, 충분히 긴 임의의 문자열을 사용합니다.
   secret: 'TestSecretKeyForGitHubActionsMustBeLongEnoughToPassValidation12345'
   expire: 3600000
   refresh-expire: 86400000
@@ -27,6 +35,8 @@ admin:
   notification:
     email: admin@example.com
 
+# --- 파일 업로드 테스트를 위한 임시 경로 설정 ---
+# 빌드 과정에서 생성되는 임시 디렉토리를 사용합니다.
 file:
   upload:
     dir: build/tmp/uploads/images
