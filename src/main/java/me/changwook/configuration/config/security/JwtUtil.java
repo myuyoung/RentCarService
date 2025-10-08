@@ -29,7 +29,7 @@ public class JwtUtil {
 
     public JwtUtil(
             @Value("${jwt.secret}") String secretKey,
-            @Value ("${jwt.expire}") long expiration,
+            @Value("${jwt.expire}") long expiration,
             @Value("${jwt.refresh-expire}") long refreshInterval) {
         this.key = Keys.hmacShaKeyFor(secretKey.getBytes());
         this.expiration = expiration;
