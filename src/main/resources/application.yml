@@ -4,7 +4,9 @@ spring:
       on-profile: prod
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://3306:3306/rentcarservice?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul
+    url: jdbc:mysql://${DB_HOST}:${DB_PORT}/${DB_NAME}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
   application:
     name: WookApp
   #JavaMailSender에 삽입할 smtp 네이버 정보
@@ -22,7 +24,6 @@ spring:
           ssl:
             trust: smtp.naver.com
             protocols: TLSv1.2
-
 # Actuator Health Check 설정
 management:
   endpoints:
@@ -38,17 +39,12 @@ management:
   jpa:
     open-in-view: false
     hibernate:
-      ddl-auto: auto
+      ddl-auto: update
     properties:
       hibernate:
         format_sql: false
         default_batch_fetch_size: 100
-    database-platform: org.hibernate.dialect.H2Dialect
-  h2:
-    console:
-      settings:
-        web-allow-others: false
-      enabled: true
+    database-platform: org.hibernate.dialect.MySQLDialect
   messages:  # (v) 중복: local 프로파일에도 동일 설정 존재
     basename: messages_ko
     encoding: UTF-8
@@ -57,7 +53,6 @@ management:
       enabled: true
       max-file-size: 10MB
       max-request-size: 10MB
-
 security:
   login:
     max-attempts: 5
@@ -68,7 +63,7 @@ admin:
 server:
   port: 7950
 jwt:
-  secret: ${Jwt_Secret:d9f82kd9fkdw92kfslaj2k39fkdslqwe}
+  secret: ${JWT_SECRET_KEY}
   expire: 3600000 #1시간
   refresh-expire: 36000000 #10시간
 

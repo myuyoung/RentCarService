@@ -19,7 +19,7 @@ services:
       - SPRING_MAIL_PASSWORD=${SPRING_MAIL_PASSWORD}
       - ADMIN_EMAIL=${ADMIN_EMAIL}
       # 활성 프로파일은 여기에 직접 지정하거나 .env 파일로 옮길 수 있습니다.
-      - SPRING_PROFILES_ACTIVE=local
+      - SPRING_PROFILES_ACTIVE=prod
       - SPRING_DATASOURCE_DRIVER_CLASS_NAME=com.mysql.cj.jdbc.Driver
     networks:
       - pinpoint_network

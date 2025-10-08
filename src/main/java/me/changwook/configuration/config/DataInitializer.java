@@ -17,7 +17,7 @@ import java.util.Arrays;
 import java.util.Optional;
 
 @Configuration
-@Profile({"test", "local", "local2"})
+@Profile({"test", "local", "local2","prod"})
 @RequiredArgsConstructor
 public class DataInitializer {
 
