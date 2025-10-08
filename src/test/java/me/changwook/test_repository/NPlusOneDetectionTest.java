@@ -133,7 +133,7 @@ class NPlusOneDetectionTest {
 		prepareCarsWithCategories(carCount);
 
 		stats.clear();
-		List<RentCars> cars = rentCarsRepository.findAllByCarId();
+		List<RentCars> cars = rentCarsRepository.findAllByRentCars();
 		// lazy 연관(category)에 접근하여 쿼리 유발
 		for (RentCars car : cars) {
 			if (car.getCategory() != null) {

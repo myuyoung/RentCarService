@@ -17,7 +17,7 @@ import java.util.Optional;
 public interface RentCarsRepository extends JpaRepository<RentCars, Long>, RentCarsRepositoryCustom {
 
     @Query("select rc from RentCars rc")
-    List<RentCars> findAllRentCars();
+    List<RentCars> findAllByRentCars();
 
     @Query("select rc from RentCars rc where rc.category.id = :categoryId")
     List<RentCars> findAllByCategoryId(@Param("categoryId") Long categoryId);
