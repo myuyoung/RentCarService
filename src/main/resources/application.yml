@@ -161,7 +161,7 @@ logging:
 jwt:
   secret: ${Jwt_Secret:d9f82kd9fkdw92kfslaj2k39fkdslqwe}
   expire: 10000 #10초
-  refresh-expire: 86_400_000 #1일
+  refresh-expire: 86400000 #1일
 
 messages:
   basename: messages_ko
