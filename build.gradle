@@ -122,6 +122,11 @@ tasks.register('createNGrinderScriptsDir') {
         }
     }
 }
+
+test{
+    useJUnitPlatform()
+    systemProperty ('spring.profiles.active','test')
+}
 //bootRun {
 //    jvmArgs = [
 //            "-javaagent:${project.projectDir}/agent/pinpoint-agent-3.0.3/pinpoint-bootstrap-3.0.3.jar",
