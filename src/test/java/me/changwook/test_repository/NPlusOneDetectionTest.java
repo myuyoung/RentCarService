@@ -156,7 +156,7 @@ class NPlusOneDetectionTest {
 		LocalDateTime start = LocalDate.now().atStartOfDay();
 		LocalDateTime end = LocalDate.now().plusDays(5).atStartOfDay();
 
-		RentCars anyCar = rentCarsRepository.findAll().getFirst();
+		RentCars anyCar = rentCarsRepository.findAll().get(0);
 
 		stats.clear();
 		List<Rent> rents = rentRepository.findOverLappingReservations(anyCar, start, end);

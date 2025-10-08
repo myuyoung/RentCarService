@@ -92,7 +92,7 @@ public class RentRepositoryTest {
                 .allSatisfy(rent -> assertThat(rent.getRentCars().getRentCarNumber())
                         .isEqualTo(testRentCars.getRentCarNumber()));
 
-        assertThat(foundRents.getFirst().getRentCars().getRentCarNumber())
+        assertThat(foundRents.get(0).getRentCars().getRentCarNumber())
                 .isEqualTo(testRentCars.getRentCarNumber());
     }
     
