@@ -13,8 +13,8 @@ spring:
   mail:
     host: smtp.naver.com
     port: 587
-    username: ${Spring_Mail_UserName:}
-    password: ${Spring_Mail_Password:}
+    username: ${Spring_Mail_UserName}
+    password: ${Spring_Mail_Password}
     properties:
       mail:
         smtp:
@@ -59,7 +59,7 @@ security:
     lockout-duration-minutes: 15
 admin:
   notification:
-    email: ${Admin_Email:}
+    email: ${Admin_Email}
 server:
   port: 7950
 jwt:
