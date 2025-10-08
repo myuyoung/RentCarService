@@ -1,47 +1,33 @@
 spring:
   datasource:
-    url: jdbc:h2:mem:wookdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1
     username: sa
     password:
     driver-class-name: org.h2.Driver
   jpa:
-    open-in-view: false
     hibernate:
-      ddl-auto: create
+      ddl-auto: create-drop # 테스트가 끝날 때마다 DB를 초기화
+    database-platform: org.hibernate.dialect.H2Dialect
     properties:
       hibernate:
-        #        show_sql: true
         format_sql: true
-        default_batch_fetch_size: 1000
-    database-platform: org.hibernate.dialect.H2Dialect
-  h2:
-    console:
-      settings:
-        web-allow-others: true
-      enabled: true
-  messages:
-    basename: messages_ko
-    encoding: UTF-8
-logging:
-  level:
-    sql: debug
+
 jwt:
-  secret: d9f82kd9fkdw92kfslaj2k39fkdslqwe
+  secret: 'TestSecretKeyForGitHubActionsMustBeLongEnoughToPassValidation12345'
   expire: 3600000
-security:
-  login:
-    max-attempts: 5
-    lockout-duration-minutes: 15
+  refresh-expire: 86400000
+
+spring.mail:
+  host: smtp.example.com
+  port: 587
+  username: test@example.com
+  password: testpassword
+
 admin:
   notification:
-    email: "test-admin@example.com"
+    email: admin@example.com
 
-# 파일 업로드 기본 설정 (테스트 환경용)
 file:
   upload:
-    dir: ${java.io.tmpdir}/test-upload
-    url-path: /images
-  upload-dir: ${java.io.tmpdir}/test-upload
-  resources:
-    handler: /media/**
-    locations: ${java.io.tmpdir}/test-chat-files/
+    dir: build/tmp/uploads/images
+  upload-dir: build/tmp/chat_files
