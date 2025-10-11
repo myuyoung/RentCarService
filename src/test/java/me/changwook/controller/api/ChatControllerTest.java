@@ -63,7 +63,8 @@ public class ChatControllerTest {
         
         // WebSocket 연결
         String url = "ws://localhost:" + port + "/ws-stomp";
-        stompSession = stompClient.connect(url, new StompSessionHandlerAdapter() {}).get(1, TimeUnit.SECONDS);
+        stompSession = stompClient.connectAsync(url, new StompSessionHandlerAdapter() {
+        }).get(1, TimeUnit.SECONDS);
     }
 
     @Test

@@ -1,5 +1,6 @@
 package me.changwook.controller.api;
 
+import me.changwook.DTO.MemberDTO;
 import me.changwook.service.impl.CarRegistrationSubmissionService;
 import me.changwook.service.impl.MemberService;
 import me.changwook.service.impl.RentService;
@@ -16,6 +17,7 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Arrays;
+import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -45,7 +47,7 @@ public class AdminControllerTest {
     @DisplayName("관리자 페이지 접근 테스트")
     @WithMockUser(roles = "ADMIN")
     void admin_page_access() throws Exception {
-        Page mockPage = new PageImpl(Arrays.asList());
+        Page<MemberDTO> mockPage = new PageImpl<>(List.of());
         
         when(memberService.getAllMembers(any(Pageable.class))).thenReturn(mockPage);
         when(responseFactory.success(anyString(), any())).thenReturn(
