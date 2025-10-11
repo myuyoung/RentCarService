@@ -46,9 +46,6 @@ spring:
       max-file-size: 10MB
       max-request-size: 10MB
 
-
-# ✅ management, admin, server, jwt, file 등은 Spring과 관련 없는
-# 독립적인 최상위 설정이므로 spring 블록 밖에 있어도 괜찮습니다.
 management:
   endpoints:
     web:
