@@ -125,7 +125,12 @@ tasks.register('createNGrinderScriptsDir') {
 
 test{
     useJUnitPlatform()
-    systemProperty ('spring.profiles.active','test')
+    systemProperty 'spring.profiles.active','test'
+}
+
+tasks.withType(JavaCompile) {
+    options.compilerArgs << "-Xlint:deprecation"
+    options.compilerArgs << "-Xlint:unchecked"
 }
 //bootRun {
 //    jvmArgs = [
