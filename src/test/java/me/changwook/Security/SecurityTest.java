@@ -5,6 +5,7 @@ import me.changwook.DTO.LoginRequestDTO;
 import me.changwook.DTO.RegisterMemberDTO;
 import me.changwook.TestConfig;
 import me.changwook.TestRegisterMemberDTO;
+import me.changwook.util.IntegrationTest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,11 +22,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest
-@AutoConfigureMockMvc
-@Import(TestConfig.class)
-//통합 테스트 목적 (회원가입 + 로그인{Spring Security와 JWT})
-public class SecurityTest {
+
+public class SecurityTest extends IntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;

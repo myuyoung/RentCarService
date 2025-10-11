@@ -2,6 +2,7 @@ package me.changwook.test_controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import me.changwook.TestRegisterMemberDTO;
+import me.changwook.util.IntegrationTest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,11 +20,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest
-@AutoConfigureMockMvc
-@Transactional
-@Rollback
-public class RegisterControllerValidationTest {
+
+public class RegisterControllerValidationTest extends IntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;

@@ -15,6 +15,7 @@ import me.changwook.repository.MemberRepository;
 import me.changwook.repository.RentCarsRepository;
 import me.changwook.repository.RentRepository;
 import me.changwook.service.impl.RentService;
+import me.changwook.util.IntegrationTest;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -29,12 +30,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
-@SpringBootTest
-@Transactional
-@Rollback
 @Slf4j
-@Import({QuerydslConfig.class,TestConfig.class})
-public class RentServiceTests {
+public class RentServiceTests extends IntegrationTest {
 
     @Autowired
     private RentRepository rentRepository;
