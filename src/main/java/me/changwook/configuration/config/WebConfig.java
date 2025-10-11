@@ -20,10 +20,10 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class WebConfig implements WebMvcConfigurer {
 
-    @Value("${file.upload-dir}")
+    @Value("${file.upload.dir}")
     private String uploadDir;
     
-    @Value("${file.upload-dir}")
+    @Value("${file.upload.chat-dir}")
     private String chatUploadDir;
 
     @Value("${file.static-serving.enabled:true}")
