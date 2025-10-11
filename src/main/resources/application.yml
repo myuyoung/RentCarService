@@ -23,7 +23,28 @@ spring:
           ssl:
             trust: smtp.naver.com
             protocols: TLSv1.2
-# --- Actuator Health Check 설정 ---
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: create
+    properties:
+      hibernate:
+        format_sql: false
+        default_batch_fetch_size: 100
+    database-platform: org.hibernate.dialect.MySQLDialect
+  messages:
+    basename: messages_ko
+    encoding: UTF-8
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 10MB
+  security:
+    login:
+      max-attempts: 5
+      lockout-duration-minutes: 15
+
 management:
   endpoints:
     web:
@@ -35,29 +56,6 @@ management:
   health:
     mail:
       enabled: false
-
-jpa:
-  open-in-view: false
-  hibernate:
-    ddl-auto: create
-  properties:
-    hibernate:
-      format_sql: false
-      default_batch_fetch_size: 100
-  database-platform: org.hibernate.dialect.MySQLDialect
-messages:
-  basename: messages_ko
-  encoding: UTF-8
-servlet:
-  multipart:
-    enabled: true
-    max-file-size: 10MB
-    max-request-size: 10MB
-
-security:
-  login:
-    max-attempts: 5
-    lockout-duration-minutes: 15
 
 admin:
   notification:
