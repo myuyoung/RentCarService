@@ -19,7 +19,7 @@ public class LocalFileStorageService {
 
     private final Path fileStorageLocation;
 
-    public LocalFileStorageService(@Value("${file.upload-dir}") String uploadDir) {
+    public LocalFileStorageService(@Value("${file.upload.chat-dir}") String uploadDir) {
         // Path 객체로 변환
         this.fileStorageLocation = Paths.get(uploadDir).toAbsolutePath().normalize();
 

@@ -40,4 +40,10 @@ admin:
 file:
   upload:
     dir: build/tmp/uploads/images
-  upload-dir: build/tmp/chat_files
+    chat-dir: build/tmp/chat_files
+  # --- 테스트 시에는 실제 정적 리소스 핸들링이 필요 없으므로 비활성화 ---
+  resources:
+    handler: /media/**
+    locations: build/tmp/chat_files/
+  static-serving:
+    enabled: false # 테스트 중에는 비활성화하여 외부 의존성 제거

@@ -172,7 +172,7 @@ messages:
 file:
   upload:
     dir: ${user.home}/uploads/images
-  upload-dir: ${user.home}/chat_files
+  chat-dir: ${user.home}/chat_files
   resources:
     handler: /media/**
     locations: ${user.home}/chat_files/
