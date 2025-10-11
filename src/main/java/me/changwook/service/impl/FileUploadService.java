@@ -51,7 +51,7 @@ public class FileUploadService {
      * 파일 업로드 기본 디렉터리 경로
      * application.yml: file.upload.dir
      */
-    @Value("${file.upload.dir}")
+    @Value("${file.upload.chat-dir}")
     private String uploadDir;
 
     /**
