@@ -9,7 +9,6 @@ spring:
     password: ${DB_PASSWORD}
   application:
     name: WookApp
-  #JavaMailSender에 삽입할 smtp 네이버 정보
   mail:
     host: smtp.naver.com
     port: 587
@@ -24,7 +23,7 @@ spring:
           ssl:
             trust: smtp.naver.com
             protocols: TLSv1.2
-# Actuator Health Check 설정 ㅎ
+# --- Actuator Health Check 설정 ---
 management:
   endpoints:
     web:
@@ -35,7 +34,8 @@ management:
       show-details: always
   health:
     mail:
-      enabled: false  # Mail Health Indicator 비활성화
+      enabled: false
+
 jpa:
   open-in-view: false
   hibernate:
@@ -45,7 +45,7 @@ jpa:
       format_sql: false
       default_batch_fetch_size: 100
   database-platform: org.hibernate.dialect.MySQLDialect
-messages:  # (v) 중복: local 프로파일에도 동일 설정 존재
+messages:
   basename: messages_ko
   encoding: UTF-8
 servlet:
@@ -53,33 +53,35 @@ servlet:
     enabled: true
     max-file-size: 10MB
     max-request-size: 10MB
+
 security:
   login:
     max-attempts: 5
     lockout-duration-minutes: 15
+
 admin:
   notification:
     email: ${Admin_Email}
+
 server:
   port: 7950
+
 jwt:
   secret: ${JWT_SECRET_KEY}
   expire: 3600000 #1시간
   refresh-expire: 36000000 #10시간
 
-# 통합 파일 서빙 설정 (API + 정적 리소스)
-file:  # (v) 중복: local 프로파일에도 동일한 file 설정 존재
+# --- 통합 파일 서빙 설정 ---
+file:
   upload:
     dir: ${user.home}/uploads/images
-  upload-dir: ${user.home}/chat_files  # 채팅 파일 업로드용
+  upload-dir: ${user.home}/chat_files
   resources:
     handler: /media/**
     locations: ${user.home}/chat_files/
-  # API 기반 스트리밍: /api/files/view/{imageId} (인증 필요, MIME 타입 정규화)
-  # 정적 리소스 매핑: /images/** (빠른 접근, 브라우저 캐싱)
   static-serving:
-    enabled: true           # 정적 리소스 서빙 활성화
-    cache-duration: 3600    # 캐시 지속시간 (초)
+    enabled: true
+    cache-duration: 3600
 
 ---
 spring:
