@@ -75,7 +75,7 @@ jwt:
 file:
   upload:
     dir: ${user.home}/uploads/images
-  chat-dir: ${user.home}/chat_files
+    chat-dir: ${user.home}/chat_files
   resources:
     handler: /media/**
     locations: ${user.home}/chat_files/
@@ -125,7 +125,7 @@ messages:  # (v) 중복: 기본 프로파일과 local 프로파일에 동일 설
 file:  # (v) 중복: 기본 프로파일과 동일 설정 반복
   upload:
     dir: ${user.home}/uploads/images
-  chat-dir: ${user.home}/chat_files  # 채팅 파일 업로드용
+    chat-dir: ${user.home}/chat_files  # 채팅 파일 업로드용
   resources:
     handler: /media/**
     locations: ${user.home}/chat_files/
@@ -172,7 +172,7 @@ messages:
 file:
   upload:
     dir: ${user.home}/uploads/images
-  chat-dir: ${user.home}/chat_files
+    chat-dir: ${user.home}/chat_files
   resources:
     handler: /media/**
     locations: ${user.home}/chat_files/
