@@ -11,7 +11,7 @@ env:
   ECR_REPOSITORY: rent-car-service
   ECS_CLUSTER: rentcar-cluster-2
   ECS_SERVICE: rent-car-service
-  ECS_TASK_DEFINITION: rent-car-service-task-definition
+  ECS_TASK_DEFINITION: rent-car-service-task
   CONTAINER_NAME: rent-car-service
 
 permissions:
