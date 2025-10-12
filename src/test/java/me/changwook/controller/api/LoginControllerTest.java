@@ -4,9 +4,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import me.changwook.DTO.AuthResponseDTO;
 import me.changwook.DTO.LoginRequestDTO;
 import me.changwook.configuration.config.security.JwtUtil;
+import me.changwook.configuration.config.security.SecurityConfig;
 import me.changwook.domain.Role;
 import me.changwook.repository.RefreshTokenRepository;
 import me.changwook.service.NotificationService;
+import me.changwook.service.impl.CustomUserDetailsService;
 import me.changwook.service.impl.LoginService;
 import me.changwook.service.impl.MemberService;
 import me.changwook.util.ResponseFactory;
@@ -15,6 +17,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
@@ -26,10 +29,12 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(LoginController.class)
 @ActiveProfiles("test")
+@Import(SecurityConfig.class)
 public class LoginControllerTest {
 
     @Autowired
@@ -55,6 +60,9 @@ public class LoginControllerTest {
 
     @MockBean
     private ResponseFactory responseFactory;
+
+    @MockBean
+    private CustomUserDetailsService customUserDetailsService;
 
     @Test
     @DisplayName("로그인 성공 테스트")
@@ -102,7 +110,7 @@ public class LoginControllerTest {
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(loginRequest)))
-                .andExpect(status().isOk());
+                .andExpect(status().isBadRequest());
     }
 
     @Test

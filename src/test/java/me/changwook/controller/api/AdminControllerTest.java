@@ -1,8 +1,10 @@
 package me.changwook.controller.api;
 
 import me.changwook.DTO.MemberDTO;
+import me.changwook.configuration.config.security.JwtUtil;
 import me.changwook.service.impl.CarRegistrationSubmissionService;
 import me.changwook.service.impl.MemberService;
+import me.changwook.service.impl.RentCarService;
 import me.changwook.service.impl.RentService;
 import me.changwook.util.ResponseFactory;
 import org.junit.jupiter.api.DisplayName;
@@ -10,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -28,6 +31,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(AdminController.class)
 @ActiveProfiles("test")
+@Import(SecurityException.class)
 public class AdminControllerTest {
 
     @Autowired
@@ -40,10 +44,16 @@ public class AdminControllerTest {
     private RentService rentService;
 
     @MockBean
+    private RentCarService rentCarService;
+
+    @MockBean
     private CarRegistrationSubmissionService submissionService;
 
     @MockBean
     private ResponseFactory responseFactory;
+
+    @MockBean
+    private JwtUtil jwtUtil;
 
     @Test
     @DisplayName("관리자 페이지 접근 테스트")
