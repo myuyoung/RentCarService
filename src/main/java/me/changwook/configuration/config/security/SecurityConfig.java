@@ -3,6 +3,7 @@ package me.changwook.configuration.config.security;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -51,6 +52,7 @@ public class SecurityConfig {
                                 "/h2-console/**",
                                 "/actuator/**")
                         .permitAll()
+                        .requestMatchers(HttpMethod.POST,"/api/register/").permitAll()
                         // API 기반 파일 스트리밍 - 인증된 사용자만 접근 가능
                         .requestMatchers("/api/files/view/**")
                         .authenticated()
@@ -63,7 +65,6 @@ public class SecurityConfig {
                 .headers(headers-> headers.frameOptions(frameOptions -> frameOptions.sameOrigin()))
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .httpBasic(AbstractHttpConfigurer::disable);
-
         return http.build();
     }
 

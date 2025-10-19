@@ -103,44 +103,44 @@ public class FileUploadService {
         log.info("최종 업로드 경로: {}", uploadPath);
 
         // 고유 파일명 생성
-String originalFileName = file.getOriginalFilename();
-String fileExtension = getFileExtension(originalFileName);
-String storedFileName = UUID.randomUUID().toString() + fileExtension;
-String relativePath = dateDir + "/" + storedFileName; // 공백 제거는 trim()보다는 Path API가 더 안전
+    String originalFileName = file.getOriginalFilename();
+    String fileExtension = getFileExtension(originalFileName);
+    String storedFileName = UUID.randomUUID() + fileExtension;
+    String relativePath = dateDir + "/" + storedFileName; // 공백 제거는 trim()보다는 Path API가 더 안전
 
-// [추가] relativePath 유효성 검증
-if (relativePath.isBlank()) {
-    log.error("Critical: Relative path for file {} could not be generated.", originalFileName);
-    throw new IOException("파일의 상대 경로를 생성할 수 없습니다.");
-}
+    // [추가] relativePath 유효성 검증
+    if (relativePath.isBlank()) {
+        log.error("중요: {} 파일의 상대 경로를 생성할 수 없습니다.", originalFileName);
+        throw new IOException("파일의 상대 경로를 생성할 수 없습니다.");
+    }
 
-// 파일 시스템에 물리적 저장
-Path filePath = uploadPath.resolve(storedFileName);
-Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+    // 파일 시스템에 물리적 저장
+    Path filePath = uploadPath.resolve(storedFileName);
+    Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
 
-        log.info("파일 업로드 완료: {} -> {}", originalFileName, filePath.toString());
+    log.info("파일 업로드 완료: {} -> {}", originalFileName, filePath.toString());
 
         // MIME 타입 정규화하여 저장
-        String normalizedContentType = normalizeImageContentType(file.getContentType());
+    String normalizedContentType = normalizeImageContentType(file.getContentType());
         
         // Image 엔티티 생성 (소유자 정보 제외)
-        Image image = Image.builder()
-                .originalFileName(originalFileName)
-                .storedFileName(storedFileName)
-                .filePath(filePath.toString())
-                .relativePath(relativePath)
-                .fileSize(file.getSize())
-                .contentType(normalizedContentType)  // 정규화된 MIME 타입 사용
-                .uploadedBy(uploadedBy)
-                .build();
+    Image image = Image.builder()
+            .originalFileName(originalFileName)
+            .storedFileName(storedFileName)
+            .filePath(filePath.toString())
+            .relativePath(relativePath)
+            .fileSize(file.getSize())
+            .contentType(normalizedContentType)  // 정규화된 MIME 타입 사용
+            .uploadedBy(uploadedBy)
+            .build();
 
-        if (submissionId != null) {
-            // 제출건에 이미지 연결 (객체 연관으로 연결)
-            var submission = submissionRepository.findById(submissionId)
-                    .orElseThrow(() -> new IllegalArgumentException("제출 건을 찾을 수 없습니다."));
-            image.setSubmission(submission);
-            imageRepository.save(image);
-        } else {
+    if (submissionId != null) {
+        // 제출건에 이미지 연결 (객체 연관으로 연결)
+        var submission = submissionRepository.findById(submissionId)
+                .orElseThrow(() -> new IllegalArgumentException("제출 건을 찾을 수 없습니다."));
+        image.setSubmission(submission);
+        imageRepository.save(image);
+        }else {
             // Member를 조회하여 Image 리스트에 추가 (memberId가 없으면 이메일로 조회)
             Member member;
             if (memberId != null) {

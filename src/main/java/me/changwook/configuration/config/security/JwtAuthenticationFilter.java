@@ -34,8 +34,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final RefreshTokenRepository refreshTokenRepository;
 
     private static final String[] EXCLUDE_PATH = {
-            "/", "/index.html", "/login", "/logout", "/register", "/auth/login", "/api/register/member",
-            "/v3/api-docs/", "/swagger-ui/", "/h2-console/", "/css/", "/js/"
+            "/", "/index.html", "/login", "/logout", "/register", "/auth/login", "/api/register/**",
+            "/v3/api-docs/", "/swagger-ui/", "/h2-console/", "/css/", "/js/", "/api/login"
     };
 
     private final WebAuthenticationDetailsSource detailsSource = new WebAuthenticationDetailsSource();
@@ -102,19 +102,30 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     //인증 처리 로직 메서드
     private void setAuthentication(String token, HttpServletRequest request) {
-        String username = jwtUtil.getUsernameFromToken(token);
-        String role = jwtUtil.getRoleFromToken(token);
-        UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+        try{
+            String username = jwtUtil.getUsernameFromToken(token);
+            String role = jwtUtil.getRoleFromToken(token);
+            log.debug("토큰에서 추출된 사용자 이름: {}",username);
+            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+            log.debug("로드된 UserDetails: {}, 권한:{}", userDetails.getUsername(), userDetails.getAuthorities());
 
-        log.info("JWT 인증 설정: 사용자={}, JWT Role={}, UserDetails Authorities={}", username, role, userDetails.getAuthorities());
+            log.info("JWT 인증 설정: 사용자={}, JWT Role={}, UserDetails Authorities={}", username, role, userDetails.getAuthorities());
 
-        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
 
-        authentication.setDetails(detailsSource.buildDetails(request));
+            authentication.setDetails(detailsSource.buildDetails(request));
 
-        SecurityContextHolder.getContext().setAuthentication(authentication);
+            SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        log.info("인증 컨텍스트 설정 완료: {}", SecurityContextHolder.getContext().getAuthentication().getAuthorities());
+            log.info("SecurityContextHolder에 인증 설정 완료: 사용자={}, 권한={}",
+                    SecurityContextHolder.getContext().getAuthentication().getName(),
+                    SecurityContextHolder.getContext().getAuthentication().getAuthorities());
+        }catch (Exception e){
+            log.error("setAuthentication 중 에러 발생: 사용자={}, 토큰={}, 에러={}",
+                    jwtUtil.getUsernameFromToken(token), token, e.getMessage(), e);
+            SecurityContextHolder.clearContext();
+        }
+
     }
 
     private String getAccessTokenFromRequest(HttpServletRequest request) {

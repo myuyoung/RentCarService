@@ -22,6 +22,7 @@ spring:
     properties:
       hibernate:
         format_sql: true
+    defer-datasource-initialization: true
 
   # --- 이메일 설정 (수정된 부분) ---
   mail:
