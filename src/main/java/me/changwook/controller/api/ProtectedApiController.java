@@ -4,6 +4,7 @@ import me.changwook.DTO.ApiResponseDTO;
 import me.changwook.util.ResponseFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,6 +20,7 @@ public class ProtectedApiController {
 
     //테스트용 컨트롤러
     @GetMapping
+//    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponseDTO<String>> protectedEndpoint(Authentication authentication) {
         String message = "JWT 인증 성공! 유저: " + authentication.getName();
         return responseFactory.success("JWT 인증 성공", message);
@@ -26,6 +28,7 @@ public class ProtectedApiController {
     
     // 토큰 유효성 검사용 테스트 엔드포인트
     @GetMapping("/test")
+//    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponseDTO<String>> tokenValidityTest(Authentication authentication) {
         String message = "토큰 유효성 검사 성공! 유저: " + authentication.getName();
         return responseFactory.success("토큰 유효", message);

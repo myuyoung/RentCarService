@@ -45,7 +45,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     @NonNull HttpServletResponse response,
                                     @NonNull FilterChain filterChain) throws ServletException, IOException {
 
-        String accessToken = getAccessTokenFromRequest(request);
+        String accessToken = getTokenFromHeader(request);
+
+        // ✅ [수정 2] 헤더에 토큰이 없으면, 기존 방식대로 쿠키에서 가져옵니다.
+        if (!StringUtils.hasText(accessToken)) {
+            accessToken = getAccessTokenFromRequest(request); // 기존 쿠키 확인 로직
+        }
 
         if (StringUtils.hasText(accessToken)) {
             try {
@@ -115,7 +120,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             authentication.setDetails(detailsSource.buildDetails(request));
 
+
+            log.info("Created Authentication object: {}", authentication);
+            log.info("Authentication authorities: {}", authentication.getAuthorities());
+
             SecurityContextHolder.getContext().setAuthentication(authentication);
+            logger.info("Authentication set in SecurityContextHolder");
 
             log.info("SecurityContextHolder에 인증 설정 완료: 사용자={}, 권한={}",
                     SecurityContextHolder.getContext().getAuthentication().getName(),
@@ -156,5 +166,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String username = jwtUtil.getUsernameFromToken(token);
         return refreshTokenRepository.findByUsername(username).map(refreshToken -> refreshToken.getToken().equals(token)).orElse(false);
 
+    }
+
+    private String getTokenFromHeader(HttpServletRequest request) {
+        String bearerToken = request.getHeader("Authorization");
+        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
+            return bearerToken.substring(7);
+        }
+        return null;
     }
 }
