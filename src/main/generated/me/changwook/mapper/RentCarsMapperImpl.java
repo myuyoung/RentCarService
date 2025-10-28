@@ -3,14 +3,14 @@ package me.changwook.mapper;
 import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.processing.Generated;
-import me.changwook.DTO.RentCarsDTO;
-import me.changwook.domain.RentCars;
+import me.changwook.rentcar.RentCars;
+import me.changwook.rentcar.dto.RentCarsDTO;
 import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2025-10-11T23:22:28+0900",
-    comments = "version: 1.5.5.Final, compiler: javac, environment: Java 21.0.8 (Amazon.com Inc.)"
+    date = "2025-10-25T00:37:16+0900",
+    comments = "version: 1.5.5.Final, compiler: IncrementalProcessingEnvironment from gradle-language-java-8.10.jar, environment: Java 17.0.16 (Homebrew)"
 )
 @Component
 public class RentCarsMapperImpl implements RentCarsMapper {

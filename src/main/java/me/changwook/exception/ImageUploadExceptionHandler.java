@@ -1,9 +1,9 @@
 package me.changwook.exception;
 
-import me.changwook.DTO.ApiResponseDTO;
-import me.changwook.controller.api.ImageController;
-import me.changwook.controller.api.UserImageController;
-import me.changwook.util.ResponseFactory;
+import me.changwook.common.ApiResponse;
+import me.changwook.image.ImageController;
+import me.changwook.member.UserImageController;
+import me.changwook.common.ResponseFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -34,7 +34,7 @@ public class ImageUploadExceptionHandler {
      * 파일 I/O 예외 처리
      */
     @ExceptionHandler(IOException.class)
-    public ResponseEntity<ApiResponseDTO<Void>> handleIOException(IOException e) {
+    public ResponseEntity<ApiResponse<Void>> handleIOException(IOException e) {
         log.error("파일 I/O 오류 발생: ", e);
         return responseFactory.internalServerError("파일 처리 중 오류가 발생했습니다: " + e.getMessage());
     }
@@ -43,7 +43,7 @@ public class ImageUploadExceptionHandler {
      * 잘못된 인자 예외 처리
      */
     @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<ApiResponseDTO<Void>> handleIllegalArgumentException(IllegalArgumentException e) {
+    public ResponseEntity<ApiResponse<Void>> handleIllegalArgumentException(IllegalArgumentException e) {
         log.warn("잘못된 요청: ", e);
         return responseFactory.badRequest(e.getMessage());
     }
@@ -52,7 +52,7 @@ public class ImageUploadExceptionHandler {
      * 파일 크기 초과 예외 처리
      */
     @ExceptionHandler(MaxUploadSizeExceededException.class)
-    public ResponseEntity<ApiResponseDTO<Void>> handleMaxUploadSizeExceededException(MaxUploadSizeExceededException e) {
+    public ResponseEntity<ApiResponse<Void>> handleMaxUploadSizeExceededException(MaxUploadSizeExceededException e) {
         log.warn("파일 크기 초과: ", e);
         return responseFactory.badRequest("파일 크기가 허용 범위를 초과했습니다.");
     }
@@ -61,7 +61,7 @@ public class ImageUploadExceptionHandler {
      * 일반적인 예외 처리
      */
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiResponseDTO<Void>> handleGenericException(Exception e) {
+    public ResponseEntity<ApiResponse<Void>> handleGenericException(Exception e) {
         log.error("예상치 못한 오류 발생: ", e);
         return responseFactory.internalServerError("서버 내부 오류가 발생했습니다.");
     }

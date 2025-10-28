@@ -2,7 +2,6 @@ security:
   login:
     max-attempts: 5
     lockout-duration-minutes: 15
-
 spring:
   config:
     activate:
@@ -130,10 +129,20 @@ file:  # (v) 중복: 기본 프로파일과 동일 설정 반복
     locations: ${user.home}/chat_files/
 
 ---
+security:
+  login:
+    max-attempts: 5
+    lockout-duration-minutes: 15
+admin:
+  notification:
+    email: TestEmail@Email.com
 spring:
   config:
     activate:
       on-profile: local2
+  mail:
+    host: localhost
+    port: 25
   port: 7950
   forward-headers-strategy: native
   servlet:
@@ -175,4 +184,5 @@ file:
   resources:
     handler: /media/**
     locations: ${user.home}/chat_files/
+
 

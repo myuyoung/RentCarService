@@ -1,9 +1,10 @@
 package me.changwook.ApiTest;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import me.changwook.DTO.LoginRequestDTO;
-import me.changwook.DTO.RegisterMemberDTO;
-import me.changwook.repository.MemberRepository;
+import me.changwook.member.Member;
+import me.changwook.member.dto.LoginRequestDTO;
+import me.changwook.member.dto.RegisterMemberDTO;
+import me.changwook.member.MemberRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +15,8 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -81,8 +84,10 @@ public class RegisterTest {
         String accessToken = objectMapper.readTree(responseBody).get("data").get("token").asText();
 
         assertThat(accessToken).isNotNull();
+        Member member = memberRepository.findByEmail("test123@mail.com").orElseThrow(Exception::new);
+        UUID id = member.getId();
 
-        mockMvc.perform(get("/api/protected")
+        mockMvc.perform(get("/api/MyPage/{id}",id)
                 .header("Authorization", "Bearer " + accessToken))
                 //then (검증)
                 .andExpect(status().isOk())

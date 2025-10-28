@@ -1,7 +1,7 @@
 package me.changwook.mapper;
 
-import me.changwook.DTO.RentCarsDTO;
-import me.changwook.domain.RentCars;
+import me.changwook.rentcar.dto.RentCarsDTO;
+import me.changwook.rentcar.RentCars;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;

@@ -1,7 +1,7 @@
 package me.changwook.exception.apiException;
 
 import lombok.extern.slf4j.Slf4j;
-import me.changwook.DTO.ApiResponseDTO;
+import me.changwook.common.ApiResponse;
 import me.changwook.exception.custom.MemberNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,11 +17,11 @@ public class MemberNotFoundExceptionHandler{
 
     @ResponseStatus(HttpStatus.NOT_FOUND)
     @ExceptionHandler(MemberNotFoundException.class)
-    public ResponseEntity<ApiResponseDTO<Void>> MemberNotFoundException() {
+    public ResponseEntity<ApiResponse<Void>> MemberNotFoundException() {
 
         log.error("HttpStatus = {}",HttpStatus.NOT_FOUND.name());
 
-        ApiResponseDTO<Void> errorDTO = new ApiResponseDTO<>(false,MESSAGE,null);
+        ApiResponse<Void> errorDTO = new ApiResponse<>(false,MESSAGE,null);
 
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorDTO);
     }

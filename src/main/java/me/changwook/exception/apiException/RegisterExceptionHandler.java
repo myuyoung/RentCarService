@@ -2,8 +2,8 @@ package me.changwook.exception.apiException;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import me.changwook.DTO.ApiResponseDTO;
-import me.changwook.DTO.ErrorDTO;
+import me.changwook.common.ApiResponse;
+import me.changwook.common.ErrorResponse;
 import me.changwook.exception.custom.RegisterException;
 import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
@@ -29,14 +29,14 @@ public class RegisterExceptionHandler {
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(RegisterException.class)
-    public ErrorDTO RegisterException(RegisterException ex) {
+    public ErrorResponse RegisterException(RegisterException ex) {
       log.error("Exception Handler{}",ex.getMessage());
-      return new ErrorDTO("BAD_REQUEST", ex.getMessage());
+      return new ErrorResponse("BAD_REQUEST", ex.getMessage());
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ApiResponseDTO<Map<String,String>>> ValidException (MethodArgumentNotValidException ex,Locale locale) {
+    public ResponseEntity<ApiResponse<Map<String,String>>> ValidException (MethodArgumentNotValidException ex, Locale locale) {
         Map<String,String> errors = new HashMap<>();
         for (FieldError error : ex.getBindingResult().getFieldErrors()) {
             // 메시지 코드 (messages_ko.properties 키) → 메시지 값
@@ -45,7 +45,7 @@ public class RegisterExceptionHandler {
         }
         log.error("Exception Handler{}",errors);
 
-        ApiResponseDTO<Map<String,String>> response = new ApiResponseDTO<>(false,"회원가입이 실패했습니다.",errors);
+        ApiResponse<Map<String,String>> response = new ApiResponse<>(false,"회원가입이 실패했습니다.",errors);
 
         return ResponseEntity.badRequest().body(response);
     }

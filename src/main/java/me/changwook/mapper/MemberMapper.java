@@ -1,7 +1,7 @@
 package me.changwook.mapper;
 
-import me.changwook.DTO.MemberDTO;
-import me.changwook.domain.Member;
+import me.changwook.member.dto.MemberDTO;
+import me.changwook.member.Member;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
@@ -21,7 +21,7 @@ public interface MemberMapper {
     @Mapping(target = "role", ignore = true)
     @Mapping(target = "failedLoginAttempts", ignore = true)
     @Mapping(target = "accountLockedUntil", ignore = true)
-    @Mapping(target = "rent", ignore = true)
+    @Mapping(target = "reservation", ignore = true)
     @Mapping(target = "images", ignore = true)
     Member memberDTOToMember(MemberDTO memberDTO);
 

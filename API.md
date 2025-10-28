@@ -1242,7 +1242,7 @@ curl -X POST http://localhost:7950/api/MyPage/reservation \
 
 ```json
 {
-  "rentDTO": {
+  "reservationDTO": {
     "rent_id": "b2296160-8ede-44df-a694-5844f16b3c86",
     "rentTime": "2019-08-24T14:15:22Z",
     "duration": 1,
@@ -1597,7 +1597,7 @@ curl -X GET http://localhost:7950/api/test/streaming-config \
 This operation does not require authentication
 </aside>
 
-<h1 id="openapi-definition-rent-cars-controller">rent-cars-controller</h1>
+<h1 id="openapi-definition-reservation-cars-controller">reservation-cars-controller</h1>
 
 ## searchCars
 
@@ -2107,7 +2107,7 @@ This operation does not require authentication
 
 ```json
 {
-  "rentDTO": {
+  "reservationDTO": {
     "rent_id": "b2296160-8ede-44df-a694-5844f16b3c86",
     "rentTime": "2019-08-24T14:15:22Z",
     "duration": 1,
@@ -2139,7 +2139,7 @@ This operation does not require authentication
 
 |Name|Type|Required|Restrictions|Description|
 |---|---|---|---|---|
-|rentDTO|[RentDTO](#schemarentdto)|true|none|none|
+|reservationDTO|[RentDTO](#schemarentdto)|true|none|none|
 |rentCarsDTO|[RentCarsDTO](#schemarentcarsdto)|true|none|none|
 
 <h2 id="tocS_ApiResponseDTORentDTO">ApiResponseDTORentDTO</h2>
