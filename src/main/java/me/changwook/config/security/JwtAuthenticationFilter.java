@@ -8,7 +8,9 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.Cookie;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import me.changwook.member.auth.RefreshToken;
 import me.changwook.member.auth.RefreshTokenRepository;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -47,7 +49,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String accessToken = getTokenFromHeader(request);
 
-        // ✅ [수정 2] 헤더에 토큰이 없으면, 기존 방식대로 쿠키에서 가져옵니다.
+        // 헤더에 토큰이 없으면, 기존 방식대로 쿠키에서 가져옵니다.
         if (!StringUtils.hasText(accessToken)) {
             accessToken = getAccessTokenFromRequest(request); // 기존 쿠키 확인 로직
         }
@@ -64,14 +66,35 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 if (refreshToken != null && isRefreshTokenValidInDB(refreshToken)) {
                     // DB에서 리프레시 토큰 확인
                     String username = jwtUtil.getUsernameFromToken(refreshToken);
-
                     String role = jwtUtil.getRoleFromToken(refreshToken);
 
                     String newAccessToken = jwtUtil.generateAccessToken(username, role);
+                    String newRefreshToken = jwtUtil.generateRefreshToken(refreshToken,role);
+
+                    RefreshToken dbToken = new RefreshToken();
+                    dbToken.setToken(newRefreshToken);
+                    dbToken.setExpiryDate(jwtUtil.getExpiration());
+                    refreshTokenRepository.save(dbToken);
 
                     setAuthentication(newAccessToken, request);
 
                     response.setHeader("X-New-Access-Token", newAccessToken);
+
+                    ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", newRefreshToken)
+                            .httpOnly(true)
+                            .path("/")
+                            .maxAge(jwtUtil.getRefreshInterval() / 1000)
+                            .sameSite("Lax")
+                            .build();
+                    response.addHeader("Set-Cookie", refreshCookie.toString());
+
+                    ResponseCookie accessCookie = ResponseCookie.from("accessToken", newAccessToken)
+                            .httpOnly(true)
+                            .path("/")
+                            .maxAge(jwtUtil.getExpiration() / 1000)
+                            .sameSite("Lax")
+                            .build();
+                    response.addHeader("Set-Cookie", accessCookie.toString());
 
                     log.info("액세스 토큰이 성공적으로 갱신되었습니다. 사용자: {}", username);
                 } else {

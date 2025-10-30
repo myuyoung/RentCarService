@@ -52,6 +52,7 @@ public class LoginController {
         
         AuthResponseDTO authResponse = (AuthResponseDTO) loginResult.get("authResponse");
         String refreshToken = (String) loginResult.get("refresh-token");
+        String accessToken = (String) loginResult.get("accessToken");
 
         // RefreshToken 쿠키 설정
         ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", refreshToken)
@@ -64,14 +65,22 @@ public class LoginController {
 
         // AccessToken도 쿠키에 저장 (페이지 네비게이션 시 자동 인증을 위해)
         ResponseCookie accessCookie = ResponseCookie.from("accessToken", authResponse.getToken())
-                .httpOnly(false)  // JavaScript에서 접근 가능하도록
+                .httpOnly(true)
                 .path("/")
                 .maxAge(jwtUtil.getExpiration() / 1000)
                 .sameSite("Lax")
                 .build();
         response.addHeader("Set-Cookie", accessCookie.toString());
 
-        return responseFactory.success("로그인이 성공했습니다.", authResponse);
+        //token은 body로 전달하지 않기 위해서 토큰은 제외시키고 파싱함.
+        AuthResponseDTO httpResponse = AuthResponseDTO.builder()
+                .email(authResponse.getEmail())
+                .name(authResponse.getName())
+                .role(authResponse.getRole())
+                .redirectUrl(authResponse.getRedirectUrl())
+                .build();
+
+        return responseFactory.success("로그인이 성공했습니다.", httpResponse);
     }
 
     //    AJAX방식으로 클라이언트 단계에서 토큰을 재발급하는 로직(서버계층으로 바꿈)

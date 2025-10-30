@@ -231,5 +231,4 @@ public class DataInitializer {
                     return categoryRepository.save(newCategory);
                 });
     }
-
 }
