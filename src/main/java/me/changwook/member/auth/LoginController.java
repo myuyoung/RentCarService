@@ -1,24 +1,25 @@
-package me.changwook.member;
+package me.changwook.member.auth;
 
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.changwook.common.ApiResponse;
+import me.changwook.member.MemberService;
+import me.changwook.member.Role;
 import me.changwook.member.dto.AuthResponseDTO;
 import me.changwook.member.dto.LoginRequestDTO;
 import me.changwook.member.dto.MemberDTO;
 import me.changwook.config.security.JwtUtil;
-import me.changwook.member.auth.RefreshToken;
-import me.changwook.member.auth.RefreshTokenRepository;
 import me.changwook.alert.NotificationService;
-import me.changwook.member.auth.LoginService;
 import me.changwook.common.ResponseFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -36,7 +37,6 @@ public class LoginController {
     private final JwtUtil jwtUtil;
     private final RefreshTokenRepository refreshTokenRepository;
     private final LoginService loginService;
-    private final MemberService memberService;
     private final NotificationService notificationService;
     private final ResponseFactory responseFactory;
 
@@ -83,12 +83,20 @@ public class LoginController {
         return responseFactory.success("로그인이 성공했습니다.", httpResponse);
     }
 
-    //    AJAX방식으로 클라이언트 단계에서 토큰을 재발급하는 로직(서버계층으로 바꿈)
-    @Deprecated
+
     @PostMapping("/refresh-token")
     @Transactional
-    public ResponseEntity<ApiResponse<AuthResponseDTO>> refreshToken(HttpServletRequest request, HttpServletResponse response) {
+    public ResponseEntity<ApiResponse<AuthResponseDTO>> refreshToken(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            @RequestBody(required = false) Map<String, String> requestBody) {
         String oldRefreshToken = extractRefreshToken(request, "refreshToken");
+
+        //웹(쿠키) 또는 모바일(Body)에서 토큰 가져오기
+        if (!StringUtils.hasText(oldRefreshToken) && requestBody != null && requestBody.containsKey("refreshToken")) {
+            oldRefreshToken = requestBody.get("refreshToken"); // 2순위: JSON Body
+            log.info("쿠키가 아닌 JSON Body에서 Refresh Token 수신");
+        }
 
         if (oldRefreshToken == null) {
             return responseFactory.error("Refresh Token이 존재하지 않습니다.", HttpStatus.UNAUTHORIZED);
@@ -98,8 +106,20 @@ public class LoginController {
         String username = jwtUtil.validateToken(oldRefreshToken) ? jwtUtil.getUsernameFromToken(oldRefreshToken) : null;
         String role = jwtUtil.validateToken(oldRefreshToken) ? jwtUtil.getRoleFromToken(oldRefreshToken) : null;
 
-        if (username == null || role == null) {
-            return responseFactory.error("유효하지 않는 Refresh Token 입니다.", HttpStatus.UNAUTHORIZED);
+        try{
+            jwtUtil.validateToken(oldRefreshToken);
+            username = jwtUtil.getUsernameFromToken(oldRefreshToken);
+            role = jwtUtil.getRoleFromToken(oldRefreshToken);
+        }catch(ExpiredJwtException e){
+            log.warn("Refresh Token이 만료되었습니다. 재로그인이 필요합니다. 사용자:{}", e.getClaims().getSubject());
+            //토큰의 내용이 비어있지 않다면 그러니까 토큰이 존재하는데 만료된 것들을 지움
+            if (e.getClaims() != null && e.getClaims().getSubject() != null) {
+                refreshTokenRepository.deleteByUsername(e.getClaims().getSubject());
+            }
+            return responseFactory.error("Refresh Token이 만료되었습니다. 다시 로그인해주세요.", HttpStatus.UNAUTHORIZED);
+        }catch (Exception e){
+            log.warn("유효하지 않은 Refresh Token 입니다. (서명,형식 오류 등", e);
+            return responseFactory.error("유효하지 않은 Refresh Token 입니다", HttpStatus.UNAUTHORIZED);
         }
 
         Optional<RefreshToken> tokenOpt = refreshTokenRepository.findByUsername(username);
@@ -124,6 +144,7 @@ public class LoginController {
         savedToken.setExpiryDate(jwtUtil.getExpirationDateFromToken(newRefreshToken).getTime());
         refreshTokenRepository.save(savedToken);
 
+        //(웹 클라이언트용) 쿠키 업데이트
         // RefreshToken 쿠키 업데이트
         ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", newRefreshToken)
                 .httpOnly(true)
@@ -142,13 +163,11 @@ public class LoginController {
                 .build();
         response.addHeader("Set-Cookie", accessCookie.toString());
 
-        // 사용자 정보를 다시 조회하여 최신 정보 반환
-        MemberDTO memberInfo = memberService.findByEmail(username);
-        
+
         AuthResponseDTO authResponseDTO = AuthResponseDTO.builder()
                 .token(newAccessToken)
-                .email(memberInfo.getEmail())
-                .name(memberInfo.getName())
+                .refreshToken(newRefreshToken)
+                .email(username)
                 .role(Role.valueOf(role.replace("ROLE_", "")))
                 .build();
 

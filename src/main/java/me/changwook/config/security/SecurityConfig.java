@@ -24,7 +24,7 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, CustomAuthenticationEntryPoint customAuthenticationEntryPoint) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
@@ -44,7 +44,9 @@ public class SecurityConfig {
                         .authenticated()
 
                         // permitAll() 규칙은 가장 마지막에 두는 것이 안전합니다.
-                        .requestMatchers("/", "/templates/**", "/css/**", "/js/**", "/favicon.ico", "/favicon.svg", "/login", "/logout", "/register/**", "/auth/login", "/api/register/member",
+                        .requestMatchers("/", "/templates/**", "/css/**", "/js/**", "/favicon.ico", "/favicon.svg", "/login", "/logout", "/register/**", "/auth/login",
+                                "/auth/refresh-token",
+                                "/api/register/member",
                                 "/api/rentcars/**",
                                 "/mypage",
                                 "/search",
@@ -63,6 +65,7 @@ public class SecurityConfig {
                         .anyRequest()
                         .authenticated()
                 )
+                .exceptionHandling(ex -> ex.authenticationEntryPoint(customAuthenticationEntryPoint))
                 .headers(headers-> headers.frameOptions(frameOptions -> frameOptions.sameOrigin()))
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .httpBasic(AbstractHttpConfigurer::disable);
