@@ -6,15 +6,13 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import me.changwook.alert.NotificationService;
 import me.changwook.common.ApiResponse;
-import me.changwook.member.MemberService;
+import me.changwook.common.ResponseFactory;
+import me.changwook.config.security.JwtUtil;
 import me.changwook.member.Role;
 import me.changwook.member.dto.AuthResponseDTO;
 import me.changwook.member.dto.LoginRequestDTO;
-import me.changwook.member.dto.MemberDTO;
-import me.changwook.config.security.JwtUtil;
-import me.changwook.alert.NotificationService;
-import me.changwook.common.ResponseFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
@@ -72,8 +70,9 @@ public class LoginController {
                 .build();
         response.addHeader("Set-Cookie", accessCookie.toString());
 
-        //token은 body로 전달하지 않기 위해서 토큰은 제외시키고 파싱함.
         AuthResponseDTO httpResponse = AuthResponseDTO.builder()
+                .token(accessToken)
+                .refreshToken(refreshToken)
                 .email(authResponse.getEmail())
                 .name(authResponse.getName())
                 .role(authResponse.getRole())
@@ -90,6 +89,10 @@ public class LoginController {
             HttpServletRequest request,
             HttpServletResponse response,
             @RequestBody(required = false) Map<String, String> requestBody) {
+
+        String username;
+        String role;
+
         String oldRefreshToken = extractRefreshToken(request, "refreshToken");
 
         //웹(쿠키) 또는 모바일(Body)에서 토큰 가져오기
@@ -101,10 +104,6 @@ public class LoginController {
         if (oldRefreshToken == null) {
             return responseFactory.error("Refresh Token이 존재하지 않습니다.", HttpStatus.UNAUTHORIZED);
         }
-
-        // 토큰 유효성 검증 및 사용자 이름 추출
-        String username = jwtUtil.validateToken(oldRefreshToken) ? jwtUtil.getUsernameFromToken(oldRefreshToken) : null;
-        String role = jwtUtil.validateToken(oldRefreshToken) ? jwtUtil.getRoleFromToken(oldRefreshToken) : null;
 
         try{
             jwtUtil.validateToken(oldRefreshToken);
@@ -152,15 +151,17 @@ public class LoginController {
                 .maxAge(jwtUtil.getRefreshInterval() / 1000)
                 .sameSite("Lax")
                 .build();
+
         response.addHeader("Set-Cookie", refreshCookie.toString());
 
         // AccessToken 쿠키도 업데이트
         ResponseCookie accessCookie = ResponseCookie.from("accessToken", newAccessToken)
-                .httpOnly(false)
+                .httpOnly(true)
                 .path("/")
                 .maxAge(jwtUtil.getExpiration() / 1000)
                 .sameSite("Lax")
                 .build();
+
         response.addHeader("Set-Cookie", accessCookie.toString());
 
 
@@ -207,27 +208,46 @@ public class LoginController {
         return ip;
     }
 
-        @PostMapping("/logout")
-        public ResponseEntity<ApiResponse<Void>> logout(HttpServletRequest request, HttpServletResponse response) {
-            String refreshToken = extractRefreshToken(request, "refreshToken");
-            if (refreshToken != null && jwtUtil.validateToken(refreshToken)) {
-                String username = jwtUtil.getUsernameFromToken(refreshToken);
-                refreshTokenRepository.deleteByUsername(username);
-            }
-            // RefreshToken 쿠키 삭제
-            ResponseCookie deleteRefreshCookie = ResponseCookie.from("refreshToken", "")
-                    .path("/")
-                    .maxAge(0)
-                    .build();
-            response.addHeader("Set-Cookie", deleteRefreshCookie.toString());
-            
-            // AccessToken 쿠키도 삭제
-            ResponseCookie deleteAccessCookie = ResponseCookie.from("accessToken", "")
-                    .path("/")
-                    .maxAge(0)
-                    .build();
-            response.addHeader("Set-Cookie", deleteAccessCookie.toString());
+    @PostMapping("/logout")
+    public ResponseEntity<ApiResponse<Void>> logout(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            @RequestBody(required = false) Map<String, String> requestBody) {
 
-            return responseFactory.success("로그아웃 되었습니다.");
+        String refreshToken = extractRefreshToken(request, "refreshToken");
+
+        if (!StringUtils.hasText(refreshToken) && requestBody != null && requestBody.containsKey("refreshToken")) {
+            refreshToken = requestBody.get("refreshToken");
+            log.info("쿠키가 아닌 JSON Body에서 Refresh Token 수신 (로그아웃)");
         }
+
+        if (StringUtils.hasText(refreshToken)) {
+            try {
+                if (jwtUtil.validateToken(refreshToken)) {
+                    String username = jwtUtil.getUsernameFromToken(refreshToken);
+                    refreshTokenRepository.deleteByUsername(username);
+                    log.info("사용자 {}의 Refresh Token이 DB에서 삭제되었습니다.", username);
+                }
+            } catch (Exception e) {
+                // 이미 만료되었거나 유효하지 않은 토큰으로 로그아웃 시도 시, DB 삭제 로직을 건너뜀
+                log.warn("로그아웃 시도 중 토큰 검증 실패 (이미 만료되었거나 유효하지 않음): {}", e.getMessage());
+            }
+        }
+
+        // RefreshToken 쿠키 삭제
+        ResponseCookie deleteRefreshCookie = ResponseCookie.from("refreshToken", "")
+                .path("/")
+                .maxAge(0)
+                .build();
+        response.addHeader("Set-Cookie", deleteRefreshCookie.toString());
+
+        // AccessToken 쿠키도 삭제
+        ResponseCookie deleteAccessCookie = ResponseCookie.from("accessToken", "")
+                .path("/")
+                .maxAge(0)
+                .build();
+        response.addHeader("Set-Cookie", deleteAccessCookie.toString());
+
+        return responseFactory.success("로그아웃 되었습니다.");
     }
+}
