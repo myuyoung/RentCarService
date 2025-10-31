@@ -16,6 +16,7 @@ import me.changwook.member.dto.LoginRequestDTO;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -32,11 +33,9 @@ import java.util.Optional;
 @Slf4j
 public class LoginController {
 
-    private final JwtUtil jwtUtil;
-    private final RefreshTokenRepository refreshTokenRepository;
     private final LoginService loginService;
-    private final NotificationService notificationService;
     private final ResponseFactory responseFactory;
+    private final JwtUtil jwtUtil;
 
 
     /**
@@ -46,11 +45,13 @@ public class LoginController {
      */
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<AuthResponseDTO>> login(@RequestBody LoginRequestDTO loginRequestDTO, HttpServletResponse response) {
+
         Map<String, Object> loginResult = loginService.login(loginRequestDTO);
         
         AuthResponseDTO authResponse = (AuthResponseDTO) loginResult.get("authResponse");
         String refreshToken = (String) loginResult.get("refresh-token");
         String accessToken = (String) loginResult.get("accessToken");
+
 
         // RefreshToken 쿠키 설정
         ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", refreshToken)
@@ -106,86 +107,51 @@ public class LoginController {
         }
 
         try{
-            jwtUtil.validateToken(oldRefreshToken);
-            username = jwtUtil.getUsernameFromToken(oldRefreshToken);
-            role = jwtUtil.getRoleFromToken(oldRefreshToken);
+            Map<String, String> result = loginService.rotateRefreshToken(oldRefreshToken,getClientIp(request));
+
+            String newAccessToken = result.get("accessToken");
+            String newRefreshToken = result.get("refreshToken");
+
+            response.addHeader("Set-Cookie", createCookie("refreshToken",newRefreshToken,(jwtUtil.getRefreshInterval()/1000),true).toString());
+            response.addHeader("Set-Cookie",createCookie("accessToken",newAccessToken,(jwtUtil.getExpiration()/1000),true).toString());
+
+            AuthResponseDTO authResponseDTO = AuthResponseDTO.builder()
+                    .token(newAccessToken)
+                    .refreshToken(newRefreshToken)
+                    .email(result.get("username"))
+                    .role(Role.valueOf(result.get("role").replace("ROLE_", "")))
+                    .build();
+
+            return responseFactory.success("토큰이 성공적으로 갱신되었습니다.", authResponseDTO);
+
         }catch(ExpiredJwtException e){
-            log.warn("Refresh Token이 만료되었습니다. 재로그인이 필요합니다. 사용자:{}", e.getClaims().getSubject());
-            //토큰의 내용이 비어있지 않다면 그러니까 토큰이 존재하는데 만료된 것들을 지움
-            if (e.getClaims() != null && e.getClaims().getSubject() != null) {
-                refreshTokenRepository.deleteByUsername(e.getClaims().getSubject());
-            }
+
+
             return responseFactory.error("Refresh Token이 만료되었습니다. 다시 로그인해주세요.", HttpStatus.UNAUTHORIZED);
-        }catch (Exception e){
-            log.warn("유효하지 않은 Refresh Token 입니다. (서명,형식 오류 등", e);
-            return responseFactory.error("유효하지 않은 Refresh Token 입니다", HttpStatus.UNAUTHORIZED);
+        }catch (AuthenticationException e){
+            return responseFactory.error(e.getMessage(), HttpStatus.UNAUTHORIZED);
         }
-
-        Optional<RefreshToken> tokenOpt = refreshTokenRepository.findByUsername(username);
-
-        // 탈취 감지 로직
-        if (tokenOpt.isEmpty() || !tokenOpt.get().getToken().equals(oldRefreshToken)) {
-            log.error("CRITICAL: Refresh Token 탈취 의심이 됩니다!! 사용자:{}, IP:{}", username, getClientIp(request));
-
-            refreshTokenRepository.deleteByUsername(username);
-            notificationService.notifyAdminOfTokenTheft(username, getClientIp(request));
-
-            return responseFactory.error("비정상적인 접근이 감지되었습니다.", HttpStatus.UNAUTHORIZED);
-        }
-
-        // 토큰 순환: 새로운 토큰들을 발급
-        String newAccessToken = jwtUtil.generateAccessToken(username, role);
-        String newRefreshToken = jwtUtil.generateRefreshToken(username, role);
-
-        // DB 새로운 Refresh Token저장 (기존 토큰 업데이트)
-        RefreshToken savedToken = tokenOpt.get();
-        savedToken.setToken(newRefreshToken);
-        savedToken.setExpiryDate(jwtUtil.getExpirationDateFromToken(newRefreshToken).getTime());
-        refreshTokenRepository.save(savedToken);
-
-        //(웹 클라이언트용) 쿠키 업데이트
-        // RefreshToken 쿠키 업데이트
-        ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", newRefreshToken)
-                .httpOnly(true)
-                .path("/")
-                .maxAge(jwtUtil.getRefreshInterval() / 1000)
-                .sameSite("Lax")
-                .build();
-
-        response.addHeader("Set-Cookie", refreshCookie.toString());
-
-        // AccessToken 쿠키도 업데이트
-        ResponseCookie accessCookie = ResponseCookie.from("accessToken", newAccessToken)
-                .httpOnly(true)
-                .path("/")
-                .maxAge(jwtUtil.getExpiration() / 1000)
-                .sameSite("Lax")
-                .build();
-
-        response.addHeader("Set-Cookie", accessCookie.toString());
-
-
-        AuthResponseDTO authResponseDTO = AuthResponseDTO.builder()
-                .token(newAccessToken)
-                .refreshToken(newRefreshToken)
-                .email(username)
-                .role(Role.valueOf(role.replace("ROLE_", "")))
-                .build();
-
-        return responseFactory.success("토큰이 성공적으로 갱신되었습니다.", authResponseDTO);
     }
 
+    @PostMapping("/logout")
+    public ResponseEntity<ApiResponse<Void>> logout(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            @RequestBody(required = false) Map<String, String> requestBody) {
 
-    private String extractRefreshToken(HttpServletRequest request, String name) {
-        Cookie[] cookies = request.getCookies();
-        if (cookies != null && cookies.length > 0) {
-            for (Cookie cookie : request.getCookies()) {
-                if (cookie.getName().equals(name)) {
-                    return cookie.getValue();
-                }
-            }
+        String refreshToken = extractRefreshToken(request, "refreshToken");
+
+        if (!StringUtils.hasText(refreshToken) && requestBody != null && requestBody.containsKey("refreshToken")) {
+            refreshToken = requestBody.get("refreshToken");
+            log.info("쿠키가 아닌 JSON Body에서 Refresh Token 수신 (로그아웃)");
         }
-        return null;
+
+        loginService.logout(refreshToken);
+
+        response.addHeader("Set-Cookie",deleteCookie("refreshToken").toString());
+        response.addHeader("Set-Cookie",deleteCookie("accessToken").toString());
+
+        return responseFactory.success("로그아웃 되었습니다.");
     }
 
     private String getClientIp(HttpServletRequest request) {
@@ -208,46 +174,34 @@ public class LoginController {
         return ip;
     }
 
-    @PostMapping("/logout")
-    public ResponseEntity<ApiResponse<Void>> logout(
-            HttpServletRequest request,
-            HttpServletResponse response,
-            @RequestBody(required = false) Map<String, String> requestBody) {
-
-        String refreshToken = extractRefreshToken(request, "refreshToken");
-
-        if (!StringUtils.hasText(refreshToken) && requestBody != null && requestBody.containsKey("refreshToken")) {
-            refreshToken = requestBody.get("refreshToken");
-            log.info("쿠키가 아닌 JSON Body에서 Refresh Token 수신 (로그아웃)");
-        }
-
-        if (StringUtils.hasText(refreshToken)) {
-            try {
-                if (jwtUtil.validateToken(refreshToken)) {
-                    String username = jwtUtil.getUsernameFromToken(refreshToken);
-                    refreshTokenRepository.deleteByUsername(username);
-                    log.info("사용자 {}의 Refresh Token이 DB에서 삭제되었습니다.", username);
+    private String extractRefreshToken(HttpServletRequest request, String name) {
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null && cookies.length > 0) {
+            for (Cookie cookie : request.getCookies()) {
+                if (cookie.getName().equals(name)) {
+                    return cookie.getValue();
                 }
-            } catch (Exception e) {
-                // 이미 만료되었거나 유효하지 않은 토큰으로 로그아웃 시도 시, DB 삭제 로직을 건너뜀
-                log.warn("로그아웃 시도 중 토큰 검증 실패 (이미 만료되었거나 유효하지 않음): {}", e.getMessage());
             }
         }
-
-        // RefreshToken 쿠키 삭제
-        ResponseCookie deleteRefreshCookie = ResponseCookie.from("refreshToken", "")
-                .path("/")
-                .maxAge(0)
-                .build();
-        response.addHeader("Set-Cookie", deleteRefreshCookie.toString());
-
-        // AccessToken 쿠키도 삭제
-        ResponseCookie deleteAccessCookie = ResponseCookie.from("accessToken", "")
-                .path("/")
-                .maxAge(0)
-                .build();
-        response.addHeader("Set-Cookie", deleteAccessCookie.toString());
-
-        return responseFactory.success("로그아웃 되었습니다.");
+        return null;
     }
+
+    private ResponseCookie createCookie(String name, String value, long maxAgeInSeconds, boolean httpOnly) {
+        return ResponseCookie.from(name, value)
+                .httpOnly(httpOnly)
+                .path("/")
+                .maxAge(maxAgeInSeconds)
+                .sameSite("Lax") // CSRF 방어를 위해 SameSite 설정
+                .build();
+    }
+
+    private ResponseCookie deleteCookie(String name) {
+        return ResponseCookie.from(name, "")
+                .path("/")
+                .maxAge(0)
+                .build();
+    }
+
+
+
 }
