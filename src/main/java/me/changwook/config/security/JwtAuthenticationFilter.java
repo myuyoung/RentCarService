@@ -63,47 +63,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             } catch (ExpiredJwtException e) {
                 log.info("액세스 토큰이 만료되었습니다. 리프레시 토큰으로 재발급 시도합니다.");
                 SecurityContextHolder.clearContext();
-
-//                String refreshToken = getRefreshTokenFromCookie(request);
-//                if (refreshToken != null && isRefreshTokenValidInDB(refreshToken)) {
-//
-//                    String username = jwtUtil.getUsernameFromToken(refreshToken);
-//                    String role = jwtUtil.getRoleFromToken(refreshToken);
-//
-//                    String newAccessToken = jwtUtil.generateAccessToken(username, role);
-//                    String newRefreshToken = jwtUtil.generateRefreshToken(username,role);
-//
-//                    RefreshToken dbToken = new RefreshToken();
-//                    dbToken.setToken(newRefreshToken);
-//                    dbToken.setExpiryDate(jwtUtil.getRefreshInterval());
-//                    refreshTokenRepository.save(dbToken);
-//
-//                    setAuthentication(newAccessToken, request);
-//
-//                    response.setHeader("X-New-Access-Token", newAccessToken);
-//
-//                    ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", newRefreshToken)
-//                            .httpOnly(true)
-//                            .path("/")
-//                            .maxAge(jwtUtil.getRefreshInterval() / 1000)
-//                            .sameSite("Lax")
-//                            .build();
-//                    response.addHeader("Set-Cookie", refreshCookie.toString());
-//
-//                    ResponseCookie accessCookie = ResponseCookie.from("accessToken", newAccessToken)
-//                            .httpOnly(true)
-//                            .path("/")
-//                            .maxAge(jwtUtil.getExpiration() / 1000)
-//                            .sameSite("Lax")
-//                            .build();
-//                    response.addHeader("Set-Cookie", accessCookie.toString());
-//
-//                    log.info("액세스 토큰이 성공적으로 갱신되었습니다. 사용자: {}", username);
-//                } else {
-//                    log.warn("DB에서 유효하지 않은 리프레시 토큰입니다.");
-//
-//                    SecurityContextHolder.clearContext();
-//                }
             }catch (Exception e){
                 log.error("JWT 인증 오류 {}", e.getMessage());
                 SecurityContextHolder.clearContext();
