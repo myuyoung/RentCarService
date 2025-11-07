@@ -4,26 +4,23 @@ import io.jsonwebtoken.ExpiredJwtException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.changwook.alert.NotificationService;
-import me.changwook.member.dto.AuthResponseDTO;
-import me.changwook.member.dto.LoginRequestDTO;
 import me.changwook.config.security.CustomUserDetails;
 import me.changwook.config.security.JwtUtil;
 import me.changwook.member.Member;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseCookie;
+import me.changwook.member.Role;
+import me.changwook.member.dto.AuthResponseDTO;
+import me.changwook.member.dto.LoginRequestDTO;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-
-import me.changwook.member.Role;
-import org.springframework.util.StringUtils;
 
 @Service
 @RequiredArgsConstructor

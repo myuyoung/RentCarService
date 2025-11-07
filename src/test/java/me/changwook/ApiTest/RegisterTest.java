@@ -78,10 +78,7 @@ public class RegisterTest {
                 .andDo(print())
                 .andReturn();
 
-        //응답에서 accessToken추출
-        String responseBody = loginResult.getResponse().getContentAsString();
-        //간단하게 문자열 파싱으로 토큰을 추출
-        String accessToken = objectMapper.readTree(responseBody).get("data").get("token").asText();
+        String accessToken = loginResult.getResponse().getCookie("accessToken").getValue();
 
         assertThat(accessToken).isNotNull();
         Member member = memberRepository.findByEmail("test123@mail.com").orElseThrow(Exception::new);

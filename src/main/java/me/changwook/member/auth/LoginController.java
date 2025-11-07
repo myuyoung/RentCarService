@@ -6,7 +6,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import me.changwook.alert.NotificationService;
 import me.changwook.common.ApiResponse;
 import me.changwook.common.ResponseFactory;
 import me.changwook.config.security.JwtUtil;
@@ -25,7 +24,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/auth")
@@ -125,8 +123,6 @@ public class LoginController {
             return responseFactory.success("토큰이 성공적으로 갱신되었습니다.", authResponseDTO);
 
         }catch(ExpiredJwtException e){
-
-
             return responseFactory.error("Refresh Token이 만료되었습니다. 다시 로그인해주세요.", HttpStatus.UNAUTHORIZED);
         }catch (AuthenticationException e){
             return responseFactory.error(e.getMessage(), HttpStatus.UNAUTHORIZED);
