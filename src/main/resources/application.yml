@@ -81,19 +81,33 @@ file:
     enabled: true
     cache-duration: 3600
 
+# local은 도커로 DB를 연결하기 위해서 사용되고 있음.
 ---
+server:
+  port: 7950
+  tomcat:
+    mbeanregistry:
+      enabled: true
+admin:
+  notification:
+    email: TestEmail@Email.com
+security:
+  login:
+    max-attempts: 5
+    lockout-duration-minutes: 15
 spring:
   config:
     activate:
       on-profile: local
-  port: 7950
-  forward-headers-strategy: native
+  mail:
+    host: localhost
+    port: 25
   servlet:
     context-path: /
   datasource:
-    url: jdbc:mysql://rent-car-mysql:3306/wookdb?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
-    username: ${MYSQL_USERNAME}
-    password: ${MYSQL_PASSWORD}
+    url: jdbc:mysql://localhost:3307/wookdb?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+    username: ${MYSQL_USERNAME:wook}
+    password: ${MYSQL_PASSWORD:wookpw}
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
@@ -105,8 +119,6 @@ spring:
     database-platform: org.hibernate.dialect.MySQLDialect
 logging:
   level:
-    org.hibernate.SQL: debug
-    org.hibernate.type.descriptor.sql.BasicBinder: trace
     org.springframework.security: DEBUG
     org.springframework.web: DEBUG
     me.changwook: DEBUG
@@ -127,7 +139,25 @@ file:  # (v) 중복: 기본 프로파일과 동일 설정 반복
   resources:
     handler: /media/**
     locations: ${user.home}/chat_files/
+decorator:
+  datasource:
+    p6spy:
+      # P6Spy 활성화
+      enable-logging: true
 
+      # multi-line: 여러 줄로 예쁘게 출력 (가독성 좋음)
+      log-format-strategy: multi-line
+
+      # 로그 레벨 설정 (p6spy 자체의 로그 레벨)
+      logging: slf4j
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "health,info,metrics,prometheus"
+  endpoint:
+    health:
+      show-details: always
 ---
 security:
   login:
@@ -143,7 +173,6 @@ spring:
   mail:
     host: localhost
     port: 25
-  port: 7950
   forward-headers-strategy: native
   servlet:
     context-path: /
@@ -162,11 +191,9 @@ spring:
     database-platform: org.hibernate.dialect.MySQLDialect
 logging:
   level:
-    org.hibernate.SQL: debug
-    org.hibernate.type.descriptor.sql.BasicBinder: trace
-    org.springframework.security: DEBUG
-    org.springframework.web: DEBUG
-    me.changwook: DEBUG
+    p6spy: INFO
+    org.hibernate.SQL: OFF
+    org.hibernate.type.descriptor.sql: OFF
 
 jwt:
   secret: ${Jwt_Secret:d9f82kd9fkdw92kfslaj2k39fkdslqwe}

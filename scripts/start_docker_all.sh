@@ -102,6 +102,12 @@ fi
 log_info "Docker Compose로 전체 시스템 시작 중..."
 log_info "이 과정은 몇 분이 소요될 수 있습니다..."
 
+#  사용할 Spring 프로필을 'local2'로 명시적으로 설정
+# 만약 다른 프로필로 실행하고 싶다면 이 값을 변경하거나,
+# 스크립트 실행 시 'SPRING_PROFILES_ACTIVE=prod ./start_docker_all.sh'와 같이 덮어쓸 수 있음.
+export SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE:-local2}
+log_info "Spring Boot Profile을 '$SPRING_PROFILES_ACTIVE'로 설정하여 실행합니다."
+
 if docker compose up -d --build; then
     log_success "Docker Compose 시작 완료!"
 else
@@ -130,12 +136,12 @@ done
 
 # Spring Boot 준비 대기
 log_info "Spring Boot 서비스 대기 중..."
-for i in {1..60}; do
+for i in {1..20}; do
     if curl -s -o /dev/null -w "%{http_code}" http://localhost:7950/actuator/health 2>/dev/null | grep -q "200"; then
         log_success "Spring Boot 서비스 준비 완료"
         break
     fi
-    if [ $i -eq 60 ]; then
+    if [ $i -eq 20 ]; then
         log_error "Spring Boot 서비스 시작 타임아웃"
         docker compose logs rent-car-service
         exit 1

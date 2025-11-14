@@ -1,5 +1,5 @@
 # 1. 베이스 이미지: 프로젝트와 동일한 Java 17 사용
-FROM openjdk:17-jdk-slim
+FROM eclipse-temurin:17-jdk-jammy
 
 # 2. 애플리케이션 JAR 파일 복사
 ARG JAR_FILE=build/libs/*.jar
