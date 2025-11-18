@@ -83,6 +83,9 @@ dependencies {
 
     //P6Spy
     implementation 'com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.9.1'
+
+    //더미데이터 삽입
+    implementation 'net.datafaker:datafaker:2.5.3'
 }
 
 // QueryDSL Q-Type 생성 경로 설정

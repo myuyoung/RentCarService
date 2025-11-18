@@ -1,13 +1,16 @@
 package me.changwook.config;
 
 import lombok.extern.slf4j.Slf4j;
+import me.changwook.config.logging.MdcLogInterceptor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.CacheControl;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.io.File;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -32,10 +35,25 @@ public class WebConfig implements WebMvcConfigurer {
     @Value("${file.static-serving.cache-duration:3600}")
     private long cacheDurationSeconds;
 
-    public WebConfig() {
+    private final MdcLogInterceptor mdcLogInterceptor;
+
+    public WebConfig(MdcLogInterceptor mdcLogInterceptor) {
+        this.mdcLogInterceptor = mdcLogInterceptor;
         log.info("=== 통합 파일 서빙 모드로 실행 ===");
         log.info("API 기반 스트리밍: /api/files/view/{{imageId}} (인증 필요)");
         log.info("정적 리소스 매핑: /images/** (빠른 접근, 캐싱)");
+    }
+
+    @Override
+    public void addInterceptors(InterceptorRegistry registry) {
+        registry.addInterceptor(mdcLogInterceptor)
+                .addPathPatterns("/**")
+                .excludePathPatterns(
+                        "/actuator/**",  // Actuator(프로메테우스) 경로 제외
+                        "/images/**",    // 정적 이미지 리소스 제외
+                        "/media/**",     // 정적 미디어 리소스 제외
+                        "/error"         // 스프링 기본 에러 페이지 제외
+                );// 모든 요청에 대해 인터셉터 적용
     }
 
     @Override
@@ -72,7 +90,7 @@ public class WebConfig implements WebMvcConfigurer {
         log.info("=== 정적 리소스 매핑 설정 ===");
         log.info("일반 이미지 - URL 패턴: /images/**, 파일 위치: {}", resourcePath);
         log.info("채팅 파일 - URL 패턴: /media/**, 파일 위치: {}", chatResourcePath);
-        log.info("캐시 지속시간: {}초", cacheDurationSeconds);
+        log.info("캐시 지속시간: {}초", Optional.of(cacheDurationSeconds));
     }
     
     private void createDirectoryIfNotExists(String dirPath, String description) {

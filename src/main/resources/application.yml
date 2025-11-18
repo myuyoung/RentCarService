@@ -111,7 +111,7 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
-      ddl-auto: update  # 테이블 자동 생성/업데이트 활성화
+      ddl-auto: create
     properties:
       hibernate:
         default_batch_fetch_size: 1000
@@ -122,10 +122,12 @@ logging:
     org.springframework.security: DEBUG
     org.springframework.web: DEBUG
     me.changwook: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - [ReqID: %X{requestId} | User: %X{userId}] - %msg%n"
 
 jwt:  # (v) 중복: test 프로파일과 기본 설정에 동일 설정
   secret: ${Jwt_Secret:d9f82kd9fkdw92kfslaj2k39fkdslqwe}
-  expire: 10000 #10초
+  expire: 600000 #10분
   refresh-expire: 86400000 #1일
 
 messages:  # (v) 중복: 기본 프로파일과 local 프로파일에 동일 설정

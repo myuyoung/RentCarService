@@ -37,7 +37,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private static final String[] EXCLUDE_PATH = {
             "/", "/index.html", "/login", "/logout", "/register", "/auth/login", "/api/register/**",
-            "/v3/api-docs/", "/swagger-ui/", "/h2-console/", "/css/", "/js/", "/api/login"
+            "/v3/api-docs/", "/swagger-ui/", "/h2-console/", "/css/", "/js/", "/api/login","/actuator/prometheus"
     };
 
     private final WebAuthenticationDetailsSource detailsSource = new WebAuthenticationDetailsSource();
@@ -64,13 +64,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 log.info("액세스 토큰이 만료되었습니다. 리프레시 토큰으로 재발급 시도합니다.");
                 SecurityContextHolder.clearContext();
             }catch (Exception e){
-                log.error("JWT 인증 오류 {}", e.getMessage());
+                log.warn("JWT 유효성 검사 실패 {}", e.getMessage());
                 SecurityContextHolder.clearContext();
             }
         }
         filterChain.doFilter(request, response);
     }
 
+    //URI가 포함되는 순간 filter를 작동시키지 않으므로 인증/인가를 회피할 수 있음.
     @Override
     protected boolean shouldNotFilter(@NonNull HttpServletRequest request) {
         String uri = request.getRequestURI();
