@@ -58,7 +58,8 @@ public class SecurityConfig {
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
                                 "/h2-console/**",
-                                "/actuator/**")
+                                "/actuator/**",
+                                "/auth/logout")
                         .permitAll()
 
                         // 위에 명시되지 않은 나머지 모든 요청은 인증을 요구합니다.

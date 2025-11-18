@@ -57,9 +57,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if (StringUtils.hasText(accessToken)) {
             try {
                 // 토큰 유효성 검증 - ExpiredJwtException 발생 가능
-                jwtUtil.validateToken(accessToken);
-                // 검증 성공 시 인증 설정
-                setAuthentication(accessToken, request);
+                if (jwtUtil.validateToken(accessToken)) {
+                    // 검증 성공 시 인증 설정
+                    setAuthentication(accessToken, request);
+                }
             } catch (ExpiredJwtException e) {
                 log.info("액세스 토큰이 만료되었습니다. 리프레시 토큰으로 재발급 시도합니다.");
                 SecurityContextHolder.clearContext();

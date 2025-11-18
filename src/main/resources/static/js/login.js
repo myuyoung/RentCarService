@@ -64,20 +64,12 @@ class LoginPage {
     }
 
     handleLoginSuccess(result) {
-        // Access Token을 localStorage에 저장 및 API 클라이언트에 설정
-        apiClient.saveAuthToken(result.data.token);
-        
-        // 사용자 정보도 저장 (선택적)
-        localStorage.setItem('userInfo', JSON.stringify({
-            email: result.data.email,
-            name: result.data.name,
-            role: result.data.role
-        }));
+        window.authManager.login(result.data);
 
         this.showSuccessMessage(result.message);
-        
+
         // 1초 후 역할 기반 리디렉션 (관리자는 /admin, 일반 사용자는 / 혹은 redirect 파라미터)
-        const role = result.data.role;
+        const role = result.data.role; // result.data는 AuthResponseDTO 객체입니다.
         const params = new URLSearchParams(window.location.search);
         const redirectParam = params.get('redirect');
 

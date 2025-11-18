@@ -72,7 +72,7 @@ export default function (data) {
         },
     };
 
-    const myPageRes = http.get(`${BASE_URL}/api/v1/members/me`, authParams);
+    const myPageRes = http.get(`${BASE_URL}/api/MyPage/reservation/list`, authParams);
 
     check(myPageRes, {
         '[MyPage] status is 200': (r) => r.status === 200,

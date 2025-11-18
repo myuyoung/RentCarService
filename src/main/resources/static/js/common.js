@@ -188,6 +188,15 @@ class ApiClient {
 // 전역 API 클라이언트 인스턴스
 const apiClient = new ApiClient();
 
+const savedToken = apiClient.getAuthToken();
+if (savedToken) {
+    apiClient.setAuthToken(savedToken);
+    // 재방문 시에도 서버 렌더 페이지 접근 가능하도록 쿠키에 동기화
+    try {
+        document.cookie = `accessToken=${savedToken}; Path=/; SameSite=Lax`;
+    } catch (_) {}
+}
+
 /**
  * 알림 메시지 표시 함수
  */
@@ -308,7 +317,7 @@ const loading = new LoadingManager();
 /**
  * 유틸리티 함수들
  */
-const utils = {
+let utils = {
     // 숫자를 한국 통화 형식으로 포맷
     formatCurrency(amount) {
         return new Intl.NumberFormat('ko-KR', {
@@ -627,15 +636,6 @@ function initializeMobileMenu() {
  * 페이지 로드 시 초기화
  */
 document.addEventListener('DOMContentLoaded', () => {
-    // 저장된 토큰이 있으면 API 클라이언트에 설정
-    const savedToken = apiClient.getAuthToken();
-    if (savedToken) {
-        apiClient.setAuthToken(savedToken);
-        // 재방문 시에도 서버 렌더 페이지 접근 가능하도록 쿠키에 동기화
-        try {
-            document.cookie = `accessToken=${savedToken}; Path=/; SameSite=Lax`;
-        } catch (_) {}
-    }
 
     // 모바일 메뉴 초기화
     initializeMobileMenu();
